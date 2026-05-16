@@ -13,14 +13,7 @@ const REFRESH_MS = 5 * 60 * 1000;
 const PULSE_MS = 600;
 
 function formatRate(n: number): string {
-  return Number(n).toPrecision(4);
-}
-
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return n.toFixed(2);
 }
 
 export function RateWidget() {
@@ -63,48 +56,22 @@ export function RateWidget() {
     };
   }, []);
 
+  const hasData = data && !error;
+
   return (
-    <div>
-      <article
-        className="rounded-lg p-5 bg-surface flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-        style={{ boxShadow: "var(--shadow-card)" }}
-      >
-        <div className="flex-1 min-w-0">
-          {error || !data ? (
-            <div
-              className="font-mono text-[24px] sm:text-[28px] leading-none tracking-tight"
-              style={{ color: "var(--text-3)" }}
-            >
-              {error ? "Курс временно недоступен" : "—"}
-            </div>
-          ) : (
-            <div
-              className={`font-mono text-[32px] sm:text-[40px] leading-none tracking-tight text-text${
-                pulse ? " oz-pulse-once" : ""
-              }`}
-            >
-              1 ₸ = {formatRate(data.rate)} ₩
-            </div>
-          )}
-
-          {data && !error && (
-            <p className="mt-1.5 text-[12px] text-text-2">
-              Средний рыночный курс · обновлён{" "}
-              <span className="font-mono">{formatTime(data.asOf)}</span>
-            </p>
-          )}
-        </div>
-
-        {data && !error && data.sparkline.length >= 2 && (
-          <div className="sm:flex-shrink-0">
-            <Sparkline values={data.sparkline.map((p) => p.rate)} />
-          </div>
-        )}
-      </article>
-
-      <p className="mt-2 px-1 text-[11px] text-text-3">
-        Это справочный курс. Ваша сделка может отличаться.
-      </p>
+    <div
+      className={`oz-rate-pill font-mono${pulse ? " oz-pulse-once" : ""}`}
+      aria-label={hasData ? `1 тенге = ${formatRate(data!.rate)} вон` : "Курс недоступен"}
+    >
+      <span className="oz-rate-pill__sym">₸</span>
+      <span className="oz-rate-pill__arrow">→</span>
+      <span className="oz-rate-pill__sym">₩</span>
+      <span className="oz-rate-pill__rate">
+        {hasData ? formatRate(data!.rate) : "—"}
+      </span>
+      {hasData && data!.sparkline.length >= 2 && (
+        <Sparkline values={data!.sparkline.map((p) => p.rate)} variant="pill" />
+      )}
     </div>
   );
 }

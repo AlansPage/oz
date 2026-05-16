@@ -211,6 +211,42 @@ button {
   animation: oz-pulse 0.6s ease-out 1;
 }
 
+/* Rate pill: glossy green capsule for the header */
+.oz-rate-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--r-full);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: linear-gradient(180deg, #2BA169 0%, var(--primary) 55%, #156138 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.10),
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 4px 10px rgba(26, 122, 74, 0.25);
+  white-space: nowrap;
+}
+
+.oz-rate-pill__sym {
+  font-size: 10px;
+  opacity: 0.85;
+}
+
+.oz-rate-pill__arrow {
+  font-size: 10px;
+  opacity: 0.7;
+  margin: 0 -2px;
+}
+
+.oz-rate-pill__rate {
+  font-variant-numeric: tabular-nums;
+}
+
 /* Brand mark */
 .oz-brand-mark {
   border-radius: 7px;

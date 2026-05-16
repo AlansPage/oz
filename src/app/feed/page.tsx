@@ -23,12 +23,13 @@ export default async function FeedPage() {
           <BrandMark size={28} />
           <span className="font-bold text-[16px] tracking-tight">öz</span>
         </div>
-        <LogoutButton />
+        <div className="flex items-center gap-3">
+          <RateWidget />
+          <LogoutButton />
+        </div>
       </header>
 
       <section className="flex-1 px-6 py-10 max-w-sm mx-auto w-full">
-        <RateWidget />
-
         <div
           className="rounded-lg p-6 bg-surface mt-6"
           style={{ boxShadow: "var(--shadow-card)" }}

@@ -1,21 +1,33 @@
+type Variant = "default" | "pill";
+
 type Props = {
   values: number[];
   width?: number;
   height?: number;
+  variant?: Variant;
 };
 
-export function Sparkline({ values, width = 120, height = 32 }: Props) {
+const VARIANT_DEFAULTS: Record<Variant, { width: number; height: number; stroke: string; strokeWidth: number; opacity: number }> = {
+  default: { width: 120, height: 32, stroke: "var(--primary)", strokeWidth: 1.5, opacity: 0.6 },
+  pill: { width: 38, height: 14, stroke: "#FFFFFF", strokeWidth: 1.25, opacity: 0.9 },
+};
+
+export function Sparkline({ values, width, height, variant = "default" }: Props) {
   if (values.length < 2) return null;
+
+  const defaults = VARIANT_DEFAULTS[variant];
+  const w = width ?? defaults.width;
+  const h = height ?? defaults.height;
 
   const min = Math.min(...values);
   const max = Math.max(...values);
   const flat = max === min;
   const span = flat ? 1 : max - min;
 
-  const stepX = width / (values.length - 1);
+  const stepX = w / (values.length - 1);
   const points = values.map((v, i) => {
     const x = i * stepX;
-    const y = flat ? height / 2 : height - ((v - min) / span) * height;
+    const y = flat ? h / 2 : h - ((v - min) / span) * h;
     return [x, y] as const;
   });
 
@@ -23,23 +35,36 @@ export function Sparkline({ values, width = 120, height = 32 }: Props) {
     .map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`)
     .join(" ");
 
+  const [lastX, lastY] = points[points.length - 1];
+
   return (
     <svg
-      width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
+      width={w}
+      height={h}
+      viewBox={`0 0 ${w} ${h}`}
       preserveAspectRatio="none"
       aria-hidden
+      style={{ overflow: "visible" }}
     >
       <path
         d={d}
         fill="none"
-        stroke="var(--primary)"
-        strokeWidth={1.5}
+        stroke={defaults.stroke}
+        strokeWidth={defaults.strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"
-        opacity={0.6}
+        opacity={defaults.opacity}
       />
+      {variant === "pill" && (
+        <circle
+          cx={lastX}
+          cy={lastY}
+          r={2.25}
+          fill="none"
+          stroke="#FFFFFF"
+          strokeWidth={1.25}
+        />
+      )}
     </svg>
   );
 }
