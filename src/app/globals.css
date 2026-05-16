@@ -1,0 +1,214 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Canvas */
+  --bg: #F5F0E8;
+  --bg-grid: rgba(17, 24, 39, 0.04);
+
+  /* Surfaces */
+  --surface: #FFFFFF;
+  --surface-2: #FAF6EE;
+  --surface-sunken: #EDE6D8;
+
+  /* Text */
+  --text: #111827;
+  --text-2: #4B5563;
+  --text-3: #6B7280;
+  --text-mute: #6B6557;
+
+  /* Borders */
+  --border: #E5DDCB;
+  --border-strong: #D5C9AF;
+
+  /* Brand: green is for trust/confirmation only */
+  --primary: #1A7A4A;
+  --primary-hover: #156138;
+  --primary-soft: #E3F1E8;
+  --primary-ink: #0E3D24;
+
+  /* Status */
+  --success: #1A7A4A;
+  --warning: #B45309;
+  --warning-soft: #FEF3C7;
+  --error: #B42318;
+  --error-soft: #FEE4E2;
+  --info: #0B5FB8;
+  --info-soft: #DBEAFE;
+  --gold: #B98A3A;
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-full: 9999px;
+
+  /* Spacing scale (4px base) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --s-16: 64px;
+
+  /* Shadows: warm over beige canvas */
+  --shadow-card: 0 1px 2px rgba(60, 40, 10, 0.04), 0 8px 24px rgba(60, 40, 10, 0.06);
+  --shadow-pop: 0 4px 12px rgba(60, 40, 10, 0.08), 0 24px 60px rgba(60, 40, 10, 0.12);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* Inputs follow the design system spec exactly */
+.oz-input {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  padding: 13px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.oz-input::placeholder {
+  color: var(--text-mute);
+}
+
+.oz-input:focus,
+.oz-input.is-focused {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.oz-input.is-error {
+  border-color: var(--error);
+}
+
+.oz-input.is-error:focus {
+  box-shadow: 0 0 0 3px var(--error-soft);
+}
+
+/* Buttons */
+.oz-btn {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 15px;
+  border-radius: var(--r-md);
+  padding: 12px 20px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.05s;
+  line-height: 1;
+}
+
+.oz-btn:active {
+  transform: translateY(1px);
+}
+
+.oz-btn--lg {
+  padding: 16px 24px;
+  font-size: 16px;
+}
+
+.oz-btn--full {
+  width: 100%;
+}
+
+.oz-btn--primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.oz-btn--primary:hover {
+  background: var(--primary-hover);
+}
+
+.oz-btn--primary:disabled {
+  background: var(--surface-sunken);
+  color: var(--text-mute);
+  cursor: not-allowed;
+}
+
+.oz-btn--secondary {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.oz-btn--secondary:hover {
+  background: var(--surface-2);
+}
+
+.oz-btn--ghost {
+  background: transparent;
+  color: var(--text);
+}
+
+.oz-btn--ghost:hover {
+  background: var(--surface-2);
+}
+
+/* OTP boxes */
+.oz-otp-box {
+  width: 44px;
+  height: 52px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  caret-color: var(--primary);
+}
+
+.oz-otp-box:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.oz-otp-box.is-error {
+  border-color: var(--error);
+}
+
+/* Brand mark */
+.oz-brand-mark {
+  border-radius: 7px;
+  background: var(--primary);
+  color: var(--bg);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
