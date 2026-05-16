@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { BrandMark } from "@/components/BrandMark";
 import { LogoutButton } from "@/components/LogoutButton";
+import { RateWidget } from "@/components/RateWidget";
 
 export default async function FeedPage() {
   const supabase = createClient();
@@ -26,8 +27,10 @@ export default async function FeedPage() {
       </header>
 
       <section className="flex-1 px-6 py-10 max-w-sm mx-auto w-full">
+        <RateWidget />
+
         <div
-          className="rounded-lg p-6 bg-surface"
+          className="rounded-lg p-6 bg-surface mt-6"
           style={{ boxShadow: "var(--shadow-card)" }}
         >
           <p className="text-[14px] text-text-2">Вы вошли как</p>

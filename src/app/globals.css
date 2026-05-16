@@ -200,6 +200,17 @@ button {
   border-color: var(--error);
 }
 
+/* One-shot pulse, used to register a value refresh without flashing */
+@keyframes oz-pulse {
+  0% { opacity: 1; }
+  30% { opacity: 0.55; }
+  100% { opacity: 1; }
+}
+
+.oz-pulse-once {
+  animation: oz-pulse 0.6s ease-out 1;
+}
+
 /* Brand mark */
 .oz-brand-mark {
   border-radius: 7px;
