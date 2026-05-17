@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Sparkline } from "./Sparkline";
+import { Sparkler } from "./Sparkler";
 
 type RatePayload = {
   rate: number;
@@ -22,6 +23,7 @@ export function RateWidget() {
   const [pulse, setPulse] = useState(false);
   const prevRate = useRef<number | null>(null);
   const pulseTimer = useRef<number | null>(null);
+  const donutRef = useRef<SVGGElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,7 +72,10 @@ export function RateWidget() {
         {hasData ? formatRate(data!.rate) : "—"}
       </span>
       {hasData && data!.sparkline.length >= 2 && (
-        <Sparkline values={data!.sparkline.map((p) => p.rate)} variant="pill" />
+        <>
+          <Sparkline values={data!.sparkline.map((p) => p.rate)} variant="pill" donutRef={donutRef} />
+          <Sparkler sourceRef={donutRef} />
+        </>
       )}
     </div>
   );
