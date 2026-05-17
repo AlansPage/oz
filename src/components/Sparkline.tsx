@@ -9,7 +9,7 @@ type Props = {
 
 const VARIANT_DEFAULTS: Record<Variant, { width: number; height: number; stroke: string; strokeWidth: number; opacity: number }> = {
   default: { width: 120, height: 32, stroke: "var(--primary)", strokeWidth: 1.5, opacity: 0.6 },
-  pill: { width: 38, height: 14, stroke: "#FFFFFF", strokeWidth: 1.25, opacity: 0.9 },
+  pill: { width: 64, height: 26, stroke: "var(--primary)", strokeWidth: 2.5, opacity: 0.95 },
 };
 
 export function Sparkline({ values, width, height, variant = "default" }: Props) {
@@ -36,6 +36,8 @@ export function Sparkline({ values, width, height, variant = "default" }: Props)
     .join(" ");
 
   const [lastX, lastY] = points[points.length - 1];
+  const isPill = variant === "pill";
+  const donutR = 5;
 
   return (
     <svg
@@ -55,15 +57,39 @@ export function Sparkline({ values, width, height, variant = "default" }: Props)
         strokeLinejoin="round"
         opacity={defaults.opacity}
       />
-      {variant === "pill" && (
-        <circle
-          cx={lastX}
-          cy={lastY}
-          r={2.25}
-          fill="none"
-          stroke="#FFFFFF"
-          strokeWidth={1.25}
-        />
+      {isPill && (
+        <g className="oz-donut">
+          {/* glossy white inner core */}
+          <circle cx={lastX} cy={lastY} r={donutR - 1.4} fill="rgba(255,255,255,0.92)" />
+          {/* deep green ring */}
+          <circle
+            cx={lastX}
+            cy={lastY}
+            r={donutR}
+            fill="none"
+            stroke="var(--primary)"
+            strokeWidth={1.8}
+          />
+          {/* travelling shine */}
+          <circle
+            className="oz-donut-shine"
+            cx={lastX}
+            cy={lastY}
+            r={donutR}
+            fill="none"
+            stroke="rgba(255,255,255,0.95)"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            strokeDasharray="6 26"
+          />
+          {/* tiny specular highlight */}
+          <circle
+            cx={lastX - 1.2}
+            cy={lastY - 1.4}
+            r={0.9}
+            fill="rgba(255,255,255,0.95)"
+          />
+        </g>
       )}
     </svg>
   );
