@@ -2,7 +2,7 @@
 
 P2P маркетплейс для обмена тенге (KZT) и вон (KRW) между казахстанцами в Корее. Web-first, mobile-web-first responsive.
 
-This is **auth-only** at the moment — phone OTP signup and session. Marketplace flows come later.
+Phone-OTP auth is wired end to end. The marketplace schema (`profiles`, `listings`) lives in `supabase/migrations/`; UI for listings lands in the next slice.
 
 ## Stack
 
@@ -35,6 +35,53 @@ In the Supabase dashboard:
 
 The app sends phone numbers in E.164 (`+7XXXXXXXXXX`).
 
+## Database
+
+Schema lives in `supabase/migrations/` (timestamped, append-only). Demo data lives in `supabase/seed.sql`.
+
+### Apply migrations to the remote DB
+
+```bash
+npx supabase login                                     # one-time, interactive
+npx supabase link --project-ref sdgdeuhligplyemhuirn
+npx supabase db push                                   # applies pending migrations
+```
+
+CLI-free alternative: paste the migration SQL into the Supabase dashboard → SQL editor.
+
+### Seed demo data
+
+`supabase db push` does **not** run `seed.sql` against a remote DB. Apply it manually:
+
+1. Open the Supabase dashboard → SQL editor
+2. Paste the contents of `supabase/seed.sql`
+3. Run
+
+The seed is idempotent (`on conflict (id) do nothing`), safe to re-run.
+
+### Regenerate TypeScript types
+
+```bash
+npm run types        # writes src/lib/supabase/database.types.ts
+```
+
+### Verify in the dashboard
+
+After applying the migration + seed:
+
+- Table editor shows `profiles` (4 rows) and `listings` (8 rows)
+- Both tables show the RLS lock icon
+- As anon role in SQL editor: `insert into public.listings (...) values (...)` → fails
+- As authenticated role: `select * from public.listings` returns the 8 active rows
+
+### What's enforced at the DB layer
+
+- `profiles.id` cascades from `auth.users(id)`; a trigger (`on_auth_user_created`) auto-creates a profile on signup
+- `listings.user_id` and `listings.created_at` are immutable after insert (BEFORE UPDATE trigger)
+- `listings.amount_currency` must match the "from" side of `direction` (check constraint)
+- `listings.note` ≤ 280 chars
+- RLS: anyone authenticated can read profiles and active listings; users can only insert/update their own listings; no deletes (use `status = 'withdrawn'`)
+
 ## Routes
 
 | Path | Description |
@@ -66,7 +113,8 @@ npm run dev          # next dev
 npm run build        # next build
 npm run typecheck    # tsc --noEmit
 npm run lint         # next lint
-npm run gen:types    # supabase gen types typescript --project-id ... (no schema yet, run later)
+npm run types        # supabase gen types typescript → src/lib/supabase/database.types.ts
+npm run gen:types    # alias of `types` (same output)
 ```
 
 ## Deploying to Vercel
