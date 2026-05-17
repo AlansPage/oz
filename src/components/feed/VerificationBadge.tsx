@@ -1,9 +1,15 @@
 import type { VerificationTier } from "@/lib/types";
 
-const LABEL: Record<VerificationTier, string> = {
+const SHORT_LABEL: Record<VerificationTier, string> = {
   phone: "тел.",
   phone_id: "ID",
   verified_trader: "трейдер",
+};
+
+const FULL_LABEL: Record<VerificationTier, string> = {
+  phone: "Телефон подтверждён",
+  phone_id: "Удостоверение проверено",
+  verified_trader: "Верифицированный трейдер",
 };
 
 const CLASS: Record<VerificationTier, string> = {
@@ -12,6 +18,12 @@ const CLASS: Record<VerificationTier, string> = {
   verified_trader: "oz-vbadge oz-vbadge--trader",
 };
 
-export function VerificationBadge({ tier }: { tier: VerificationTier }) {
-  return <span className={CLASS[tier]}>{LABEL[tier]}</span>;
+type Props = {
+  tier: VerificationTier;
+  full?: boolean;
+};
+
+export function VerificationBadge({ tier, full }: Props) {
+  const label = full ? FULL_LABEL[tier] : SHORT_LABEL[tier];
+  return <span className={CLASS[tier]}>{label}</span>;
 }

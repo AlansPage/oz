@@ -16,6 +16,40 @@ export type ListingStatus =
 
 export type ListingWithProfile = Listing & { profiles: Profile };
 
+export type TransactionStatus =
+  | "pending_sender_payment"
+  | "sender_paid"
+  | "completed"
+  | "disputed"
+  | "cancelled";
+
+// Defined manually until the next `npm run gen:types` after the
+// transactions migration is applied to the linked project.
+export type Transaction = {
+  id: string;
+  listing_id: string;
+  initiator_id: string;
+  counterparty_id: string;
+  direction: Direction;
+  amount: number;
+  amount_currency: Currency;
+  rate: number | null;
+  rate_locked_at: string;
+  status: TransactionStatus;
+  created_at: string;
+  completed_at: string | null;
+};
+
+export type TransactionInsert = {
+  listing_id: string;
+  initiator_id: string;
+  counterparty_id: string;
+  direction: Direction;
+  amount: number;
+  amount_currency: Currency;
+  rate?: number | null;
+};
+
 export const directionFrom = (d: Direction): Currency =>
   d === "kzt_to_krw" ? "KZT" : "KRW";
 export const directionTo = (d: Direction): Currency =>

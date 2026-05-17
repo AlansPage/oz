@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ListingCard } from "./ListingCard";
 import { FilterBar, type DirectionFilter, type SortOption } from "./FilterBar";
@@ -19,6 +20,7 @@ type Props = {
 
 export function FeedClient({ currentUserId }: Props) {
   const supabase = createClient();
+  const router = useRouter();
   const [filter, setFilter] = useState<DirectionFilter>("all");
   const [sort, setSort] = useState<SortOption>("new");
   const [items, setItems] = useState<ListingWithProfile[]>([]);
@@ -60,14 +62,19 @@ export function FeedClient({ currentUserId }: Props) {
     fetchListings();
   }, [fetchListings]);
 
-  const onContact = useCallback((id: string) => {
-    console.log("contact", id);
-  }, []);
+  const onContact = useCallback(
+    (id: string) => {
+      router.push(`/listing/${id}`);
+    },
+    [router],
+  );
 
-  const onEdit = useCallback((id: string) => {
-    console.log("edit", id);
-    setSheetOpen(true);
-  }, []);
+  const onEdit = useCallback(
+    (id: string) => {
+      router.push(`/listing/${id}`);
+    },
+    [router],
+  );
 
   const onWithdraw = useCallback(
     async (id: string) => {
