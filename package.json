@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "gen:types": "supabase gen types typescript --project-id sdgdeuhligplyemhuirn > src/lib/supabase/database.types.ts",
-    "types": "supabase gen types typescript --project-id sdgdeuhligplyemhuirn > src/lib/supabase/database.types.ts"
+    "gen:types": "npx supabase gen types typescript --project-id sdgdeuhligplyemhuirn > src/lib/supabase/database.types.ts",
+    "types": "npx supabase gen types typescript --project-id sdgdeuhligplyemhuirn > src/lib/supabase/database.types.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
