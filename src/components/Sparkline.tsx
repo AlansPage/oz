@@ -12,7 +12,7 @@ type Props = {
 
 const VARIANT_DEFAULTS: Record<Variant, { width: number; height: number; stroke: string; strokeWidth: number; opacity: number }> = {
   default: { width: 120, height: 32, stroke: "var(--primary)", strokeWidth: 1.5, opacity: 0.6 },
-  pill: { width: 64, height: 26, stroke: "var(--primary)", strokeWidth: 2.5, opacity: 0.95 },
+  pill: { width: 64, height: 26, stroke: "var(--bg)", strokeWidth: 2.5, opacity: 0.95 },
 };
 
 export function Sparkline({ values, width, height, variant = "default", donutRef }: Props) {
@@ -62,13 +62,12 @@ export function Sparkline({ values, width, height, variant = "default", donutRef
       />
       {isPill && (
         <g className="oz-donut" ref={donutRef}>
-          <circle cx={lastX} cy={lastY} r={donutR - 1.4} fill="#FFFFFF" />
           <circle
             cx={lastX}
             cy={lastY}
             r={donutR}
             fill="none"
-            stroke="var(--primary)"
+            stroke="var(--bg)"
             strokeWidth={1.8}
           />
         </g>

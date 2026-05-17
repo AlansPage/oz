@@ -12,12 +12,11 @@ type Particle = {
   breaking: boolean;
 };
 
-const GRAVITY = 0.05;
-const DRAG = 0.985;
 const EDGE_INSET = 1.5;
 const EMIT_MIN_MS = 90;
 const EMIT_JITTER_MS = 110;
 const MAX_PARTICLES = 80;
+const BEIGE = "245, 240, 232";
 
 type Props = {
   sourceRef: RefObject<SVGGraphicsElement | null>;
@@ -63,12 +62,12 @@ export function Sparkler({ sourceRef }: Props) {
 
     const emit = (x: number, y: number) => {
       const angle = Math.random() * Math.PI * 2;
-      const speed = 0.55 + Math.random() * 1.05;
+      const speed = 0.9 + Math.random() * 1.2;
       particles.push({
         x,
         y,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 0.55,
+        vy: Math.sin(angle) * speed,
         life: 1,
         size: 0.9 + Math.random() * 0.7,
         breaking: false,
@@ -76,15 +75,22 @@ export function Sparkler({ sourceRef }: Props) {
     };
 
     const drawParticle = (p: Particle) => {
-      const r = p.size * 2.6;
-      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
-      grad.addColorStop(0, `rgba(255, 255, 255, ${Math.min(1, p.life)})`);
-      grad.addColorStop(0.35, `rgba(26, 122, 74, ${p.life * 0.85})`);
-      grad.addColorStop(1, "rgba(26, 122, 74, 0)");
-      ctx.fillStyle = grad;
+      const speed = Math.hypot(p.vx, p.vy) || 1;
+      const len = p.breaking ? 1.5 + p.size * 2.5 : 4 + p.size * 1.8;
+      const hx = p.vx / speed;
+      const hy = p.vy / speed;
+      const tailX = p.x - hx * len * 0.6;
+      const tailY = p.y - hy * len * 0.6;
+      const headX = p.x + hx * len * 0.4;
+      const headY = p.y + hy * len * 0.4;
+
+      ctx.strokeStyle = `rgba(${BEIGE}, ${Math.min(1, p.life)})`;
+      ctx.lineWidth = 1.25;
+      ctx.lineCap = "round";
       ctx.beginPath();
-      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(tailX, tailY);
+      ctx.lineTo(headX, headY);
+      ctx.stroke();
     };
 
     const tick = (t: number) => {
@@ -102,16 +108,13 @@ export function Sparkler({ sourceRef }: Props) {
       const next: Particle[] = [];
       for (const p of particles) {
         if (p.breaking) {
-          p.size += 0.55;
-          p.life -= 0.22;
+          p.size += 0.35;
+          p.life -= 0.28;
           if (p.life > 0) next.push(p);
         } else {
-          p.vy += GRAVITY;
-          p.vx *= DRAG;
-          p.vy *= DRAG;
           p.x += p.vx;
           p.y += p.vy;
-          p.life -= 0.006;
+          p.life -= 0.005;
           if (
             p.x < EDGE_INSET ||
             p.x > cssWidth - EDGE_INSET ||
@@ -120,7 +123,7 @@ export function Sparkler({ sourceRef }: Props) {
             p.life <= 0
           ) {
             p.breaking = true;
-            p.life = Math.min(1, p.life + 0.2);
+            p.life = Math.min(1, p.life + 0.25);
           }
           next.push(p);
         }
