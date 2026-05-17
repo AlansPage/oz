@@ -22,6 +22,10 @@ export function formatAmount(n: number, currency: Currency): string {
   return `${amountFormatter.format(Math.round(n))} ${CURRENCY_SYMBOL[currency]}`;
 }
 
+export function formatAmountBare(n: number): string {
+  return amountFormatter.format(Math.round(n));
+}
+
 export function formatAmountInput(raw: string): string {
   const digits = raw.replace(/\D/g, "");
   if (!digits) return "";

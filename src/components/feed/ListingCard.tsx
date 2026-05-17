@@ -6,6 +6,7 @@ import { useRate } from "./RateContext";
 import {
   equivalentAmount,
   formatAmount,
+  formatAmountBare,
   formatPhoneMasked,
   formatRate,
   formatRelativeTime,
@@ -74,7 +75,7 @@ export function ListingCard({
           <span className="oz-card__direction" aria-hidden>
             {SYMBOL[from]} → {SYMBOL[to]}
           </span>
-          {formatAmount(Number(listing.amount), from)}
+          {formatAmountBare(Number(listing.amount))}
         </div>
         <div className="oz-card__rateline">
           {listing.rate !== null

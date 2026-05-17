@@ -5,8 +5,13 @@ import { Sparkline } from "./Sparkline";
 import { Sparkler } from "./Sparkler";
 import { useRate } from "./feed/RateContext";
 
+const rateFormatter = new Intl.NumberFormat("ru-RU", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 function formatRate(n: number): string {
-  return n.toFixed(2);
+  return rateFormatter.format(n);
 }
 
 export function RateWidget() {
