@@ -60,7 +60,7 @@ export function RateWidget() {
 
   return (
     <div
-      className={`oz-rate-pill font-mono${pulse ? " oz-pulse-once" : ""}`}
+      className={`oz-rate-pill${pulse ? " oz-pulse-once" : ""}`}
       aria-label={hasData ? `1 тенге = ${formatRate(data!.rate)} вон` : "Курс недоступен"}
     >
       <span className="oz-rate-pill__sym">₸</span>
