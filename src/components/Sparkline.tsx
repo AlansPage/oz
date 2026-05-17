@@ -70,18 +70,6 @@ export function Sparkline({ values, width, height, variant = "default" }: Props)
             stroke="var(--primary)"
             strokeWidth={1.8}
           />
-          {/* travelling shine */}
-          <circle
-            className="oz-donut-shine"
-            cx={lastX}
-            cy={lastY}
-            r={donutR}
-            fill="none"
-            stroke="rgba(255,255,255,0.95)"
-            strokeWidth={1.8}
-            strokeLinecap="round"
-            strokeDasharray="6 26"
-          />
           {/* tiny specular highlight */}
           <circle
             cx={lastX - 1.2}
@@ -89,6 +77,24 @@ export function Sparkline({ values, width, height, variant = "default" }: Props)
             r={0.9}
             fill="rgba(255,255,255,0.95)"
           />
+          {/* firework sparks radiating outward */}
+          {Array.from({ length: 8 }).map((_, i) => {
+            const angle = (i / 8) * Math.PI * 2;
+            const dist = 9 + (i % 2) * 2.5;
+            const cx = lastX + Math.cos(angle) * dist;
+            const cy = lastY + Math.sin(angle) * dist;
+            return (
+              <circle
+                key={i}
+                className="oz-spark"
+                cx={cx}
+                cy={cy}
+                r={1.25}
+                fill="var(--primary)"
+                style={{ animationDelay: `${(i * 0.18).toFixed(2)}s` }}
+              />
+            );
+          })}
         </g>
       )}
     </svg>
