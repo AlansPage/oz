@@ -103,12 +103,235 @@ export type Database = {
         }
         Relationships: []
       }
+      receipts: {
+        Row: {
+          amount_claimed: number | null
+          created_at: string
+          currency: string
+          id: string
+          ocr_confidence: number | null
+          ocr_data: Json | null
+          ocr_status: string | null
+          side: string
+          storage_path: string
+          transaction_id: string
+          uploader_id: string
+          verified: boolean
+        }
+        Insert: {
+          amount_claimed?: number | null
+          created_at?: string
+          currency: string
+          id?: string
+          ocr_confidence?: number | null
+          ocr_data?: Json | null
+          ocr_status?: string | null
+          side: string
+          storage_path: string
+          transaction_id: string
+          uploader_id: string
+          verified?: boolean
+        }
+        Update: {
+          amount_claimed?: number | null
+          created_at?: string
+          currency?: string
+          id?: string
+          ocr_confidence?: number | null
+          ocr_data?: Json | null
+          ocr_status?: string | null
+          side?: string
+          storage_path?: string
+          transaction_id?: string
+          uploader_id?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipts_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_uploader_id_fkey"
+            columns: ["uploader_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          amount_currency: string
+          completed_at: string | null
+          counterparty_confirmed_at: string | null
+          counterparty_id: string
+          counterparty_paid_at: string | null
+          created_at: string
+          direction: string
+          dispute_description: string | null
+          dispute_reason: string | null
+          disputed_at: string | null
+          disputed_by: string | null
+          id: string
+          initiator_confirmed_at: string | null
+          initiator_id: string
+          initiator_paid_at: string | null
+          listing_id: string
+          rate: number | null
+          rate_locked_at: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          amount_currency: string
+          completed_at?: string | null
+          counterparty_confirmed_at?: string | null
+          counterparty_id: string
+          counterparty_paid_at?: string | null
+          created_at?: string
+          direction: string
+          dispute_description?: string | null
+          dispute_reason?: string | null
+          disputed_at?: string | null
+          disputed_by?: string | null
+          id?: string
+          initiator_confirmed_at?: string | null
+          initiator_id: string
+          initiator_paid_at?: string | null
+          listing_id: string
+          rate?: number | null
+          rate_locked_at?: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          amount_currency?: string
+          completed_at?: string | null
+          counterparty_confirmed_at?: string | null
+          counterparty_id?: string
+          counterparty_paid_at?: string | null
+          created_at?: string
+          direction?: string
+          dispute_description?: string | null
+          dispute_reason?: string | null
+          disputed_at?: string | null
+          disputed_by?: string | null
+          id?: string
+          initiator_confirmed_at?: string | null
+          initiator_id?: string
+          initiator_paid_at?: string | null
+          listing_id?: string
+          rate?: number | null
+          rate_locked_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_counterparty_id_fkey"
+            columns: ["counterparty_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_disputed_by_fkey"
+            columns: ["disputed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_initiator_id_fkey"
+            columns: ["initiator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      advance_transaction: {
+        Args: { p_action: string; p_transaction_id: string }
+        Returns: {
+          amount: number
+          amount_currency: string
+          completed_at: string | null
+          counterparty_confirmed_at: string | null
+          counterparty_id: string
+          counterparty_paid_at: string | null
+          created_at: string
+          direction: string
+          dispute_description: string | null
+          dispute_reason: string | null
+          disputed_at: string | null
+          disputed_by: string | null
+          id: string
+          initiator_confirmed_at: string | null
+          initiator_id: string
+          initiator_paid_at: string | null
+          listing_id: string
+          rate: number | null
+          rate_locked_at: string
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      open_dispute: {
+        Args: {
+          p_description: string
+          p_reason: string
+          p_transaction_id: string
+        }
+        Returns: {
+          amount: number
+          amount_currency: string
+          completed_at: string | null
+          counterparty_confirmed_at: string | null
+          counterparty_id: string
+          counterparty_paid_at: string | null
+          created_at: string
+          direction: string
+          dispute_description: string | null
+          dispute_reason: string | null
+          disputed_at: string | null
+          disputed_by: string | null
+          id: string
+          initiator_confirmed_at: string | null
+          initiator_id: string
+          initiator_paid_at: string | null
+          listing_id: string
+          rate: number | null
+          rate_locked_at: string
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never

@@ -3,8 +3,9 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { BrandMark } from "@/components/BrandMark";
 import { LogoutButton } from "@/components/LogoutButton";
+import { TransactionDetailClient } from "./TransactionDetailClient";
 
-export default async function TransactionPlaceholderPage({
+export default async function TransactionPage({
   params,
 }: {
   params: { id: string };
@@ -17,8 +18,6 @@ export default async function TransactionPlaceholderPage({
   if (!user) {
     redirect("/");
   }
-
-  const shortId = params.id.slice(0, 8);
 
   return (
     <main className="min-h-[100dvh] flex flex-col bg-bg">
@@ -35,19 +34,7 @@ export default async function TransactionPlaceholderPage({
         </div>
       </header>
 
-      <section className="oz-listing-page">
-        <div className="oz-listing-empty">
-          <div className="oz-listing-empty__title">
-            Сделка #{shortId} создана
-          </div>
-          <div className="oz-listing-empty__copy">
-            Экран сделки скоро появится.
-          </div>
-          <Link href="/feed" className="oz-btn oz-btn--primary">
-            Вернуться к ленте
-          </Link>
-        </div>
-      </section>
+      <TransactionDetailClient id={params.id} currentUserId={user.id} />
     </main>
   );
 }

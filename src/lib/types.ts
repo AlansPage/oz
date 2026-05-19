@@ -19,9 +19,19 @@ export type ListingWithProfile = Listing & { profiles: Profile };
 export type TransactionStatus =
   | "pending_sender_payment"
   | "sender_paid"
+  | "counterparty_confirmed"
+  | "counterparty_paid"
   | "completed"
   | "disputed"
   | "cancelled";
+
+export type DisputeReason =
+  | "not_received"
+  | "wrong_amount"
+  | "wrong_account"
+  | "other";
+
+export type ReceiptSide = "initiator" | "counterparty";
 
 // Defined manually until the next `npm run gen:types` after the
 // transactions migration is applied to the linked project.
@@ -38,6 +48,14 @@ export type Transaction = {
   status: TransactionStatus;
   created_at: string;
   completed_at: string | null;
+  initiator_paid_at: string | null;
+  counterparty_paid_at: string | null;
+  initiator_confirmed_at: string | null;
+  counterparty_confirmed_at: string | null;
+  disputed_at: string | null;
+  disputed_by: string | null;
+  dispute_reason: DisputeReason | null;
+  dispute_description: string | null;
 };
 
 export type TransactionInsert = {
@@ -48,6 +66,30 @@ export type TransactionInsert = {
   amount: number;
   amount_currency: Currency;
   rate?: number | null;
+};
+
+export type Receipt = {
+  id: string;
+  transaction_id: string;
+  uploader_id: string;
+  storage_path: string;
+  side: ReceiptSide;
+  amount_claimed: number | null;
+  currency: Currency;
+  created_at: string;
+  ocr_status: "pending" | "parsed" | "failed" | null;
+  ocr_data: unknown | null;
+  ocr_confidence: number | null;
+  verified: boolean;
+};
+
+export type ReceiptInsert = {
+  transaction_id: string;
+  uploader_id: string;
+  storage_path: string;
+  side: ReceiptSide;
+  amount_claimed: number | null;
+  currency: Currency;
 };
 
 export const directionFrom = (d: Direction): Currency =>
