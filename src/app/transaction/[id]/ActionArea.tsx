@@ -116,21 +116,6 @@ export function ActionArea({
     );
   }
 
-  if (status === "completed") {
-    return (
-      <div className="oz-listing-actions">
-        <button
-          className="oz-btn oz-btn--ghost"
-          disabled
-          title="Скоро"
-          style={{ cursor: "not-allowed" }}
-        >
-          Оценить контрагента (скоро)
-        </button>
-      </div>
-    );
-  }
-
   if (status === "disputed") {
     return (
       <div className="oz-listing-about">

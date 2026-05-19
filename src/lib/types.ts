@@ -92,6 +92,36 @@ export type ReceiptInsert = {
   currency: Currency;
 };
 
+export const RATING_TAGS = [
+  "Быстро",
+  "Чётко",
+  "Дружелюбно",
+  "Курс честный",
+  "Без проблем",
+] as const;
+
+export type RatingTag = (typeof RATING_TAGS)[number];
+
+export type Rating = {
+  id: string;
+  transaction_id: string;
+  rater_id: string;
+  ratee_id: string;
+  stars: number;
+  tags: string[];
+  comment: string | null;
+  created_at: string;
+};
+
+export type RatingInsert = {
+  transaction_id: string;
+  rater_id: string;
+  ratee_id: string;
+  stars: number;
+  tags: string[];
+  comment: string | null;
+};
+
 export const directionFrom = (d: Direction): Currency =>
   d === "kzt_to_krw" ? "KZT" : "KRW";
 export const directionTo = (d: Direction): Currency =>

@@ -327,6 +327,13 @@ button {
   min-width: 0;
 }
 
+.oz-card__identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
 .oz-card__name {
   font-size: 14px;
   font-weight: 500;
@@ -334,6 +341,12 @@ button {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.oz-card__rating {
+  font-size: 12px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
 }
 
 .oz-card__amount {

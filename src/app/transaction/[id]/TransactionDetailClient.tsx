@@ -8,6 +8,7 @@ import {
   directionTo,
   type Currency,
   type Profile,
+  type Rating,
   type Receipt,
   type Transaction,
   type TransactionStatus,
@@ -18,6 +19,7 @@ import { ActionArea } from "./ActionArea";
 import { ReceiptThumbnail } from "./ReceiptThumbnail";
 import { ReceiptUploadSheet } from "./ReceiptUploadSheet";
 import { DisputeSheet } from "./DisputeSheet";
+import { RateForm, RatingReadOnly } from "./RatingCard";
 
 type Props = {
   id: string;
@@ -44,6 +46,7 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
   const router = useRouter();
   const [tx, setTx] = useState<TransactionWithProfiles | null>(null);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
+  const [ratings, setRatings] = useState<Rating[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
@@ -68,16 +71,24 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
     setReceipts((data as unknown as Receipt[] | null) ?? []);
   }, [supabase, id]);
 
+  const fetchRatings = useCallback(async () => {
+    const { data } = await supabase
+      .from("ratings")
+      .select("*")
+      .eq("transaction_id", id);
+    setRatings((data as unknown as Rating[] | null) ?? []);
+  }, [supabase, id]);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      await Promise.all([fetchTx(), fetchReceipts()]);
+      await Promise.all([fetchTx(), fetchReceipts(), fetchRatings()]);
       if (!cancelled) setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [fetchTx, fetchReceipts]);
+  }, [fetchTx, fetchReceipts, fetchRatings]);
 
   useEffect(() => {
     const channel = supabase
@@ -106,12 +117,24 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
           fetchReceipts();
         },
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "ratings",
+          filter: `transaction_id=eq.${id}`,
+        },
+        () => {
+          fetchRatings();
+        },
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, id, fetchTx, fetchReceipts]);
+  }, [supabase, id, fetchTx, fetchReceipts, fetchRatings]);
 
   if (loading) {
     return (
@@ -166,6 +189,12 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
     receipts.find((r) => r.side === "counterparty") ?? null;
 
   const showDispute = !STATUSES_HIDE_DISPUTE.includes(tx.status);
+
+  const counterpartyId =
+    viewerRole === "initiator" ? tx.counterparty_id : tx.initiator_id;
+  const myRating = ratings.find((r) => r.rater_id === currentUserId) ?? null;
+  const theirRating =
+    ratings.find((r) => r.rater_id === counterpartyId) ?? null;
 
   return (
     <section className="oz-listing-page">
@@ -260,6 +289,23 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
             </div>
           )}
         </div>
+      )}
+
+      {tx.status === "completed" && !myRating && (
+        <RateForm
+          transactionId={tx.id}
+          raterId={currentUserId}
+          rateeId={counterpartyId}
+          onSubmitted={() => fetchRatings()}
+        />
+      )}
+
+      {tx.status === "completed" && myRating && (
+        <RatingReadOnly title="Ваша оценка" rating={myRating} />
+      )}
+
+      {tx.status === "completed" && theirRating && (
+        <RatingReadOnly title="Контрагент оценил вас" rating={theirRating} />
       )}
 
       <ActionArea

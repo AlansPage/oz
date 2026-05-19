@@ -65,7 +65,14 @@ export function ListingCard({
             name={profile.display_name}
             phone={profile.phone}
           />
-          <span className="oz-card__name">{displayName}</span>
+          <div className="oz-card__identity">
+            <span className="oz-card__name">{displayName}</span>
+            <span className="oz-card__rating">
+              {profile.rating_count > 0 && profile.rating_avg !== null
+                ? `★ ${Number(profile.rating_avg).toFixed(1)} · ${profile.rating_count}`
+                : "Новый"}
+            </span>
+          </div>
         </div>
         <VerificationBadge tier={tier} />
       </div>
