@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
-import { useSupabase } from "@/components/SupabaseProvider";
 import { BrandMark } from "@/components/BrandMark";
 import {
   digitsOnly,
@@ -11,11 +10,14 @@ import {
   isComplete,
   toE164,
 } from "@/lib/phone";
-import { translateAuthError } from "@/lib/auth-errors";
+
+type RequestCodeResponse =
+  | { status: "delivered_via_telegram" }
+  | { status: "awaiting_link"; bot_username: string }
+  | { error: string };
 
 export default function PhonePage() {
   const router = useRouter();
-  const { supabase } = useSupabase();
   const [digits, setDigits] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,16 +31,49 @@ export default function PhonePage() {
     setLoading(true);
 
     const phone = toE164(digits);
-    const { error: otpError } = await supabase.auth.signInWithOtp({ phone });
-    setLoading(false);
-
-    if (otpError) {
-      setError(translateAuthError(otpError, "send"));
+    let res: Response;
+    try {
+      res = await fetch("/api/auth/request-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+    } catch {
+      setLoading(false);
+      setError("Не удалось отправить код. Попробуйте ещё раз.");
       return;
     }
 
-    sessionStorage.setItem("oz:auth:phone", phone);
-    router.push("/auth/verify");
+    const body = (await res.json().catch(() => null)) as RequestCodeResponse | null;
+    setLoading(false);
+
+    if (!res.ok || !body) {
+      if (res.status === 429) {
+        setError("Слишком много попыток. Подождите немного.");
+      } else if (body && "error" in body && body.error === "invalid_phone") {
+        setError("Неверный формат номера телефона.");
+      } else {
+        setError("Не удалось отправить код. Попробуйте ещё раз.");
+      }
+      return;
+    }
+
+    if ("status" in body && body.status === "delivered_via_telegram") {
+      sessionStorage.setItem("oz:auth:phone", phone);
+      sessionStorage.setItem("oz:auth:mode", "delivered");
+      router.push("/auth/verify");
+      return;
+    }
+
+    if ("status" in body && body.status === "awaiting_link") {
+      sessionStorage.setItem("oz:auth:phone", phone);
+      sessionStorage.setItem("oz:auth:mode", "awaiting_link");
+      sessionStorage.setItem("oz:auth:bot", body.bot_username);
+      router.push("/auth/verify");
+      return;
+    }
+
+    setError("Не удалось отправить код. Попробуйте ещё раз.");
   }
 
   return (
@@ -59,7 +94,7 @@ export default function PhonePage() {
           Введите номер телефона
         </h1>
         <p className="mt-2 text-[14px] text-text-2">
-          Мы отправим SMS с кодом для входа.
+          Мы отправим код через Telegram-бот.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8">
