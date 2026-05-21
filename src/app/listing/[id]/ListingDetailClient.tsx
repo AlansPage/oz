@@ -3,7 +3,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { ListingWithProfile } from "@/lib/types";
+import { signAvatar } from "@/lib/avatar-url";
+import {
+  ProfileGateSheet,
+  PROFILE_GATE_DISMISS_KEY,
+} from "@/components/ProfileGateSheet";
+import type { ListingWithProfile, Profile } from "@/lib/types";
 import { ListingHero } from "./ListingHero";
 import { ContactActions } from "./ContactActions";
 import { EditActions } from "./EditActions";
@@ -14,6 +19,7 @@ import { formatAmountInput } from "@/lib/format";
 type Props = {
   id: string;
   currentUserId: string;
+  currentProfile: Profile;
 };
 
 export type EditForm = {
@@ -33,12 +39,18 @@ function initialEditForm(listing: ListingWithProfile): EditForm {
   };
 }
 
-export function ListingDetailClient({ id, currentUserId }: Props) {
+export function ListingDetailClient({
+  id,
+  currentUserId,
+  currentProfile,
+}: Props) {
   const supabase = createClient();
   const router = useRouter();
   const [listing, setListing] = useState<ListingWithProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [gateOpen, setGateOpen] = useState(false);
+  const [profile, setProfile] = useState<Profile>(currentProfile);
   const [editForm, setEditForm] = useState<EditForm | null>(null);
 
   const fetchListing = useCallback(async () => {
@@ -47,13 +59,47 @@ export function ListingDetailClient({ id, currentUserId }: Props) {
       .select("*, profiles(*)")
       .eq("id", id)
       .maybeSingle();
-    const fetched = (data as unknown as ListingWithProfile | null) ?? null;
+    let fetched = (data as unknown as ListingWithProfile | null) ?? null;
+    if (fetched?.profiles?.avatar_url) {
+      const signed = await signAvatar(supabase, fetched.profiles.avatar_url);
+      fetched = {
+        ...fetched,
+        profiles: { ...fetched.profiles, avatar_url: signed },
+      };
+    }
     setListing(fetched);
     if (fetched && fetched.user_id === currentUserId) {
       setEditForm(initialEditForm(fetched));
     }
     setLoading(false);
   }, [supabase, id, currentUserId]);
+
+  const gateNeeded = !profile.display_name || !profile.avatar_url;
+
+  function startDealOrGate() {
+    let dismissed = false;
+    try {
+      dismissed =
+        typeof window !== "undefined" &&
+        window.sessionStorage.getItem(PROFILE_GATE_DISMISS_KEY) === "1";
+    } catch {
+      dismissed = false;
+    }
+    if (gateNeeded && !dismissed) {
+      setGateOpen(true);
+      return;
+    }
+    setConfirmOpen(true);
+  }
+
+  async function refreshProfileAfterGate() {
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", currentUserId)
+      .maybeSingle();
+    if (data) setProfile(data as Profile);
+  }
 
   useEffect(() => {
     fetchListing();
@@ -140,18 +186,36 @@ export function ListingDetailClient({ id, currentUserId }: Props) {
           onWithdrawn={() => router.push("/feed")}
         />
       ) : (
-        <ContactActions onStartDeal={() => setConfirmOpen(true)} />
+        <ContactActions onStartDeal={startDealOrGate} />
       )}
 
       <AboutUser profile={listing.profiles} />
 
       {!isOwner && (
-        <ConfirmTransactionSheet
-          open={confirmOpen}
-          onClose={() => setConfirmOpen(false)}
-          listing={listing}
-          currentUserId={currentUserId}
-        />
+        <>
+          <ConfirmTransactionSheet
+            open={confirmOpen}
+            onClose={() => setConfirmOpen(false)}
+            listing={listing}
+            currentUserId={currentUserId}
+          />
+          <ProfileGateSheet
+            open={gateOpen}
+            userId={currentUserId}
+            phone={profile.phone}
+            currentDisplayName={profile.display_name}
+            currentAvatarPath={profile.avatar_url}
+            onComplete={async () => {
+              await refreshProfileAfterGate();
+              setGateOpen(false);
+              setConfirmOpen(true);
+            }}
+            onDefer={() => {
+              setGateOpen(false);
+              setConfirmOpen(true);
+            }}
+          />
+        </>
       )}
     </section>
   );

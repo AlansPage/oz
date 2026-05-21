@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { signAvatar } from "@/lib/avatar-url";
 import { BrandMark } from "@/components/BrandMark";
-import { LogoutButton } from "@/components/LogoutButton";
+import { HeaderAvatarMenu } from "@/components/HeaderAvatarMenu";
 import { RateWidget } from "@/components/RateWidget";
 import { RateProvider } from "@/components/feed/RateContext";
 import { FeedClient } from "@/components/feed/FeedClient";
+import type { Profile } from "@/lib/types";
 
 export default async function FeedPage() {
   const supabase = createClient();
@@ -15,6 +17,18 @@ export default async function FeedPage() {
   if (!user) {
     redirect("/");
   }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile) {
+    redirect("/");
+  }
+
+  const headerAvatarUrl = await signAvatar(supabase, profile.avatar_url);
 
   return (
     <RateProvider>
@@ -28,11 +42,18 @@ export default async function FeedPage() {
             <RateWidget />
           </div>
           <div className="justify-self-end">
-            <LogoutButton />
+            <HeaderAvatarMenu
+              displayName={profile.display_name}
+              phone={profile.phone}
+              avatarUrl={headerAvatarUrl}
+            />
           </div>
         </header>
 
-        <FeedClient currentUserId={user.id} />
+        <FeedClient
+          currentUserId={user.id}
+          currentProfile={profile as Profile}
+        />
       </main>
     </RateProvider>
   );

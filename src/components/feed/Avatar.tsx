@@ -2,7 +2,7 @@ type Props = {
   url?: string | null;
   name?: string | null;
   phone?: string | null;
-  size?: "sm" | "lg";
+  size?: "sm" | "lg" | "xl";
 };
 
 function initial(name?: string | null, phone?: string | null): string {
@@ -13,7 +13,9 @@ function initial(name?: string | null, phone?: string | null): string {
 }
 
 export function Avatar({ url, name, phone, size = "sm" }: Props) {
-  const cls = size === "lg" ? "oz-avatar oz-avatar--lg" : "oz-avatar";
+  const sizeCls =
+    size === "xl" ? "oz-avatar--xl" : size === "lg" ? "oz-avatar--lg" : "";
+  const cls = sizeCls ? `oz-avatar ${sizeCls}` : "oz-avatar";
   if (url) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={url} alt="" className={cls} />;

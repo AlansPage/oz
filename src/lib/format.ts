@@ -52,6 +52,14 @@ export function formatPhoneMasked(raw: string | null | undefined): string {
   return `+${country} ${op} *** ** ${last2}`;
 }
 
+export function formatPhoneFull(raw: string | null | undefined): string {
+  if (!raw) return "—";
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length !== 11) return raw;
+  // +7 707 335 07 41
+  return `+${digits[0]} ${digits.slice(1, 4)} ${digits.slice(4, 7)} ${digits.slice(7, 9)} ${digits.slice(9, 11)}`;
+}
+
 export function formatRelativeTime(iso: string): string {
   const then = new Date(iso).getTime();
   const now = Date.now();

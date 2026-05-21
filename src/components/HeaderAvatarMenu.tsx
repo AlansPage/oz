@@ -1,0 +1,88 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { Avatar } from "@/components/feed/Avatar";
+
+type Props = {
+  displayName: string | null;
+  phone: string | null;
+  avatarUrl: string | null;
+};
+
+export function HeaderAvatarMenu({ displayName, phone, avatarUrl }: Props) {
+  const router = useRouter();
+  const supabase = createClient();
+  const [open, setOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    await supabase.auth.signOut();
+    router.replace("/");
+    router.refresh();
+  }
+
+  return (
+    <div className="oz-headeravatar" ref={wrapRef}>
+      <button
+        type="button"
+        className="oz-headeravatar__btn"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Меню профиля"
+      >
+        <Avatar
+          url={avatarUrl}
+          name={displayName}
+          phone={phone}
+          size="sm"
+        />
+      </button>
+      {open && (
+        <div className="oz-headeravatar__menu" role="menu">
+          <button
+            type="button"
+            role="menuitem"
+            className="oz-headeravatar__item"
+            onClick={() => {
+              setOpen(false);
+              router.push("/profile");
+            }}
+          >
+            Профиль
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="oz-headeravatar__item"
+            onClick={handleLogout}
+            disabled={loggingOut}
+          >
+            {loggingOut ? "Выходим…" : "Выйти"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
