@@ -124,17 +124,24 @@ export async function POST(req: Request) {
     // listUsers with perPage=1000 is a stopgap that won't scale past ~500
     // users.
     console.log("[verify-code] step 4: looking up existing user in auth.users");
-    const phoneNoPlus = phone.replace(/^\+/, "");
+    // auth.users.phone is stored WITHOUT the leading + (e.g. "77073350741"),
+    // while our request body and custom tables (auth_codes, profiles,
+    // telegram_links) use the + prefix. Strip the + one-way for this lookup
+    // only — never change how phones are stored in our own tables.
+    const phoneNoPlus = phone.startsWith("+") ? phone.slice(1) : phone;
     const { data: usersPage, error: listError } =
       await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
     if (listError) {
       console.error("[verify-code] error at step 4 (listUsers):", listError);
       return NextResponse.json({ error: "server_error" }, { status: 500 });
     }
+    console.log("[verify-code] comparing phone formats", {
+      request_phone: phone,
+      lookup_phone: phoneNoPlus,
+      sample_auth_phone: usersPage?.users[0]?.phone ?? null,
+    });
     const existingAuthUser =
-      usersPage?.users.find((u) => u.phone === phoneNoPlus) ??
-      usersPage?.users.find((u) => u.phone === phone) ??
-      null;
+      usersPage?.users.find((u) => u.phone === phoneNoPlus) ?? null;
     console.log("[verify-code] step 4 done", {
       total_returned: usersPage?.users.length ?? 0,
       existing: Boolean(existingAuthUser),
