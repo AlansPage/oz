@@ -20,6 +20,7 @@ export default function VerifyPage() {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [blocked, setBlocked] = useState(false);
   const [cooldown, setCooldown] = useState(RESEND_SECONDS);
 
   const verifyingRef = useRef(false);
@@ -85,9 +86,17 @@ export default function VerifyPage() {
           body: JSON.stringify({ phone, code }),
         });
         const body = (await res.json().catch(() => null)) as
-          | { ok?: boolean; redirect?: string; error?: string }
+          | { ok?: boolean; redirect?: string; error?: string; message_ru?: string }
           | null;
         if (!res.ok || !body?.ok) {
+          if (res.status === 409 && body?.error === "account_needs_migration") {
+            setError(
+              body.message_ru ??
+                "Этот номер был зарегистрирован ранее. Свяжитесь с поддержкой.",
+            );
+            setBlocked(true);
+            return;
+          }
           if (body?.error === "invalid_or_expired") {
             setError("Неверный или истёкший код.");
           } else {
@@ -145,10 +154,10 @@ export default function VerifyPage() {
   }
 
   useEffect(() => {
-    if (mode === "delivered" && code.length === 6 && !loading) {
+    if (mode === "delivered" && code.length === 6 && !loading && !blocked) {
       handleVerify();
     }
-  }, [code, mode, loading, handleVerify]);
+  }, [code, mode, loading, blocked, handleVerify]);
 
   if (!phone || !mode) return null;
 
@@ -239,7 +248,7 @@ export default function VerifyPage() {
 
               <button
                 type="submit"
-                disabled={code.length !== 6 || loading}
+                disabled={code.length !== 6 || loading || blocked}
                 className="oz-btn oz-btn--primary oz-btn--full oz-btn--lg mt-6"
               >
                 {loading ? "Проверяем…" : "Подтвердить"}
