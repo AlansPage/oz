@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_subscriptions: {
+        Row: {
+          active: boolean
+          amount_max: number | null
+          amount_min: number | null
+          cooldown_minutes: number
+          created_at: string
+          direction: string
+          id: string
+          last_notified_at: string | null
+          rate_better_than: number | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          amount_max?: number | null
+          amount_min?: number | null
+          cooldown_minutes?: number
+          created_at?: string
+          direction: string
+          id?: string
+          last_notified_at?: string | null
+          rate_better_than?: number | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          amount_max?: number | null
+          amount_min?: number | null
+          cooldown_minutes?: number
+          created_at?: string
+          direction?: string
+          id?: string
+          last_notified_at?: string | null
+          rate_better_than?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auth_codes: {
         Row: {
           attempts: number
@@ -144,6 +191,64 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "listings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_log: {
+        Row: {
+          alert_id: string | null
+          channel: string
+          created_at: string
+          error_detail: string | null
+          external_id: string | null
+          id: string
+          listing_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          alert_id?: string | null
+          channel: string
+          created_at?: string
+          error_detail?: string | null
+          external_id?: string | null
+          id?: string
+          listing_id?: string | null
+          status: string
+          user_id: string
+        }
+        Update: {
+          alert_id?: string | null
+          channel?: string
+          created_at?: string
+          error_detail?: string | null
+          external_id?: string | null
+          id?: string
+          listing_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_log_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alert_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_log_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_log_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -458,6 +563,15 @@ export type Database = {
         }
       }
       cleanup_expired_auth_codes: { Args: never; Returns: undefined }
+      find_alert_matches: {
+        Args: { p_listing_id: string }
+        Returns: {
+          alert_id: string
+          message_text: string
+          telegram_user_id: number
+          user_id: string
+        }[]
+      }
       mark_messages_read: {
         Args: { p_transaction_id: string }
         Returns: undefined
