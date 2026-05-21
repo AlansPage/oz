@@ -50,6 +50,54 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          body: string
+          created_at: string
+          flagged: boolean
+          flagged_reason: string | null
+          id: string
+          read_at: string | null
+          sender_id: string
+          transaction_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          flagged?: boolean
+          flagged_reason?: string | null
+          id?: string
+          read_at?: string | null
+          sender_id: string
+          transaction_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          flagged?: boolean
+          flagged_reason?: string | null
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           amount: number
@@ -410,6 +458,10 @@ export type Database = {
         }
       }
       cleanup_expired_auth_codes: { Args: never; Returns: undefined }
+      mark_messages_read: {
+        Args: { p_transaction_id: string }
+        Returns: undefined
+      }
       open_dispute: {
         Args: {
           p_description: string
@@ -441,6 +493,25 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      send_chat_message: {
+        Args: { p_body: string; p_transaction_id: string }
+        Returns: {
+          body: string
+          created_at: string
+          flagged: boolean
+          flagged_reason: string | null
+          id: string
+          read_at: string | null
+          sender_id: string
+          transaction_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "chat_messages"
           isOneToOne: true
           isSetofReturn: false
         }
