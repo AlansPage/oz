@@ -172,6 +172,15 @@ export function FeedClient({ currentUserId, currentProfile }: Props) {
           <EmptyState
             variant="no-match"
             onCreate={gateOrOpenPostSheet}
+            secondary={
+              filter === "all"
+                ? undefined
+                : {
+                    label: "Создать оповещение для этого направления",
+                    onClick: () =>
+                      router.push(`/alerts?direction=${filter}&create=1`),
+                  }
+            }
           />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">

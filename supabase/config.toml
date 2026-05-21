@@ -25,3 +25,6 @@ enable_signup = true
 [auth.sms]
 enable_signup = true
 enable_confirmations = true
+
+[functions.notify-matchers]
+verify_jwt = false

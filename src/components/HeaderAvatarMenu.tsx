@@ -76,6 +76,17 @@ export function HeaderAvatarMenu({ displayName, phone, avatarUrl }: Props) {
             type="button"
             role="menuitem"
             className="oz-headeravatar__item"
+            onClick={() => {
+              setOpen(false);
+              router.push("/alerts");
+            }}
+          >
+            Оповещения
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="oz-headeravatar__item"
             onClick={handleLogout}
             disabled={loggingOut}
           >

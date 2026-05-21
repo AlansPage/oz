@@ -135,6 +135,51 @@ export type ChatMessage = {
   read_at: string | null;
 };
 
+// Defined manually until the next `npm run gen:types` after the
+// alerts migration is applied to the linked project.
+export type AlertSubscription = {
+  id: string;
+  user_id: string;
+  direction: Direction;
+  amount_min: number | null;
+  amount_max: number | null;
+  rate_better_than: number | null;
+  cooldown_minutes: number;
+  active: boolean;
+  last_notified_at: string | null;
+  created_at: string;
+};
+
+export type AlertSubscriptionInsert = {
+  user_id: string;
+  direction: Direction;
+  amount_min?: number | null;
+  amount_max?: number | null;
+  rate_better_than?: number | null;
+  cooldown_minutes?: number;
+  active?: boolean;
+};
+
+export type NotificationChannel = "telegram" | "sms" | "push";
+export type NotificationStatus =
+  | "queued"
+  | "sent"
+  | "failed"
+  | "capped"
+  | "silenced";
+
+export type NotificationLog = {
+  id: string;
+  user_id: string;
+  alert_id: string | null;
+  listing_id: string | null;
+  channel: NotificationChannel;
+  status: NotificationStatus;
+  external_id: string | null;
+  error_detail: string | null;
+  created_at: string;
+};
+
 export const directionFrom = (d: Direction): Currency =>
   d === "kzt_to_krw" ? "KZT" : "KRW";
 export const directionTo = (d: Direction): Currency =>

@@ -1,9 +1,15 @@
 type Variant = "no-match" | "all-expired";
 
+type SecondaryCTA = {
+  label: string;
+  onClick: () => void;
+};
+
 type Props = {
   variant: Variant;
   onCreate?: () => void;
   onRefresh?: () => void;
+  secondary?: SecondaryCTA;
 };
 
 const COPY: Record<Variant, { title: string; cta?: string }> = {
@@ -17,7 +23,7 @@ const COPY: Record<Variant, { title: string; cta?: string }> = {
   },
 };
 
-export function EmptyState({ variant, onCreate, onRefresh }: Props) {
+export function EmptyState({ variant, onCreate, onRefresh, secondary }: Props) {
   const { title, cta } = COPY[variant];
   const handler = variant === "no-match" ? onCreate : onRefresh;
   return (
@@ -27,6 +33,16 @@ export function EmptyState({ variant, onCreate, onRefresh }: Props) {
         <button onClick={handler} className="oz-btn oz-btn--secondary">
           {cta}
         </button>
+      )}
+      {secondary && (
+        <div className="mt-3">
+          <button
+            onClick={secondary.onClick}
+            className="oz-btn oz-btn--ghost"
+          >
+            {secondary.label}
+          </button>
+        </div>
       )}
     </div>
   );
