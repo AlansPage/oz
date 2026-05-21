@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      auth_codes: {
+        Row: {
+          attempts: number
+          code: string
+          created_at: string
+          delivered: boolean
+          expires_at: string
+          id: string
+          phone: string
+          telegram_user_id: number | null
+          used: boolean
+        }
+        Insert: {
+          attempts?: number
+          code: string
+          created_at?: string
+          delivered?: boolean
+          expires_at?: string
+          id?: string
+          phone: string
+          telegram_user_id?: number | null
+          used?: boolean
+        }
+        Update: {
+          attempts?: number
+          code?: string
+          created_at?: string
+          delivered?: boolean
+          expires_at?: string
+          id?: string
+          phone?: string
+          telegram_user_id?: number | null
+          used?: boolean
+        }
+        Relationships: []
+      }
       listings: {
         Row: {
           amount: number
@@ -218,6 +254,27 @@ export type Database = {
           },
         ]
       }
+      telegram_links: {
+        Row: {
+          linked_at: string
+          phone: string
+          telegram_user_id: number
+          telegram_username: string | null
+        }
+        Insert: {
+          linked_at?: string
+          phone: string
+          telegram_user_id: number
+          telegram_username?: string | null
+        }
+        Update: {
+          linked_at?: string
+          phone?: string
+          telegram_user_id?: number
+          telegram_username?: string | null
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -352,6 +409,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cleanup_expired_auth_codes: { Args: never; Returns: undefined }
       open_dispute: {
         Args: {
           p_description: string
@@ -383,6 +441,26 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_profile_identity: {
+        Args: { p_avatar_path: string; p_display_name: string }
+        Returns: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          last_active_at: string
+          phone: string | null
+          rating_avg: number | null
+          rating_count: number
+          verification_tier: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
           isOneToOne: true
           isSetofReturn: false
         }
