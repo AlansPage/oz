@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendTelegramMessage } from "@/lib/telegram";
+import { logSecurityEvent } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
 
@@ -209,6 +210,13 @@ export async function POST(req: Request) {
   const expected = process.env.TELEGRAM_WEBHOOK_SECRET;
   const provided = req.headers.get("x-telegram-bot-api-secret-token");
   if (!expected || provided !== expected) {
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+    void logSecurityEvent({
+      event_type: "webhook_auth_failed",
+      ip,
+      detail: { provided_secret_prefix: provided?.slice(0, 4) ?? null },
+    });
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

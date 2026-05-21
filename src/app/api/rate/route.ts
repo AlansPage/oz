@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { checkInMemoryLimit } from "@/lib/rate-limit";
 
 // The /feed widget hits this on mount + every 5 min. The third-party CDN sees at
 // most one request per region per `revalidate` window, regardless of users connected.
@@ -49,7 +50,14 @@ async function fetchJson(
   }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const limit = checkInMemoryLimit(`ip:${ip}`, 120, 60 * 1000);
+  if (!limit.allowed) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
+
   const dates = lastNDates(7);
 
   const [latest, ...historical] = await Promise.all([

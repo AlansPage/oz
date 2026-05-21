@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { signAvatars } from "@/lib/avatar-url";
 import {
@@ -198,6 +199,13 @@ export function FeedClient({ currentUserId, currentProfile }: Props) {
           </div>
         )}
       </section>
+
+      <footer className="oz-feed__disclaimer">
+        öz — сообщество для прямого обмена. Платформа не участвует в передаче средств.{" "}
+        <Link href="/terms">условия</Link>
+        {" "}/{" "}
+        <Link href="/privacy">конфиденциальность</Link>
+      </footer>
 
       <Fab onClick={gateOrOpenPostSheet} />
       <PostListingSheet

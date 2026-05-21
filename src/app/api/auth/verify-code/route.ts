@@ -22,12 +22,25 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { createClient as createSsrClient } from "@/lib/supabase/server";
 import { derivePassword } from "@/lib/auth/password";
+import { checkAuthCodeAttemptsLimit } from "@/lib/rate-limit";
+import { logSecurityEvent } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
 
 const PHONE_RE = /^\+7\d{10}$/;
 const CODE_RE = /^\d{6}$/;
 const MAX_ATTEMPTS = 5;
+
+const DEBUG_VERBOSE =
+  process.env.NODE_ENV !== "production" ||
+  process.env.OZ_VERBOSE_AUTH === "1";
+
+function vlog(...args: unknown[]) {
+  if (DEBUG_VERBOSE) {
+    // eslint-disable-next-line no-console
+    vlog(...args);
+  }
+}
 
 const ACCOUNT_NEEDS_MIGRATION_BODY = {
   error: "account_needs_migration",
@@ -38,7 +51,7 @@ type RequestBody = { phone?: unknown; code?: unknown };
 
 export async function POST(req: Request) {
   try {
-    console.log("[verify-code] step 1: parsing request body");
+    vlog("[verify-code] step 1: parsing request body");
     let body: RequestBody;
     try {
       body = (await req.json()) as RequestBody;
@@ -51,18 +64,34 @@ export async function POST(req: Request) {
     const code = typeof body.code === "string" ? body.code : "";
     const phoneValid = PHONE_RE.test(phone);
     const codeValid = CODE_RE.test(code);
-    console.log("[verify-code] step 1 done", {
+    vlog("[verify-code] step 1 done", {
       phone_len: phone.length,
       code_len: code.length,
       phone_valid: phoneValid,
       code_valid: codeValid,
     });
     if (!phoneValid || !codeValid) {
-      console.log("[verify-code] rejecting: regex failed");
+      vlog("[verify-code] rejecting: regex failed");
       return NextResponse.json({ error: "invalid_or_expired" }, { status: 400 });
     }
 
-    console.log("[verify-code] step 2: looking up auth_codes row", { phone });
+    // Per-phone verify-attempt rate limit (slice 11). Sums `attempts`
+    // across recent auth_codes rows so each failed verify counts.
+    const rateLimit = await checkAuthCodeAttemptsLimit(
+      phone,
+      5,
+      10 * 60 * 1000,
+    );
+    if (!rateLimit.allowed) {
+      void logSecurityEvent({
+        event_type: "auth_rate_limited",
+        phone,
+        detail: { route: "verify-code", attempted: rateLimit.attempted },
+      });
+      return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+    }
+
+    vlog("[verify-code] step 2: looking up auth_codes row", { phone });
     const nowIso = new Date().toISOString();
     const { data: match, error: matchError } = await supabaseAdmin
       .from("auth_codes")
@@ -78,10 +107,10 @@ export async function POST(req: Request) {
       console.error("[verify-code] error at step 2 (lookup):", matchError);
       return NextResponse.json({ error: "server_error" }, { status: 500 });
     }
-    console.log("[verify-code] step 2 done", { found: Boolean(match), match_id: match?.id ?? null });
+    vlog("[verify-code] step 2 done", { found: Boolean(match), match_id: match?.id ?? null });
 
     if (!match) {
-      console.log("[verify-code] no valid code match; incrementing attempts");
+      vlog("[verify-code] no valid code match; incrementing attempts");
       const { data: latest } = await supabaseAdmin
         .from("auth_codes")
         .select("id, attempts")
@@ -99,7 +128,7 @@ export async function POST(req: Request) {
             used: nextAttempts > MAX_ATTEMPTS,
           })
           .eq("id", latest.id);
-        console.log("[verify-code] attempts updated", {
+        vlog("[verify-code] attempts updated", {
           id: latest.id,
           next_attempts: nextAttempts,
           locked: nextAttempts > MAX_ATTEMPTS,
@@ -108,7 +137,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "invalid_or_expired" }, { status: 400 });
     }
 
-    console.log("[verify-code] step 3: marking auth_codes row used", { id: match.id });
+    vlog("[verify-code] step 3: marking auth_codes row used", { id: match.id });
     const { error: useError } = await supabaseAdmin
       .from("auth_codes")
       .update({ used: true })
@@ -117,13 +146,13 @@ export async function POST(req: Request) {
       console.error("[verify-code] error at step 3 (mark used):", useError);
       return NextResponse.json({ error: "server_error" }, { status: 500 });
     }
-    console.log("[verify-code] step 3 done", { id: match.id });
+    vlog("[verify-code] step 3 done", { id: match.id });
 
     // TODO: REPLACE with phone-indexed lookup once Supabase exposes
     // getUserByPhone or once we maintain our own phone-to-user-id table.
     // listUsers with perPage=1000 is a stopgap that won't scale past ~500
     // users.
-    console.log("[verify-code] step 4: looking up existing user in auth.users");
+    vlog("[verify-code] step 4: looking up existing user in auth.users");
     // auth.users.phone is stored WITHOUT the leading + (e.g. "77073350741"),
     // while our request body and custom tables (auth_codes, profiles,
     // telegram_links) use the + prefix. Strip the + one-way for this lookup
@@ -135,25 +164,25 @@ export async function POST(req: Request) {
       console.error("[verify-code] error at step 4 (listUsers):", listError);
       return NextResponse.json({ error: "server_error" }, { status: 500 });
     }
-    console.log("[verify-code] comparing phone formats", {
+    vlog("[verify-code] comparing phone formats", {
       request_phone: phone,
       lookup_phone: phoneNoPlus,
       sample_auth_phone: usersPage?.users[0]?.phone ?? null,
     });
     const existingAuthUser =
       usersPage?.users.find((u) => u.phone === phoneNoPlus) ?? null;
-    console.log("[verify-code] step 4 done", {
+    vlog("[verify-code] step 4 done", {
       total_returned: usersPage?.users.length ?? 0,
       existing: Boolean(existingAuthUser),
       existing_id: existingAuthUser?.id ?? null,
     });
 
-    console.log("[verify-code] step 5: deriving password via HMAC");
+    vlog("[verify-code] step 5: deriving password via HMAC");
     const password = derivePassword(phone);
-    console.log("[verify-code] step 5 done", { password_len: password.length });
+    vlog("[verify-code] step 5 done", { password_len: password.length });
 
     if (existingAuthUser) {
-      console.log("[verify-code] existing user found in auth.users", {
+      vlog("[verify-code] existing user found in auth.users", {
         user_id: existingAuthUser.id,
       });
       const ssr = createSsrClient();
@@ -169,11 +198,17 @@ export async function POST(req: Request) {
           errMsg.includes("invalid login credentials") ||
           errMsg.includes("invalid_credentials")
         ) {
-          console.log("[verify-code] password mismatch on existing user — 409");
+          vlog("[verify-code] password mismatch on existing user — 409");
           console.error("[verify-code] account_needs_migration", {
             phone,
             user_id: existingAuthUser.id,
             auth_error: signInError,
+          });
+          void logSecurityEvent({
+            event_type: "auth_account_needs_migration",
+            phone,
+            user_id: existingAuthUser.id,
+            detail: { reason: "password_mismatch", error_message: signInError.message ?? null },
           });
           return NextResponse.json(ACCOUNT_NEEDS_MIGRATION_BODY, { status: 409 });
         }
@@ -181,18 +216,24 @@ export async function POST(req: Request) {
           "[verify-code] error at step 7 (signInWithPassword existing):",
           signInError,
         );
+        void logSecurityEvent({
+          event_type: "auth_failed",
+          phone,
+          user_id: existingAuthUser.id,
+          detail: { reason: "signin_existing_unhandled", error_message: signInError.message ?? null },
+        });
         return NextResponse.json({ error: "server_error" }, { status: 500 });
       }
-      console.log("[verify-code] sign in succeeded for existing user", {
+      vlog("[verify-code] sign in succeeded for existing user", {
         user_id: signInData.user?.id ?? null,
         has_session: Boolean(signInData.session),
       });
       await repairProfileIfMissing(signInData.user);
-      console.log("[verify-code] step 8: returning success response");
+      vlog("[verify-code] step 8: returning success response");
       return NextResponse.json({ ok: true, redirect: "/feed" });
     }
 
-    console.log("[verify-code] no existing user, creating new", { phone });
+    vlog("[verify-code] no existing user, creating new", { phone });
     const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
       phone,
       password,
@@ -207,22 +248,27 @@ export async function POST(req: Request) {
         errMsg.includes("already been registered")
       ) {
         // listUsers lookup missed a real user — race or pagination edge.
-        console.log("[verify-code] phone collision during createUser — 409");
+        vlog("[verify-code] phone collision during createUser — 409");
         console.error("[verify-code] account_needs_migration (collision)", {
           phone,
           create_error: createError,
+        });
+        void logSecurityEvent({
+          event_type: "auth_account_needs_migration",
+          phone,
+          detail: { reason: "createuser_phone_collision", error_message: createError.message ?? null },
         });
         return NextResponse.json(ACCOUNT_NEEDS_MIGRATION_BODY, { status: 409 });
       }
       console.error("[verify-code] error at step 6 (createUser):", createError);
       return NextResponse.json({ error: "server_error" }, { status: 500 });
     }
-    console.log("[verify-code] step 6 done", {
+    vlog("[verify-code] step 6 done", {
       user_id: created?.user?.id ?? null,
       user_phone: created?.user?.phone ?? null,
     });
 
-    console.log("[verify-code] step 7: signing in with password");
+    vlog("[verify-code] step 7: signing in with password");
     const ssr = createSsrClient();
     const { data: signInData, error: signInError } = await ssr.auth.signInWithPassword({
       phone,
@@ -235,14 +281,14 @@ export async function POST(req: Request) {
       );
       return NextResponse.json({ error: "server_error" }, { status: 500 });
     }
-    console.log("[verify-code] sign in succeeded for new user", {
+    vlog("[verify-code] sign in succeeded for new user", {
       user_id: signInData.user?.id ?? null,
       has_session: Boolean(signInData.session),
     });
     // handle_new_user trigger should have created the profile, but be safe.
     await repairProfileIfMissing(signInData.user);
 
-    console.log("[verify-code] step 8: returning success response");
+    vlog("[verify-code] step 8: returning success response");
     return NextResponse.json({ ok: true, redirect: "/feed" });
   } catch (err) {
     const e = err as Error;
@@ -279,6 +325,6 @@ async function repairProfileIfMissing(
       error,
     });
   } else {
-    console.log("[verify-code] profile repaired", { user_id: user.id });
+    vlog("[verify-code] profile repaired", { user_id: user.id });
   }
 }

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { generateOtp, sendTelegramMessage } from "@/lib/telegram";
+import { checkAuthCodeRequestLimit } from "@/lib/rate-limit";
+import { logSecurityEvent } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
 
@@ -23,16 +25,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_phone" }, { status: 400 });
   }
 
-  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-  const { count: recentCount, error: countError } = await supabaseAdmin
-    .from("auth_codes")
-    .select("id", { count: "exact", head: true })
-    .eq("phone", phone)
-    .gt("created_at", windowStart);
-  if (countError) {
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
-  }
-  if ((recentCount ?? 0) >= RATE_LIMIT_MAX) {
+  const limit = await checkAuthCodeRequestLimit(
+    phone,
+    RATE_LIMIT_MAX,
+    RATE_LIMIT_WINDOW_MS,
+  );
+  if (!limit.allowed) {
+    void logSecurityEvent({
+      event_type: "auth_rate_limited",
+      phone,
+      detail: { route: "request-code", recent: limit.recent },
+    });
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 

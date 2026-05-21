@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { checkInMemoryLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,11 @@ export async function GET(req: Request) {
   const phone = url.searchParams.get("phone") ?? "";
   if (!PHONE_RE.test(phone)) {
     return NextResponse.json({ error: "invalid_phone" }, { status: 400 });
+  }
+
+  const limit = checkInMemoryLimit(`checkstatus:${phone}`, 60, 60 * 1000);
+  if (!limit.allowed) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
   const nowIso = new Date().toISOString();

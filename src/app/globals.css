@@ -1526,3 +1526,24 @@ button {
   color: var(--warning);
   text-align: center;
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+   Slice 11: feed footer disclaimer
+   ───────────────────────────────────────────────────────────────────── */
+
+.oz-feed__disclaimer {
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+  padding: 24px 16px 32px;
+  line-height: 1.5;
+}
+
+.oz-feed__disclaimer a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.oz-feed__disclaimer a:hover {
+  color: var(--text-2);
+}

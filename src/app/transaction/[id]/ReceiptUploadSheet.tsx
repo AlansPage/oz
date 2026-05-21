@@ -179,6 +179,10 @@ export function ReceiptUploadSheet({
 
         {error && <p className="oz-sheet__error">{error}</p>}
 
+        <p className="oz-sheet__helper" style={{ fontStyle: "italic" }}>
+          Чек хранится зашифрованным и доступен только сторонам сделки.
+        </p>
+
         <button
           className="oz-btn oz-btn--primary oz-btn--full oz-btn--lg"
           onClick={submit}
