@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { signAvatar } from "@/lib/avatar-url";
 import {
   directionFrom,
   directionTo,
+  type ChatMessage,
   type Currency,
   type Profile,
   type Rating,
@@ -20,6 +22,7 @@ import { ReceiptThumbnail } from "./ReceiptThumbnail";
 import { ReceiptUploadSheet } from "./ReceiptUploadSheet";
 import { DisputeSheet } from "./DisputeSheet";
 import { RateForm, RatingReadOnly } from "./RatingCard";
+import { ChatThread } from "./ChatThread";
 
 type Props = {
   id: string;
@@ -47,6 +50,10 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
   const [tx, setTx] = useState<TransactionWithProfiles | null>(null);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [ratings, setRatings] = useState<Rating[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [counterpartyAvatarUrl, setCounterpartyAvatarUrl] = useState<
+    string | null
+  >(null);
   const [loading, setLoading] = useState(true);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
@@ -79,16 +86,30 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
     setRatings((data as unknown as Rating[] | null) ?? []);
   }, [supabase, id]);
 
+  const fetchMessages = useCallback(async () => {
+    const { data } = await supabase
+      .from("chat_messages")
+      .select("*")
+      .eq("transaction_id", id)
+      .order("created_at", { ascending: true });
+    setMessages((data as unknown as ChatMessage[] | null) ?? []);
+  }, [supabase, id]);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      await Promise.all([fetchTx(), fetchReceipts(), fetchRatings()]);
+      await Promise.all([
+        fetchTx(),
+        fetchReceipts(),
+        fetchRatings(),
+        fetchMessages(),
+      ]);
       if (!cancelled) setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [fetchTx, fetchReceipts, fetchRatings]);
+  }, [fetchTx, fetchReceipts, fetchRatings, fetchMessages]);
 
   useEffect(() => {
     const channel = supabase
@@ -129,12 +150,42 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
           fetchRatings();
         },
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "chat_messages",
+          filter: `transaction_id=eq.${id}`,
+        },
+        () => {
+          fetchMessages();
+        },
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, id, fetchTx, fetchReceipts, fetchRatings]);
+  }, [supabase, id, fetchTx, fetchReceipts, fetchRatings, fetchMessages]);
+
+  useEffect(() => {
+    if (!tx) {
+      setCounterpartyAvatarUrl(null);
+      return;
+    }
+    const role: ViewerRole =
+      tx.initiator_id === currentUserId ? "initiator" : "counterparty";
+    const path =
+      role === "initiator" ? tx.counterparty.avatar_url : tx.initiator.avatar_url;
+    let cancelled = false;
+    void signAvatar(supabase, path).then((url) => {
+      if (!cancelled) setCounterpartyAvatarUrl(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase, tx, currentUserId]);
 
   if (loading) {
     return (
@@ -195,6 +246,18 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
   const myRating = ratings.find((r) => r.rater_id === currentUserId) ?? null;
   const theirRating =
     ratings.find((r) => r.rater_id === counterpartyId) ?? null;
+
+  const chatClosedReason: "completed" | "cancelled" | "disputed" | null =
+    tx.status === "completed"
+      ? "completed"
+      : tx.status === "cancelled"
+        ? "cancelled"
+        : tx.status === "disputed"
+          ? "disputed"
+          : null;
+  const counterpartyUnreadCount = messages.filter(
+    (m) => m.sender_id !== currentUserId && m.read_at === null,
+  ).length;
 
   return (
     <section className="oz-listing-page">
@@ -337,6 +400,30 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
           fetchTx();
         }}
       />
+
+      <section className="oz-listing-about" aria-label="Чат">
+        <div className="oz-chat__header">
+          <span className="oz-chat__title">Чат с контрагентом</span>
+          {counterpartyUnreadCount > 0 && (
+            <span className="oz-chat__unread">{counterpartyUnreadCount}</span>
+          )}
+        </div>
+        <ChatThread
+          transactionId={tx.id}
+          currentUserId={currentUserId}
+          counterpartyAvatarUrl={counterpartyAvatarUrl}
+          counterpartyName={counterpartyProfile.display_name}
+          counterpartyPhone={counterpartyProfile.phone}
+          messages={messages}
+          isClosed={chatClosedReason !== null}
+          closedReason={chatClosedReason}
+          onSent={(msg) =>
+            setMessages((prev) =>
+              prev.some((m) => m.id === msg.id) ? prev : [...prev, msg],
+            )
+          }
+        />
+      </section>
 
       {showDispute && (
         <button

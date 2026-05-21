@@ -122,6 +122,19 @@ export type RatingInsert = {
   comment: string | null;
 };
 
+// Defined manually until the next `npm run gen:types` after the
+// chat migration is applied to the linked project.
+export type ChatMessage = {
+  id: string;
+  transaction_id: string;
+  sender_id: string;
+  body: string;
+  flagged: boolean;
+  flagged_reason: string | null;
+  created_at: string;
+  read_at: string | null;
+};
+
 export const directionFrom = (d: Direction): Currency =>
   d === "kzt_to_krw" ? "KZT" : "KRW";
 export const directionTo = (d: Direction): Currency =>

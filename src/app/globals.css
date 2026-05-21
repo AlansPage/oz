@@ -1169,3 +1169,186 @@ button {
   color: var(--text-3);
   cursor: default;
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+   Slice 8: in-app chat
+   ───────────────────────────────────────────────────────────────────── */
+
+.oz-avatar--xs {
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+}
+
+.oz-chat__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin-bottom: 12px;
+}
+
+.oz-chat__title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.oz-chat__unread {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--r-full);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.oz-chat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.oz-chat__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.oz-chat__empty {
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13px;
+  padding: 32px 16px;
+}
+
+.oz-chat__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.oz-chat__row--own {
+  justify-content: flex-end;
+}
+
+.oz-chat__row--other {
+  justify-content: flex-start;
+}
+
+.oz-chat__bubble {
+  position: relative;
+  max-width: 75%;
+  padding: 8px 12px;
+  border-radius: var(--r-md);
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.oz-chat__bubble--own {
+  background: var(--primary-soft);
+}
+
+.oz-chat__bubble--other {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.oz-chat__bubble--pending {
+  opacity: 0.6;
+}
+
+.oz-chat__bubble--flagged::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warning);
+}
+
+.oz-chat__timestamp {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.oz-chat__composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s-2);
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.oz-chat__textarea {
+  flex: 1;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.4;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  resize: none;
+  min-height: 40px;
+  max-height: 96px;
+  overflow-y: auto;
+}
+
+.oz-chat__textarea:focus {
+  border-color: var(--primary);
+}
+
+.oz-chat__send {
+  flex-shrink: 0;
+}
+
+.oz-chat__error {
+  font-size: 12px;
+  color: var(--warning);
+  margin-top: 6px;
+}
+
+.oz-chat__banner {
+  font-size: 13px;
+  color: var(--text-2);
+  text-align: center;
+  padding: 12px 8px;
+  border-top: 1px solid var(--border);
+  margin-top: 12px;
+}
+
+.oz-chat__newpill {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  background: var(--primary);
+  color: var(--primary-ink, #fff);
+  font-size: 12px;
+  border-radius: var(--r-full);
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+}
