@@ -82,6 +82,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     status: "awaiting_link",
-    bot_username: process.env.TELEGRAM_BOT_USERNAME ?? "oz_auth_bot",
+    bot_username: process.env.TELEGRAM_BOT_USERNAME ?? "ozauth_bot",
   });
 }
