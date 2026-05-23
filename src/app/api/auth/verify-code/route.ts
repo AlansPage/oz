@@ -279,6 +279,12 @@ export async function POST(req: Request) {
         "[verify-code] error at step 7 (signInWithPassword new):",
         signInError,
       );
+      void logSecurityEvent({
+        event_type: "auth_failed",
+        phone,
+        user_id: created?.user?.id ?? null,
+        detail: { reason: "signin_new_unhandled", error_message: signInError.message ?? null },
+      });
       return NextResponse.json({ error: "server_error" }, { status: 500 });
     }
     vlog("[verify-code] sign in succeeded for new user", {
