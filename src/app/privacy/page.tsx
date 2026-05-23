@@ -402,19 +402,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-[16px] font-bold tracking-tight mb-2">
-              9. Дети
-            </h2>
-            <p>
-              Сервис не предназначен для лиц младше 18 лет. Мы сознательно не
-              собираем данные о несовершеннолетних. Если нам станет известно,
-              что аккаунт был зарегистрирован несовершеннолетним, мы удалим его
-              и связанные с ним данные.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-[16px] font-bold tracking-tight mb-2">
-              10. Cookies и аналитика
+              9. Cookies и аналитика
             </h2>
             <p>
               Мы используем минимальный набор cookies, необходимый для работы
@@ -439,7 +427,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-[16px] font-bold tracking-tight mb-2">
-              11. Изменения политики
+              10. Изменения политики
             </h2>
             <p>
               Мы можем менять эту политику. Если изменения существенно влияют
@@ -456,7 +444,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-[16px] font-bold tracking-tight mb-2">
-              12. Контакт
+              11. Контакт
             </h2>
             <p>
               По вопросам, связанным с этой политикой, по запросам на получение
