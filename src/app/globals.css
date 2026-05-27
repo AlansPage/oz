@@ -38,9 +38,11 @@
   --info-soft: #DBEAFE;
   --gold: #B98A3A;
 
-  /* Rate widget v2: soft tint of --primary (#1A7A4A → rgb(26,122,74)) over the canvas */
-  --rate-widget-bg: rgba(26, 122, 74, 0.08);
-  --rate-widget-border: rgba(26, 122, 74, 0.2);
+  /* Rate widget v2 — values taken verbatim from .design-handoff/rate-widget-v2/widget-rest.svg.
+     The widget uses its own soft palette (lighter than --primary), not the brand green. */
+  --rate-widget-bg: #F1FFF0;                  /* rect fill */
+  --rate-widget-border: rgba(66, 158, 113, 0.4); /* #429E71 @ 0.4, stroke-width 1.2 */
+  --rate-fg: #429E71;                         /* all green content; opacity per element */
 
   /* Radius */
   --r-sm: 8px;
@@ -207,16 +209,22 @@ button {
 /* ===== Rate widget v2 — soft tinted status surface =====
    Calm context indicator (not a CTA): tinted surface, primary-green type, a
    hollow direction triangle, and a quietly self-drawing sparkline. */
+/* Geometry mirrors the SVG: a 360×124 rect, rx 40, content vertically centred,
+   24px left inset, sparkline pinned to the right at ~43% of the width. */
 .oz-rate {
   position: relative;
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: flex-start;
   gap: 4px;
-  padding: 18px 24px;
-  border-radius: 24px;
+  width: 360px;
+  max-width: 100%;
+  height: 124px;
+  padding: 0 8px 0 24px;
+  border-radius: 40px;
   background: var(--rate-widget-bg);
-  border: 1px solid var(--rate-widget-border);
+  border: 1.2px solid var(--rate-widget-border);
   white-space: nowrap;
   transition: transform 0.2s ease;
 }
@@ -229,42 +237,47 @@ button {
 .oz-rate__row {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
 }
 
 .oz-rate__icons {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 20px;
   animation: oz-rate-icons-in 200ms ease-out both;
 }
 
+/* ₸ / ₩ — heavier than v1 (was 600); the SVG glyphs are chunky. */
 .oz-rate__sym {
   font-size: 32px;
-  font-weight: 600;
+  font-weight: 800;
   line-height: 1;
-  color: var(--primary);
+  color: var(--rate-fg);
+  opacity: 0.62; /* SVG fill-opacity 0.6 */
 }
 
 .oz-rate__tri {
   display: block;
-  color: var(--primary);
+  color: var(--rate-fg);
+  opacity: 0.6; /* SVG fill-opacity 0.6 */
 }
 
 .oz-rate__num {
   display: inline-block;
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 36px;
+  font-size: 30px;
   line-height: 1;
   letter-spacing: -0.01em;
-  color: var(--primary);
+  color: var(--rate-fg);
+  opacity: 0.85; /* SVG fill-opacity 0.8 — the most prominent element */
   font-variant-numeric: tabular-nums;
   animation: oz-rate-num-in 400ms ease-out 200ms both;
 }
 
 .oz-rate__num--err {
   color: var(--text-3);
+  opacity: 1;
 }
 
 .oz-rate__num-inner {
@@ -278,8 +291,8 @@ button {
 
 .oz-rate__num-skel {
   display: inline-block;
-  width: 78px;
-  height: 30px;
+  width: 72px;
+  height: 26px;
   border-radius: 8px;
 }
 
@@ -288,17 +301,23 @@ button {
   color: var(--text-3);
 }
 
-/* Sparkline: ~40% of the widget on the right (≈30% on mobile, set below). */
+/* Sparkline: pinned right, ~43% of the widget (≈30% on mobile, set below).
+   The SVG path lives in a 148→360 slice of the reference viewBox; the left
+   edge fades via a mask so the line appears to emerge. */
 .oz-rate__spark {
-  width: 116px;
-  height: 44px;
-  flex-shrink: 0;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 200px;
+  height: 60px;
   overflow: visible;
 }
 
 .oz-rate__spark-path {
   fill: none;
-  stroke: var(--primary);
+  stroke: var(--rate-fg);
+  stroke-opacity: 0.6; /* SVG stroke-opacity 0.6 */
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -306,20 +325,18 @@ button {
   vector-effect: non-scaling-stroke;
   /* Draw once on mount; React re-renders don't restart it. */
   animation: oz-rate-spark-draw 800ms ease-out both;
-  /* On rate update the path reshapes by one point; smooth where supported. */
-  transition: d 400ms ease-out;
 }
 
 .oz-rate__spark-dot {
-  /* Opaque canvas fill reads as a clean open circle over the tinted surface. */
-  fill: var(--bg);
-  stroke: var(--primary);
+  /* Widget-bg fill reads as a clean open circle over the tinted surface. */
+  fill: var(--rate-widget-bg);
+  stroke: var(--rate-fg);
+  stroke-opacity: 0.6; /* SVG stroke-opacity 0.6 */
   stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
   opacity: 0;
   /* Appears exactly as the draw completes (800ms). */
   animation: oz-rate-spark-dot-in 300ms ease-out 800ms both;
-  transition: cx 400ms ease-out, cy 400ms ease-out;
 }
 
 @keyframes oz-rate-icons-in {
@@ -329,7 +346,7 @@ button {
 
 @keyframes oz-rate-num-in {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to { opacity: 0.85; } /* matches the resting fill-opacity 0.8 from the SVG */
 }
 
 @keyframes oz-rate-pulse {
@@ -349,24 +366,28 @@ button {
 
 @media (max-width: 479px) {
   .oz-rate {
-    padding: 14px 16px;
+    height: 96px;
+    padding: 0 8px 0 16px;
+    border-radius: 32px;
   }
-  .oz-rate__row {
-    gap: 8px;
+  .oz-rate__row,
+  .oz-rate__icons {
+    gap: 14px;
   }
   .oz-rate__sym {
-    font-size: 26px;
-  }
-  .oz-rate__tri {
-    width: 16px;
-    height: 16px;
-  }
-  .oz-rate__num {
     font-size: 28px;
   }
+  .oz-rate__tri {
+    width: 12px;
+    height: 12px;
+  }
+  .oz-rate__num {
+    font-size: 28px; /* SPEC: rate number stays ≥ 28px on mobile */
+  }
+  /* Sparkline reduces to ~30% of the widget width. */
   .oz-rate__spark {
-    width: 80px;
-    height: 38px;
+    width: 110px;
+    height: 48px;
   }
 }
 

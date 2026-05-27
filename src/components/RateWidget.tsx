@@ -13,13 +13,14 @@ function formatRate(n: number): string {
 }
 
 // Hollow, outline-only right-pointing triangle — the direction indicator.
-// Deliberately NOT a filled play glyph.
+// Deliberately NOT a filled play glyph. Sized/proportioned to the SVG reference
+// (~14px, chunky outline).
 function DirectionTriangle() {
   return (
     <svg
       className="oz-rate__tri"
-      width={20}
-      height={20}
+      width={14}
+      height={14}
       viewBox="0 0 20 20"
       fill="none"
       aria-hidden
@@ -27,7 +28,7 @@ function DirectionTriangle() {
       <path
         d="M6 4.5 L15 10 L6 15.5 Z"
         stroke="currentColor"
-        strokeWidth={1.6}
+        strokeWidth={2.2}
         strokeLinejoin="round"
         strokeLinecap="round"
       />
@@ -39,7 +40,7 @@ export function RateWidget() {
   const { data, error, pulse } = useRate();
 
   const hasData = Boolean(data) && !error;
-  const values = hasData ? data!.sparkline.map((p) => p.rate) : [];
+  const hasSparkline = hasData && data!.sparkline.length >= 2;
 
   return (
     <div
@@ -68,7 +69,7 @@ export function RateWidget() {
           />
         )}
 
-        {hasData && values.length >= 2 && <RateSparkline values={values} />}
+        {hasSparkline && <RateSparkline />}
       </div>
 
       {error && <span className="oz-rate__sub">Курс временно недоступен</span>}
