@@ -43,36 +43,44 @@ export function RateWidget() {
   const hasSparkline = hasData && data!.sparkline.length >= 2;
 
   return (
-    <div
-      className="oz-rate"
-      aria-label={hasData ? `1 тенге = ${formatRate(data!.rate)} вон` : "Курс недоступен"}
-    >
-      <div className="oz-rate__row">
-        <span className="oz-rate__icons">
-          <span className="oz-rate__sym">₸</span>
-          <DirectionTriangle />
-          <span className="oz-rate__sym">₩</span>
-        </span>
-
-        {error ? (
-          <span className="oz-rate__num oz-rate__num--err">—</span>
-        ) : hasData ? (
-          <span className="oz-rate__num">
-            <span className={`oz-rate__num-inner${pulse ? " oz-rate__num-inner--pulse" : ""}`}>
-              {formatRate(data!.rate)}
-            </span>
+    <div className="oz-rate-wrap">
+      <div
+        className="oz-rate"
+        aria-label={hasData ? `1 тенге = ${formatRate(data!.rate)} вон` : "Курс недоступен"}
+      >
+        <div className="oz-rate__row">
+          <span className="oz-rate__icons">
+            <span className="oz-rate__sym">₸</span>
+            <DirectionTriangle />
+            <span className="oz-rate__sym">₩</span>
           </span>
-        ) : (
-          <span
-            className="oz-skeleton oz-rate__num-skel"
-            aria-hidden
-          />
-        )}
 
-        {hasSparkline && <RateSparkline />}
+          {error ? (
+            <span className="oz-rate__num oz-rate__num--err">—</span>
+          ) : hasData ? (
+            <span className="oz-rate__num">
+              <span className={`oz-rate__num-inner${pulse ? " oz-rate__num-inner--pulse" : ""}`}>
+                {formatRate(data!.rate)}
+              </span>
+            </span>
+          ) : (
+            <span
+              className="oz-skeleton oz-rate__num-skel"
+              aria-hidden
+            />
+          )}
+
+          {hasSparkline && <RateSparkline />}
+        </div>
+
+        {error && <span className="oz-rate__sub">Курс временно недоступен</span>}
       </div>
 
-      {error && <span className="oz-rate__sub">Курс временно недоступен</span>}
+      {hasData && (
+        <p className="oz-rate__note">
+          Справочный курс · может отличаться от реального
+        </p>
+      )}
     </div>
   );
 }
