@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { signAvatar } from "@/lib/avatar-url";
@@ -23,6 +29,11 @@ import { ReceiptUploadSheet } from "./ReceiptUploadSheet";
 import { DisputeSheet } from "./DisputeSheet";
 import { RateForm, RatingReadOnly } from "./RatingCard";
 import { ChatThread } from "./ChatThread";
+import { ReceiptViewerSheet } from "./ReceiptViewerSheet";
+import { SendScreen } from "./screens/SendScreen";
+import { WaitScreen } from "./screens/WaitScreen";
+import { ConfirmScreen } from "./screens/ConfirmScreen";
+import { CompleteScreen } from "./screens/CompleteScreen";
 
 type Props = {
   id: string;
@@ -57,6 +68,7 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
   const [loading, setLoading] = useState(true);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
+  const [viewerReceipt, setViewerReceipt] = useState<Receipt | null>(null);
 
   const fetchTx = useCallback(async () => {
     const { data } = await supabase
@@ -259,14 +271,174 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
     (m) => m.sender_id !== currentUserId && m.read_at === null,
   ).length;
 
+  const onBack = () => router.push("/feed");
+  const onDispute = () => setDisputeOpen(true);
+  const handleCancel = async () => {
+    await supabase.rpc("advance_transaction", {
+      p_transaction_id: tx.id,
+      p_action: "cancel",
+    });
+    fetchTx();
+  };
+  const handleConfirmReceived = async () => {
+    await supabase.rpc("advance_transaction", {
+      p_transaction_id: tx.id,
+      p_action: "counterparty_confirm",
+    });
+    fetchTx();
+  };
+  const handleSubmitRating = async (stars: number) => {
+    await supabase.from("ratings").insert({
+      transaction_id: tx.id,
+      rater_id: currentUserId,
+      ratee_id: counterpartyId,
+      stars,
+      tags: [],
+      comment: null,
+    });
+    await fetchRatings();
+  };
+
+  // v0.4 redesigned visual layers. Other status × viewer combinations keep
+  // the legacy layout below.
+  const isSend =
+    tx.status === "pending_sender_payment" && viewerRole === "initiator";
+  const isWait = tx.status === "sender_paid" && viewerRole === "initiator";
+  const isConfirm =
+    tx.status === "sender_paid" && viewerRole === "counterparty";
+  const isComplete = tx.status === "completed";
+  const isRedesigned = isSend || isWait || isConfirm || isComplete;
+
+  let screen: ReactNode = null;
+  if (isSend) {
+    screen = (
+      <SendScreen
+        shortId={shortId}
+        counterparty={counterpartyProfile}
+        amount={amount}
+        equivalent={equivalent}
+        from={from}
+        to={to}
+        rateLockedAt={tx.rate_locked_at}
+        onConfirmSent={() => setUploadOpen(true)}
+        onCancel={handleCancel}
+        onBack={onBack}
+      />
+    );
+  } else if (isWait) {
+    screen = (
+      <WaitScreen
+        shortId={shortId}
+        counterparty={counterpartyProfile}
+        receipt={initiatorReceipt}
+        amount={amount}
+        from={from}
+        equivalent={equivalent}
+        to={to}
+        rate={rate}
+        onOpenReceipt={() =>
+          initiatorReceipt && setViewerReceipt(initiatorReceipt)
+        }
+        onDispute={onDispute}
+        onBack={onBack}
+      />
+    );
+  } else if (isConfirm) {
+    screen = (
+      <ConfirmScreen
+        shortId={shortId}
+        counterparty={counterpartyProfile}
+        receipt={initiatorReceipt}
+        amount={amount}
+        from={from}
+        rate={rate}
+        paidAt={tx.initiator_paid_at}
+        onConfirmReceived={handleConfirmReceived}
+        onDispute={onDispute}
+        onBack={onBack}
+      />
+    );
+  } else if (isComplete) {
+    const gaveValue =
+      viewerRole === "initiator"
+        ? formatAmount(amount, from)
+        : equivalent !== null
+          ? formatAmount(equivalent, to)
+          : "—";
+    const gotValue =
+      viewerRole === "initiator"
+        ? equivalent !== null
+          ? formatAmount(equivalent, to)
+          : "—"
+        : formatAmount(amount, from);
+    const completeReceipt = initiatorReceipt ?? counterpartyReceipt;
+    screen = (
+      <CompleteScreen
+        shortId={shortId}
+        otherName={counterpartyProfile.display_name ?? "контрагента"}
+        gaveValue={gaveValue}
+        gotValue={gotValue}
+        rate={rate}
+        completedAt={tx.completed_at}
+        alreadyRated={myRating !== null}
+        myStars={myRating?.stars ?? null}
+        hasReceipt={completeReceipt !== null}
+        onSubmitRating={handleSubmitRating}
+        onOpenReceipt={() =>
+          completeReceipt && setViewerReceipt(completeReceipt)
+        }
+        onDone={onBack}
+      />
+    );
+  }
+
+  const chatSection = (
+    <section className="oz-listing-about" aria-label="Чат">
+      <div className="oz-chat__header">
+        <span className="oz-chat__title">Чат с контрагентом</span>
+        {counterpartyUnreadCount > 0 && (
+          <span className="oz-chat__unread">{counterpartyUnreadCount}</span>
+        )}
+      </div>
+      <ChatThread
+        transactionId={tx.id}
+        currentUserId={currentUserId}
+        counterpartyAvatarUrl={counterpartyAvatarUrl}
+        counterpartyName={counterpartyProfile.display_name}
+        counterpartyPhone={counterpartyProfile.phone}
+        messages={messages}
+        isClosed={chatClosedReason !== null}
+        closedReason={chatClosedReason}
+        onSent={(msg) =>
+          setMessages((prev) =>
+            prev.some((m) => m.id === msg.id) ? prev : [...prev, msg],
+          )
+        }
+      />
+    </section>
+  );
+
   return (
-    <section className="oz-listing-page">
-      <button className="oz-listing-back" onClick={() => router.push("/feed")}>
-        <span className="oz-listing-back__arrow" aria-hidden>
-          ←
-        </span>
-        <span>Сделка #{shortId}</span>
-      </button>
+    <>
+      {isRedesigned ? (
+        <div className="tx-route">
+          <div className="tx-route__col">
+            {screen}
+            {chatSection}
+          </div>
+        </div>
+      ) : (
+        <section className="oz-listing-page">
+          {/* TODO: v0.4 design pending for this status × viewer combination */}
+          <button
+            className="oz-listing-back"
+            onClick={() => router.push("/feed")}
+          >
+            <span className="oz-listing-back__arrow" aria-hidden>
+              ←
+            </span>
+            <span>Сделка #{shortId}</span>
+          </button>
 
       <StatusBanner
         status={tx.status}
@@ -401,29 +573,7 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
         }}
       />
 
-      <section className="oz-listing-about" aria-label="Чат">
-        <div className="oz-chat__header">
-          <span className="oz-chat__title">Чат с контрагентом</span>
-          {counterpartyUnreadCount > 0 && (
-            <span className="oz-chat__unread">{counterpartyUnreadCount}</span>
-          )}
-        </div>
-        <ChatThread
-          transactionId={tx.id}
-          currentUserId={currentUserId}
-          counterpartyAvatarUrl={counterpartyAvatarUrl}
-          counterpartyName={counterpartyProfile.display_name}
-          counterpartyPhone={counterpartyProfile.phone}
-          messages={messages}
-          isClosed={chatClosedReason !== null}
-          closedReason={chatClosedReason}
-          onSent={(msg) =>
-            setMessages((prev) =>
-              prev.some((m) => m.id === msg.id) ? prev : [...prev, msg],
-            )
-          }
-        />
-      </section>
+      {chatSection}
 
       {showDispute && (
         <button
@@ -432,6 +582,8 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
         >
           Сообщить о проблеме
         </button>
+      )}
+        </section>
       )}
 
       <ReceiptUploadSheet
@@ -462,6 +614,12 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
         transactionId={tx.id}
         onOpened={() => fetchTx()}
       />
-    </section>
+
+      <ReceiptViewerSheet
+        open={viewerReceipt !== null}
+        onClose={() => setViewerReceipt(null)}
+        receipt={viewerReceipt}
+      />
+    </>
   );
 }
