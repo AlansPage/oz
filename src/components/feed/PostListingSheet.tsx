@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRate } from "./RateContext";
+import { createClient } from "@/lib/supabase/client";
+import { PaymentMethodGateSheet } from "@/components/PaymentMethodGateSheet";
 import { formatAmountInput, formatRate, parseAmount } from "@/lib/format";
 import {
   directionFrom,
@@ -21,12 +23,15 @@ type SubmitPayload = Pick<
 
 type Props = {
   open: boolean;
+  userId: string;
   onClose: () => void;
   onSubmit: (payload: SubmitPayload) => Promise<void>;
 };
 
-export function PostListingSheet({ open, onClose, onSubmit }: Props) {
+export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
   const { data: rateData } = useRate();
+  const supabase = createClient();
+  const [paymentGateOpen, setPaymentGateOpen] = useState(false);
   const [direction, setDirection] = useState<Direction>("kzt_to_krw");
   const [amountStr, setAmountStr] = useState("");
   const [rateStr, setRateStr] = useState("");
@@ -62,9 +67,7 @@ export function PostListingSheet({ open, onClose, onSubmit }: Props) {
   const rate = rateStr ? Number(rateStr.replace(",", ".")) : null;
   const canSubmit = amount > 0 && !submitting && (rate === null || rate > 0);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canSubmit) return;
+  const doSubmit = async () => {
     setSubmitting(true);
     setError(null);
     try {
@@ -80,6 +83,28 @@ export function PostListingSheet({ open, onClose, onSubmit }: Props) {
       setError(err instanceof Error ? err.message : "Не удалось опубликовать");
       setSubmitting(false);
     }
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setSubmitting(true);
+    setError(null);
+    // A user posting "exchange X to Y" must have a payment method for Y (the
+    // currency they will RECEIVE) before the listing goes live.
+    const { data: pm } = await supabase
+      .from("payment_methods")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("currency", to)
+      .eq("is_default", true)
+      .maybeSingle();
+    if (!pm) {
+      setSubmitting(false);
+      setPaymentGateOpen(true);
+      return;
+    }
+    await doSubmit();
   };
 
   return createPortal(
@@ -188,6 +213,17 @@ export function PostListingSheet({ open, onClose, onSubmit }: Props) {
           </button>
         </form>
       </div>
+
+      <PaymentMethodGateSheet
+        open={paymentGateOpen}
+        userId={userId}
+        currency={to}
+        onReady={() => {
+          setPaymentGateOpen(false);
+          void doSubmit();
+        }}
+        onCancel={() => setPaymentGateOpen(false)}
+      />
     </>,
     document.body,
   );

@@ -314,6 +314,7 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
     screen = (
       <SendScreen
         shortId={shortId}
+        transactionId={tx.id}
         counterparty={counterpartyProfile}
         amount={amount}
         equivalent={equivalent}

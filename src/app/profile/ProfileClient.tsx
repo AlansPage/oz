@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { signAvatar } from "@/lib/avatar-url";
 import { AvatarPicker } from "@/components/AvatarPicker";
 import { VerificationBadge } from "@/components/feed/VerificationBadge";
+import { PaymentMethodsSection } from "@/components/profile/PaymentMethodsSection";
 import { formatPhoneFull } from "@/lib/format";
 import type { Profile, VerificationTier } from "@/lib/types";
 
@@ -158,6 +159,10 @@ export function ProfileClient({ userId, profile, initialAvatarUrl }: Props) {
 
       <div className="oz-profile__rating">{ratingLine}</div>
       <div className="oz-profile__meta">{memberSince}</div>
+
+      <div className="oz-profile__divider" />
+
+      <PaymentMethodsSection userId={userId} />
 
       <div className="oz-profile__divider" />
 

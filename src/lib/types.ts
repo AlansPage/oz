@@ -180,6 +180,27 @@ export type NotificationLog = {
   created_at: string;
 };
 
+// Defined manually until the next `npm run gen:types` after the
+// payment_methods migration is applied to the linked project.
+export type PaymentMethod = {
+  id: string;
+  user_id: string;
+  currency: Currency;
+  bank_name: string;
+  holder_name: string;
+  account_number: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CounterpartyPaymentMethod = {
+  bank_name: string;
+  holder_name: string;
+  account_number: string;
+  currency: Currency;
+};
+
 export const directionFrom = (d: Direction): Currency =>
   d === "kzt_to_krw" ? "KZT" : "KRW";
 export const directionTo = (d: Direction): Currency =>

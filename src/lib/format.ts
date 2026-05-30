@@ -60,6 +60,22 @@ export function formatPhoneFull(raw: string | null | undefined): string {
   return `+${digits[0]} ${digits.slice(1, 4)} ${digits.slice(4, 7)} ${digits.slice(7, 9)} ${digits.slice(9, 11)}`;
 }
 
+/**
+ * Mask a payment account / card number for display. The full value is only
+ * ever shown inside the edit form. Card-shaped numbers (13–19 digits) show
+ * only the last 4; longer or non-card numbers show first 2 … last 2.
+ */
+export function maskAccountNumber(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "—";
+  const digits = trimmed.replace(/\D/g, "");
+  if (digits.length >= 13 && digits.length <= 19) {
+    return `••• ${digits.slice(-4)}`;
+  }
+  if (trimmed.length <= 4) return trimmed;
+  return `${trimmed.slice(0, 2)}•••${trimmed.slice(-2)}`;
+}
+
 export function formatRelativeTime(iso: string): string {
   const then = new Date(iso).getTime();
   const now = Date.now();

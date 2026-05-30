@@ -210,6 +210,7 @@ export function FeedClient({ currentUserId, currentProfile }: Props) {
       <Fab onClick={gateOrOpenPostSheet} />
       <PostListingSheet
         open={sheetOpen}
+        userId={currentUserId}
         onClose={() => setSheetOpen(false)}
         onSubmit={onPost}
       />

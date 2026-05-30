@@ -256,6 +256,50 @@ export type Database = {
           },
         ]
       }
+      payment_methods: {
+        Row: {
+          account_number: string
+          bank_name: string
+          created_at: string
+          currency: string
+          holder_name: string
+          id: string
+          is_default: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_number: string
+          bank_name: string
+          created_at?: string
+          currency: string
+          holder_name: string
+          id?: string
+          is_default?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_number?: string
+          bank_name?: string
+          created_at?: string
+          currency?: string
+          holder_name?: string
+          id?: string
+          is_default?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_methods_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -608,6 +652,15 @@ export type Database = {
           message_text: string
           telegram_user_id: number
           user_id: string
+        }[]
+      }
+      get_counterparty_payment_method: {
+        Args: { p_transaction_id: string }
+        Returns: {
+          account_number: string
+          bank_name: string
+          currency: string
+          holder_name: string
         }[]
       }
       mark_messages_read: {

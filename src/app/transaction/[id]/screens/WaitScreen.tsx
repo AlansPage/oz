@@ -40,8 +40,7 @@ export function WaitScreen({
         minute: "2-digit",
       })
     : null;
-  // TODO(payment-method): card tail is placeholder until schema adds it.
-  const meta = time ? `отправлено в ${time} · с карты •••• 8821` : undefined;
+  const meta = time ? `отправлено в ${time}` : undefined;
 
   return (
     <div className="tx-stage" style={{ paddingBottom: 24 }}>

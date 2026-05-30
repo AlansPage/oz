@@ -8,7 +8,13 @@ import {
   ProfileGateSheet,
   PROFILE_GATE_DISMISS_KEY,
 } from "@/components/ProfileGateSheet";
-import type { ListingWithProfile, Profile } from "@/lib/types";
+import { PaymentMethodGateSheet } from "@/components/PaymentMethodGateSheet";
+import {
+  directionTo,
+  type Direction,
+  type ListingWithProfile,
+  type Profile,
+} from "@/lib/types";
 import { ListingHero } from "./ListingHero";
 import { ContactActions } from "./ContactActions";
 import { EditActions } from "./EditActions";
@@ -50,6 +56,7 @@ export function ListingDetailClient({
   const [loading, setLoading] = useState(true);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
+  const [paymentGateOpen, setPaymentGateOpen] = useState(false);
   const [profile, setProfile] = useState<Profile>(currentProfile);
   const [editForm, setEditForm] = useState<EditForm | null>(null);
 
@@ -87,6 +94,25 @@ export function ListingDetailClient({
     }
     if (gateNeeded && !dismissed) {
       setGateOpen(true);
+      return;
+    }
+    void proceedAfterProfile();
+  }
+
+  // After identity is settled, the initiator must have a payment method for
+  // the currency they will RECEIVE before a transaction can be created.
+  async function proceedAfterProfile() {
+    if (!listing) return;
+    const receiveCurrency = directionTo(listing.direction as Direction);
+    const { data } = await supabase
+      .from("payment_methods")
+      .select("id")
+      .eq("user_id", currentUserId)
+      .eq("currency", receiveCurrency)
+      .eq("is_default", true)
+      .maybeSingle();
+    if (!data) {
+      setPaymentGateOpen(true);
       return;
     }
     setConfirmOpen(true);
@@ -208,12 +234,22 @@ export function ListingDetailClient({
             onComplete={async () => {
               await refreshProfileAfterGate();
               setGateOpen(false);
-              setConfirmOpen(true);
+              void proceedAfterProfile();
             }}
             onDefer={() => {
               setGateOpen(false);
+              void proceedAfterProfile();
+            }}
+          />
+          <PaymentMethodGateSheet
+            open={paymentGateOpen}
+            userId={currentUserId}
+            currency={directionTo(listing.direction as Direction)}
+            onReady={() => {
+              setPaymentGateOpen(false);
               setConfirmOpen(true);
             }}
+            onCancel={() => setPaymentGateOpen(false)}
           />
         </>
       )}

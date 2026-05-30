@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Currency, Profile, VerificationTier } from "@/lib/types";
+import { createClient } from "@/lib/supabase/client";
+import type {
+  CounterpartyPaymentMethod,
+  Currency,
+  Profile,
+  VerificationTier,
+} from "@/lib/types";
 import { formatAmount } from "@/lib/format";
 import { VerificationBadge } from "@/components/feed/VerificationBadge";
 import { PressAndHold } from "@/components/transaction/PressAndHold";
@@ -14,6 +20,7 @@ const RATE_LOCK_MINUTES = 15;
 
 type Props = {
   shortId: string;
+  transactionId: string;
   counterparty: Profile;
   amount: number;
   equivalent: number | null;
@@ -49,6 +56,7 @@ function joinedLine(createdAt: string): string {
 
 export function SendScreen({
   shortId,
+  transactionId,
   counterparty,
   amount,
   equivalent,
@@ -59,6 +67,40 @@ export function SendScreen({
   onCancel,
   onBack,
 }: Props) {
+  const supabase = createClient();
+  const [pm, setPm] = useState<CounterpartyPaymentMethod | null>(null);
+  const [pmLoading, setPmLoading] = useState(true);
+  const [pmError, setPmError] = useState(false);
+
+  // Reveal the counterparty's real bank details for this transaction. The RPC
+  // enforces that the caller is a party and audit-logs the reveal. Treat both
+  // an RPC error and a missing method as an error (the sender can't pay without
+  // it — defence in depth, since they should have passed the gate).
+  useEffect(() => {
+    let cancelled = false;
+    setPmLoading(true);
+    void supabase
+      .rpc("get_counterparty_payment_method", {
+        p_transaction_id: transactionId,
+      })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        const row =
+          (data as CounterpartyPaymentMethod[] | null)?.[0] ?? null;
+        if (error || !row) {
+          setPmError(true);
+          setPm(null);
+        } else {
+          setPmError(false);
+          setPm(row);
+        }
+        setPmLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase, transactionId]);
+
   const [remaining, setRemaining] = useState(() =>
     Math.max(
       0,
@@ -182,19 +224,35 @@ export function SendScreen({
         </div>
       </div>
 
+      {pmError && (
+        <div
+          className="tx-card"
+          style={{
+            padding: "12px 16px",
+            color: "var(--warning)",
+            fontSize: 13,
+            lineHeight: 1.4,
+          }}
+        >
+          Контрагент ещё не указал реквизиты. Свяжитесь через чат.
+        </div>
+      )}
+
       <div className="tx-card tx-bank" style={{ padding: 0 }}>
         <div className="tx-bank__title">Реквизиты получателя</div>
-        {/* TODO(payment-method): profiles has no payment-method columns yet.
-            Bank / card placeholders until the schema adds them. */}
-        <CopyRow label="Банк" value="Kaspi Gold" />
-        <CopyRow label="Получатель" value={name} />
-        <CopyRow label="Номер карты" value="5169 4971 •••• 8821" />
+        <CopyRow label="Банк" value={pm?.bank_name ?? "—"} />
+        <CopyRow label="Получатель" value={pm?.holder_name ?? name} />
+        <CopyRow label="Номер карты" value={pm?.account_number ?? "—"} />
         <CopyRow label="Сумма" value={formatAmount(amount, from)} emphasize />
       </div>
 
-      <p className="tx-bank-helper" style={{ padding: "0 20px" }}>
-        Получатель видит ваш платёж в течение 2–5 минут.
-      </p>
+      {!pmError && (
+        <p className="tx-bank-helper" style={{ padding: "0 20px" }}>
+          {pmLoading
+            ? "Загружаем реквизиты получателя…"
+            : "Получатель видит ваш платёж в течение 2–5 минут."}
+        </p>
+      )}
 
       <div
         style={{
@@ -204,8 +262,14 @@ export function SendScreen({
           gap: 10,
         }}
       >
-        <PressAndHold label="Я отправил деньги" onConfirm={onConfirmSent} />
-        <p className="tx-hold-hint">Удерживайте 2 сек. — далее загрузка чека</p>
+        {!pmError && (
+          <>
+            <PressAndHold label="Я отправил деньги" onConfirm={onConfirmSent} />
+            <p className="tx-hold-hint">
+              Удерживайте 2 сек. — далее загрузка чека
+            </p>
+          </>
+        )}
         <button
           className="tx-actions__ghost-link"
           style={{ marginTop: 4 }}
