@@ -654,6 +654,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      find_transaction_event_notifications: {
+        Args: { p_event_type: string; p_transaction_id: string }
+        Returns: {
+          message_text: string
+          telegram_user_id: number
+          user_id: string
+        }[]
+      }
       get_counterparty_payment_method: {
         Args: { p_transaction_id: string }
         Returns: {
