@@ -154,14 +154,17 @@ export default function VerifyPage() {
   }
 
   useEffect(() => {
-    if (mode === "delivered" && code.length === 6 && !loading && !blocked) {
+    if (code.length === 6 && !loading && !blocked) {
       handleVerify();
     }
-  }, [code, mode, loading, blocked, handleVerify]);
+  }, [code, loading, blocked, handleVerify]);
 
   if (!phone || !mode) return null;
 
-  const botUsername = bot ?? "oz_auth_bot";
+  const botUsername =
+    bot ?? process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "ozauth_bot";
+  const phoneDigits = phone.startsWith("+") ? phone.slice(1) : phone;
+  const telegramDeepLink = `https://t.me/${botUsername}?start=verify_${phoneDigits}`;
   const verifyCommand = `/verify ${phone}`;
 
   return (
@@ -183,46 +186,41 @@ export default function VerifyPage() {
               Откройте Telegram-бот
             </h1>
             <p className="mt-2 text-[14px] text-text-2">
-              Чтобы получить код, откройте{" "}
-              <span className="font-mono text-text">@{botUsername}</span>{" "}
-              и отправьте:
+              Номер{" "}
+              <span className="font-mono text-text">{phone}</span>
             </p>
 
-            <div
-              className="mt-4 oz-input font-mono text-center"
-              style={{
-                background: "var(--surface-2)",
-                userSelect: "all",
-              }}
-            >
-              {verifyCommand}
-            </div>
-
-            <a
-              href={`https://t.me/${botUsername}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => window.open(telegramDeepLink, "_blank")}
               className="oz-btn oz-btn--primary oz-btn--full oz-btn--lg mt-6"
             >
               Открыть Telegram
-            </a>
+            </button>
 
-            <p className="mt-4 text-center text-[13px] text-text-2 flex items-center justify-center gap-2">
-              <span
-                aria-hidden
-                className="inline-block w-3 h-3 rounded-full border-2 border-text-3 border-t-transparent animate-spin"
-              />
-              Жду код от бота…
+            <p className="mt-3 text-[13px] text-text-2">
+              После того как откроется бот, нажмите «Start» — мы пришлём код
+              сюда.
             </p>
 
-            {error && (
-              <p
-                className="mt-3 text-[12px] text-center"
-                style={{ color: "var(--error)" }}
-              >
-                {error}
-              </p>
-            )}
+            <form onSubmit={handleVerify} className="mt-6">
+              <OtpInput value={code} onChange={setCode} hasError={!!error} />
+
+              {error && (
+                <p
+                  className="mt-3 text-[12px] text-center"
+                  style={{ color: "var(--error)" }}
+                >
+                  {error}
+                </p>
+              )}
+            </form>
+
+            <p className="mt-4 text-[12px] leading-relaxed text-text-3">
+              Telegram не открывается? Откройте{" "}
+              <span className="font-mono">@{botUsername}</span> вручную и
+              отправьте <span className="font-mono">{verifyCommand}</span>
+            </p>
           </>
         ) : (
           <>

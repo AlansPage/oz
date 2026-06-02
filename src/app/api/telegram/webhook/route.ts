@@ -194,6 +194,74 @@ async function handleListAlerts(chatId: number, fromId: number) {
   await trySend(chatId, lines.join("\n"));
 }
 
+async function handleVerifyForPhone(
+  chatId: number,
+  fromId: number,
+  username: string | undefined,
+  phone: string,
+) {
+  if (!PHONE_RE.test(phone)) {
+    await trySend(chatId, "Неверный формат. Пример: /verify +77051234567");
+    return;
+  }
+
+  const nowIso = new Date().toISOString();
+  const { data: pending, error: lookupError } = await supabaseAdmin
+    .from("auth_codes")
+    .select("id, code")
+    .eq("phone", phone)
+    .eq("used", false)
+    .eq("delivered", false)
+    .gt("expires_at", nowIso)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (lookupError) {
+    console.error("auth_codes lookup failed", lookupError);
+    await trySend(chatId, "Внутренняя ошибка. Попробуйте ещё раз.");
+    return;
+  }
+
+  if (!pending) {
+    await trySend(
+      chatId,
+      "Сначала запросите код в приложении öz по этому номеру.",
+    );
+    return;
+  }
+
+  const { error: updateError } = await supabaseAdmin
+    .from("auth_codes")
+    .update({ telegram_user_id: fromId, delivered: true })
+    .eq("id", pending.id);
+  if (updateError) {
+    console.error("auth_codes update failed", updateError);
+    await trySend(chatId, "Внутренняя ошибка. Попробуйте ещё раз.");
+    return;
+  }
+
+  const { error: linkError } = await supabaseAdmin
+    .from("telegram_links")
+    .upsert(
+      {
+        phone,
+        telegram_user_id: fromId,
+        telegram_username: username ?? null,
+        linked_at: new Date().toISOString(),
+      },
+      { onConflict: "phone" },
+    );
+  if (linkError) {
+    console.error("telegram_links upsert failed", linkError);
+  }
+
+  await trySend(
+    chatId,
+    `öz: ваш код для входа: <b>${pending.code}</b>\n\nКод действителен 5 минут.`,
+  );
+}
+
 function replyOk() {
   return NextResponse.json({ ok: true });
 }
@@ -244,6 +312,13 @@ export async function POST(req: Request) {
       return replyOk();
     }
 
+    if (text.startsWith("/start verify_")) {
+      const digits = text.slice("/start verify_".length).trim();
+      const phone = `+${digits}`;
+      await handleVerifyForPhone(chatId, fromId, username, phone);
+      return replyOk();
+    }
+
     if (text === "/start" || text.startsWith("/start ")) {
       await trySend(chatId, START_REPLY);
       return replyOk();
@@ -257,66 +332,7 @@ export async function POST(req: Request) {
     if (text.startsWith("/verify")) {
       const parts = text.split(/\s+/);
       const phone = parts[1] ?? "";
-      if (!PHONE_RE.test(phone)) {
-        await trySend(chatId, "Неверный формат. Пример: /verify +77051234567");
-        return replyOk();
-      }
-
-      const nowIso = new Date().toISOString();
-      const { data: pending, error: lookupError } = await supabaseAdmin
-        .from("auth_codes")
-        .select("id, code")
-        .eq("phone", phone)
-        .eq("used", false)
-        .eq("delivered", false)
-        .gt("expires_at", nowIso)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (lookupError) {
-        console.error("auth_codes lookup failed", lookupError);
-        await trySend(chatId, "Внутренняя ошибка. Попробуйте ещё раз.");
-        return replyOk();
-      }
-
-      if (!pending) {
-        await trySend(
-          chatId,
-          "Сначала запросите код в приложении öz по этому номеру.",
-        );
-        return replyOk();
-      }
-
-      const { error: updateError } = await supabaseAdmin
-        .from("auth_codes")
-        .update({ telegram_user_id: fromId, delivered: true })
-        .eq("id", pending.id);
-      if (updateError) {
-        console.error("auth_codes update failed", updateError);
-        await trySend(chatId, "Внутренняя ошибка. Попробуйте ещё раз.");
-        return replyOk();
-      }
-
-      const { error: linkError } = await supabaseAdmin
-        .from("telegram_links")
-        .upsert(
-          {
-            phone,
-            telegram_user_id: fromId,
-            telegram_username: username ?? null,
-            linked_at: new Date().toISOString(),
-          },
-          { onConflict: "phone" },
-        );
-      if (linkError) {
-        console.error("telegram_links upsert failed", linkError);
-      }
-
-      await trySend(
-        chatId,
-        `öz: ваш код для входа: <b>${pending.code}</b>\n\nКод действителен 5 минут.`,
-      );
+      await handleVerifyForPhone(chatId, fromId, username, phone);
       return replyOk();
     }
 
