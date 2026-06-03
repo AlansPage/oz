@@ -38,7 +38,7 @@ const DEBUG_VERBOSE =
 function vlog(...args: unknown[]) {
   if (DEBUG_VERBOSE) {
     // eslint-disable-next-line no-console
-    vlog(...args);
+    console.log(...args);
   }
 }
 
