@@ -43,7 +43,7 @@ export function WaitScreen({
   const meta = time ? `отправлено в ${time}` : undefined;
 
   return (
-    <div className="tx-stage" style={{ paddingBottom: 24 }}>
+    <div className="tx-stage">
       <div className="tx-topbar">
         <button className="tx-topbar__back" aria-label="Назад" onClick={onBack}>
           ←

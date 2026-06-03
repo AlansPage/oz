@@ -56,7 +56,10 @@ export function CompleteScreen({
   };
 
   return (
-    <div className="tc-stage" style={{ paddingBottom: 8 }}>
+    <div
+      className="tc-stage"
+      style={{ paddingBottom: "calc(8px + env(safe-area-inset-bottom, 0px))" }}
+    >
       <div className="tc-topbar">
         <span />
         <span className="tc-topbar__id">Сделка #{shortId}</span>

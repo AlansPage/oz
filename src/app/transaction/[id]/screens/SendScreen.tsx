@@ -138,7 +138,7 @@ export function SendScreen({
       : "Новый";
 
   return (
-    <div className="tx-stage" style={{ paddingBottom: 24 }}>
+    <div className="tx-stage">
       <div className="tx-topbar">
         <button className="tx-topbar__back" aria-label="Назад" onClick={onBack}>
           ←

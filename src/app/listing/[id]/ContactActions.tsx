@@ -13,12 +13,6 @@ export function ContactActions({ onStartDeal }: Props) {
       >
         Начать сделку
       </button>
-      <button
-        className="oz-btn oz-btn--ghost oz-btn--full"
-        onClick={() => alert("Скоро")}
-      >
-        Написать в чате
-      </button>
     </div>
   );
 }
