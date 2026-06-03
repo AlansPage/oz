@@ -7,7 +7,6 @@ import {
   equivalentAmount,
   formatAmount,
   formatAmountBare,
-  formatPhoneMasked,
   formatRate,
   formatRelativeTime,
 } from "@/lib/format";
@@ -48,7 +47,7 @@ export function ListingCard({
   const tier = profile.verification_tier as VerificationTier;
 
   const displayName =
-    profile.display_name?.trim() || formatPhoneMasked(profile.phone);
+    profile.display_name?.trim() || (profile.phone_masked ?? "—");
 
   const marketRate = rateData?.rate ?? null;
   const equivalent =
@@ -63,7 +62,7 @@ export function ListingCard({
           <Avatar
             url={profile.avatar_url}
             name={profile.display_name}
-            phone={profile.phone}
+            phone={profile.phone_masked}
           />
           <div className="oz-card__identity">
             <span className="oz-card__name">{displayName}</span>

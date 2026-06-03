@@ -308,6 +308,7 @@ export type Database = {
           id: string
           last_active_at: string
           phone: string | null
+          phone_masked: string | null
           rating_avg: number | null
           rating_count: number
           verification_tier: string
@@ -319,6 +320,7 @@ export type Database = {
           id: string
           last_active_at?: string
           phone?: string | null
+          phone_masked?: string | null
           rating_avg?: number | null
           rating_count?: number
           verification_tier?: string
@@ -330,6 +332,7 @@ export type Database = {
           id?: string
           last_active_at?: string
           phone?: string | null
+          phone_masked?: string | null
           rating_avg?: number | null
           rating_count?: number
           verification_tier?: string
@@ -738,6 +741,7 @@ export type Database = {
           id: string
           last_active_at: string
           phone: string | null
+          phone_masked: string | null
           rating_avg: number | null
           rating_count: number
           verification_tier: string

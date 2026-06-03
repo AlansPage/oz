@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { signAvatar } from "@/lib/avatar-url";
+import { PROFILE_COLUMNS } from "@/lib/profile-columns";
 import {
   ProfileGateSheet,
   PROFILE_GATE_DISMISS_KEY,
@@ -63,7 +64,7 @@ export function ListingDetailClient({
   const fetchListing = useCallback(async () => {
     const { data } = await supabase
       .from("listings")
-      .select("*, profiles(*)")
+      .select(`*, profiles(${PROFILE_COLUMNS})`)
       .eq("id", id)
       .maybeSingle();
     let fetched = (data as unknown as ListingWithProfile | null) ?? null;
@@ -121,10 +122,12 @@ export function ListingDetailClient({
   async function refreshProfileAfterGate() {
     const { data } = await supabase
       .from("profiles")
-      .select("*")
+      .select(PROFILE_COLUMNS)
       .eq("id", currentUserId)
       .maybeSingle();
-    if (data) setProfile(data as Profile);
+    // phone is not selectable; preserve the owner's number from state.
+    if (data)
+      setProfile((prev) => ({ ...(data as Profile), phone: prev.phone }));
   }
 
   useEffect(() => {

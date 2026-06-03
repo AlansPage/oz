@@ -9,6 +9,7 @@ import {
   ProfileGateSheet,
   PROFILE_GATE_DISMISS_KEY,
 } from "@/components/ProfileGateSheet";
+import { PROFILE_COLUMNS } from "@/lib/profile-columns";
 import { ListingCard } from "./ListingCard";
 import { FilterBar, type DirectionFilter, type SortOption } from "./FilterBar";
 import { Fab } from "./Fab";
@@ -42,7 +43,7 @@ export function FeedClient({ currentUserId, currentProfile }: Props) {
     setLoading(true);
     let q = supabase
       .from("listings")
-      .select("*, profiles(*)")
+      .select(`*, profiles(${PROFILE_COLUMNS})`)
       .eq("status", "active")
       .gt("expires_at", new Date().toISOString())
       .limit(PAGE_SIZE);
@@ -100,10 +101,12 @@ export function FeedClient({ currentUserId, currentProfile }: Props) {
   async function refreshProfileAfterGate() {
     const { data } = await supabase
       .from("profiles")
-      .select("*")
+      .select(PROFILE_COLUMNS)
       .eq("id", currentUserId)
       .maybeSingle();
-    if (data) setProfile(data as Profile);
+    // phone is not selectable; preserve the owner's number from state.
+    if (data)
+      setProfile((prev) => ({ ...(data as Profile), phone: prev.phone }));
   }
 
   useEffect(() => {
@@ -140,7 +143,7 @@ export function FeedClient({ currentUserId, currentProfile }: Props) {
       const { data, error } = await supabase
         .from("listings")
         .insert({ ...payload, user_id: currentUserId })
-        .select("*, profiles(*)")
+        .select(`*, profiles(${PROFILE_COLUMNS})`)
         .single();
       if (error) throw error;
       const newRow = data as unknown as ListingWithProfile;

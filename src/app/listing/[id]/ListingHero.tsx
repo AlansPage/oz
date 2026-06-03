@@ -7,7 +7,6 @@ import {
   equivalentAmount,
   formatAmount,
   formatAmountInput,
-  formatPhoneMasked,
   formatRate,
   formatRelativeTime,
   parseAmount,
@@ -40,7 +39,7 @@ export function ListingHero({ listing, editForm, onEditChange }: Props) {
   const tier = profile.verification_tier as VerificationTier;
 
   const displayName =
-    profile.display_name?.trim() || formatPhoneMasked(profile.phone);
+    profile.display_name?.trim() || (profile.phone_masked ?? "—");
 
   const editing = editForm !== null;
 
@@ -76,7 +75,7 @@ export function ListingHero({ listing, editForm, onEditChange }: Props) {
         <Avatar
           url={profile.avatar_url}
           name={profile.display_name}
-          phone={profile.phone}
+          phone={profile.phone_masked}
           size="lg"
         />
         <div className="oz-listing-hero__identity">

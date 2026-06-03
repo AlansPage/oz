@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { signAvatar } from "@/lib/avatar-url";
+import { PROFILE_COLUMNS } from "@/lib/profile-columns";
+import { authPhoneToE164 } from "@/lib/phone";
 import { BrandMark } from "@/components/BrandMark";
 import { HeaderAvatarMenu } from "@/components/HeaderAvatarMenu";
 import { RateWidget } from "@/components/RateWidget";
@@ -23,15 +25,19 @@ export default async function ListingPage({
     redirect("/");
   }
 
-  const { data: profile } = await supabase
+  const { data: profileRow } = await supabase
     .from("profiles")
-    .select("*")
+    .select(PROFILE_COLUMNS)
     .eq("id", user.id)
     .single();
 
-  if (!profile) {
+  if (!profileRow) {
     redirect("/");
   }
+
+  // profiles.phone is no longer client-readable; source the owner's own
+  // number from the auth session.
+  const profile = { ...profileRow, phone: authPhoneToE164(user.phone) };
 
   const headerAvatarUrl = await signAvatar(supabase, profile.avatar_url);
 

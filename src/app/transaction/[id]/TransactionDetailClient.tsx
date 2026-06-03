@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { signAvatar } from "@/lib/avatar-url";
+import { PROFILE_COLUMNS } from "@/lib/profile-columns";
 import {
   directionFrom,
   directionTo,
@@ -74,7 +75,7 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
     const { data } = await supabase
       .from("transactions")
       .select(
-        "*, initiator:profiles!initiator_id(*), counterparty:profiles!counterparty_id(*)",
+        `*, initiator:profiles!initiator_id(${PROFILE_COLUMNS}), counterparty:profiles!counterparty_id(${PROFILE_COLUMNS})`,
       )
       .eq("id", id)
       .maybeSingle();
@@ -406,7 +407,7 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
         currentUserId={currentUserId}
         counterpartyAvatarUrl={counterpartyAvatarUrl}
         counterpartyName={counterpartyProfile.display_name}
-        counterpartyPhone={counterpartyProfile.phone}
+        counterpartyPhone={counterpartyProfile.phone_masked}
         messages={messages}
         isClosed={chatClosedReason !== null}
         closedReason={chatClosedReason}

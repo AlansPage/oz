@@ -156,7 +156,7 @@ export function SendScreen({
         style={{ padding: 20, alignItems: "flex-start" }}
       >
         <div className="tx-party-card__avatar">
-          {initialOf(counterparty.display_name, counterparty.phone)}
+          {initialOf(counterparty.display_name, counterparty.phone_masked)}
         </div>
         <div className="tx-party-card__identity">
           <div

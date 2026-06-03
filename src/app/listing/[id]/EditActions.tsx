@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { parseAmount } from "@/lib/format";
+import { PROFILE_COLUMNS } from "@/lib/profile-columns";
 import type { ListingWithProfile } from "@/lib/types";
 import type { EditForm } from "./ListingDetailClient";
 
@@ -42,7 +43,7 @@ export function EditActions({ listing, editForm, onSaved, onWithdrawn }: Props) 
         note: editForm.note.trim() ? editForm.note.trim() : null,
       })
       .eq("id", listing.id)
-      .select("*, profiles(*)")
+      .select(`*, profiles(${PROFILE_COLUMNS})`)
       .single();
 
     setBusy(false);

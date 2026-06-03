@@ -26,3 +26,12 @@ export function toE164(digits: string): string {
 export function isComplete(digits: string): boolean {
   return digits.length === 10;
 }
+
+// Supabase auth.users stores phone without the leading "+" (e.g.
+// "77073350741"). Normalize the session phone (user.phone) back to E.164
+// for the signed-in user's own display, now that profiles.phone is no
+// longer readable by the client.
+export function authPhoneToE164(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  return raw.startsWith("+") ? raw : `+${raw}`;
+}

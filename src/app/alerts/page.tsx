@@ -5,6 +5,8 @@ import { BrandMark } from "@/components/BrandMark";
 import { HeaderAvatarMenu } from "@/components/HeaderAvatarMenu";
 import { RateProvider } from "@/components/feed/RateContext";
 import { signAvatar } from "@/lib/avatar-url";
+import { PROFILE_COLUMNS } from "@/lib/profile-columns";
+import { authPhoneToE164 } from "@/lib/phone";
 import type { AlertSubscription, Direction } from "@/lib/types";
 import { AlertsClient } from "./AlertsClient";
 
@@ -24,12 +26,16 @@ export default async function AlertsPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/");
 
-  const { data: profile } = await supabase
+  const { data: profileRow } = await supabase
     .from("profiles")
-    .select("*")
+    .select(PROFILE_COLUMNS)
     .eq("id", user.id)
     .single();
-  if (!profile) redirect("/");
+  if (!profileRow) redirect("/");
+
+  // profiles.phone is no longer client-readable; source the owner's own
+  // number from the auth session.
+  const profile = { ...profileRow, phone: authPhoneToE164(user.phone) };
 
   const { data: alertsData } = await supabase
     .from("alert_subscriptions")
