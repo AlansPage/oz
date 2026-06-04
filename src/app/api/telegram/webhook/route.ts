@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { sendTelegramMessage } from "@/lib/telegram";
+import {
+  sendTelegramMessage,
+  contactRequestKeyboard,
+  removeKeyboard,
+} from "@/lib/telegram";
 import { logSecurityEvent } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
@@ -16,24 +20,34 @@ type TelegramChat = {
   id: number;
 };
 
+type TelegramContact = {
+  phone_number: string;
+  // Present only when the user shares their OWN number via a request_contact
+  // button; equals message.from.id. Absent/different for third-party contacts.
+  user_id?: number;
+};
+
 type TelegramMessage = {
   from?: TelegramUser;
   chat?: TelegramChat;
   text?: string;
+  contact?: TelegramContact;
 };
 
 type TelegramUpdate = {
   message?: TelegramMessage;
 };
 
+const SHARE_BUTTON = "📱 Поделиться номером";
+
 const START_REPLY =
   "Привет! Я бот авторизации öz.\n\n" +
   "Чтобы войти:\n" +
   "1. Откройте приложение öz и введите номер телефона\n" +
-  "2. Вернитесь сюда и отправьте: /verify +7XXXXXXXXXX\n\n" +
-  "Команды: /alerts — мои оповещения. /verify +7... — войти в öz.";
-
-const FALLBACK_REPLY = "Используйте /verify +7XXXXXXXXXX для входа в öz.";
+  "2. Нажмите кнопку «" +
+  SHARE_BUTTON +
+  "» ниже — я проверю номер и пришлю код для входа.\n\n" +
+  "Команды: /alerts — мои оповещения.";
 
 const UUID_RE =
   /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
@@ -194,14 +208,46 @@ async function handleListAlerts(chatId: number, fromId: number) {
   await trySend(chatId, lines.join("\n"));
 }
 
-async function handleVerifyForPhone(
+// Prompt the user to share their Telegram-verified phone number. This is the
+// only way to start a binding now — typing a phone is no longer accepted,
+// because the typed number is not proof of ownership.
+async function handleShareContactPrompt(chatId: number) {
+  await trySend(chatId, START_REPLY, contactRequestKeyboard(SHARE_BUTTON));
+}
+
+// The binding path. Telegram guarantees the shared number is the one verified
+// for the sender's account (and carries user_id === from.id). We deliver the
+// pending login code ONLY to the owner of that verified number, which closes
+// the takeover: an attacker can only ever share their own number.
+async function handleContactShared(
   chatId: number,
   fromId: number,
   username: string | undefined,
-  phone: string,
+  contact: TelegramContact,
 ) {
+  // Reject anything that is not the sender's own verified number (e.g. a
+  // third-party contact shared from the address book).
+  if (contact.user_id !== fromId) {
+    void logSecurityEvent({
+      event_type: "webhook_contact_mismatch",
+      detail: { from_id: fromId, contact_user_id: contact.user_id ?? null },
+    });
+    await trySend(
+      chatId,
+      "Пожалуйста, поделитесь своим собственным номером через кнопку ниже.",
+      contactRequestKeyboard(SHARE_BUTTON),
+    );
+    return;
+  }
+
+  const digits = String(contact.phone_number).replace(/\D/g, "");
+  const phone = `+${digits}`;
   if (!PHONE_RE.test(phone)) {
-    await trySend(chatId, "Неверный формат. Пример: /verify +77051234567");
+    await trySend(
+      chatId,
+      "Этот номер не поддерживается. Используйте номер +7…",
+      removeKeyboard,
+    );
     return;
   }
 
@@ -219,28 +265,20 @@ async function handleVerifyForPhone(
 
   if (lookupError) {
     console.error("auth_codes lookup failed", lookupError);
-    await trySend(chatId, "Внутренняя ошибка. Попробуйте ещё раз.");
+    await trySend(chatId, "Внутренняя ошибка. Попробуйте ещё раз.", removeKeyboard);
     return;
   }
 
   if (!pending) {
     await trySend(
       chatId,
-      "Сначала запросите код в приложении öz по этому номеру.",
+      `У вас нет ожидающего входа для ${phone}. Откройте приложение öz и запросите код для этого номера.`,
+      removeKeyboard,
     );
     return;
   }
 
-  const { error: updateError } = await supabaseAdmin
-    .from("auth_codes")
-    .update({ telegram_user_id: fromId, delivered: true })
-    .eq("id", pending.id);
-  if (updateError) {
-    console.error("auth_codes update failed", updateError);
-    await trySend(chatId, "Внутренняя ошибка. Попробуйте ещё раз.");
-    return;
-  }
-
+  // Bind the verified number to this Telegram account, then deliver the code.
   const { error: linkError } = await supabaseAdmin
     .from("telegram_links")
     .upsert(
@@ -254,11 +292,24 @@ async function handleVerifyForPhone(
     );
   if (linkError) {
     console.error("telegram_links upsert failed", linkError);
+    await trySend(chatId, "Внутренняя ошибка. Попробуйте ещё раз.", removeKeyboard);
+    return;
+  }
+
+  const { error: updateError } = await supabaseAdmin
+    .from("auth_codes")
+    .update({ telegram_user_id: fromId, delivered: true })
+    .eq("id", pending.id);
+  if (updateError) {
+    console.error("auth_codes update failed", updateError);
+    await trySend(chatId, "Внутренняя ошибка. Попробуйте ещё раз.", removeKeyboard);
+    return;
   }
 
   await trySend(
     chatId,
     `öz: ваш код для входа: <b>${pending.code}</b>\n\nКод действителен 5 минут.`,
+    removeKeyboard,
   );
 }
 
@@ -266,9 +317,13 @@ function replyOk() {
   return NextResponse.json({ ok: true });
 }
 
-async function trySend(chatId: number, text: string) {
+async function trySend(
+  chatId: number,
+  text: string,
+  replyMarkup?: Parameters<typeof sendTelegramMessage>[2],
+) {
   try {
-    await sendTelegramMessage(chatId, text);
+    await sendTelegramMessage(chatId, text, replyMarkup);
   } catch (err) {
     console.error("telegram reply failed", err);
   }
@@ -296,31 +351,30 @@ export async function POST(req: Request) {
   }
 
   const msg = update.message;
-  if (!msg || !msg.from || !msg.chat || typeof msg.text !== "string") {
+  if (!msg || !msg.from || !msg.chat) {
     return replyOk();
   }
 
   const chatId = msg.chat.id;
   const fromId = msg.from.id;
   const username = msg.from.username;
-  const text = msg.text.trim();
 
   try {
+    // Contact share (no text) is the binding path.
+    if (msg.contact) {
+      await handleContactShared(chatId, fromId, username, msg.contact);
+      return replyOk();
+    }
+
+    if (typeof msg.text !== "string") {
+      return replyOk();
+    }
+    const text = msg.text.trim();
+
+    // Deep link to mute an alert — operates on an already-linked account.
     if (text.startsWith("/start mute_")) {
       const alertId = text.slice("/start mute_".length).trim();
       await handleMute(chatId, fromId, alertId);
-      return replyOk();
-    }
-
-    if (text.startsWith("/start verify_")) {
-      const digits = text.slice("/start verify_".length).trim();
-      const phone = `+${digits}`;
-      await handleVerifyForPhone(chatId, fromId, username, phone);
-      return replyOk();
-    }
-
-    if (text === "/start" || text.startsWith("/start ")) {
-      await trySend(chatId, START_REPLY);
       return replyOk();
     }
 
@@ -329,14 +383,9 @@ export async function POST(req: Request) {
       return replyOk();
     }
 
-    if (text.startsWith("/verify")) {
-      const parts = text.split(/\s+/);
-      const phone = parts[1] ?? "";
-      await handleVerifyForPhone(chatId, fromId, username, phone);
-      return replyOk();
-    }
-
-    await trySend(chatId, FALLBACK_REPLY);
+    // Everything else (/start, /start verify…, /verify, free text) now leads to
+    // the verified-contact prompt. Typing a phone number no longer binds.
+    await handleShareContactPrompt(chatId);
     return replyOk();
   } catch (err) {
     console.error("telegram webhook error", err);

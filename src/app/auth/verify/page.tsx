@@ -163,9 +163,9 @@ export default function VerifyPage() {
 
   const botUsername =
     bot ?? process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "ozauth_bot";
-  const phoneDigits = phone.startsWith("+") ? phone.slice(1) : phone;
-  const telegramDeepLink = `https://t.me/${botUsername}?start=verify_${phoneDigits}`;
-  const verifyCommand = `/verify ${phone}`;
+  // The deep link carries no phone — the bot derives the verified number from
+  // the user's "share contact" tap. See the contact-binding design.
+  const telegramDeepLink = `https://t.me/${botUsername}?start=verify`;
 
   return (
     <main className="min-h-[100dvh] flex flex-col px-6 py-8 bg-bg">
@@ -199,8 +199,8 @@ export default function VerifyPage() {
             </button>
 
             <p className="mt-3 text-[13px] text-text-2">
-              После того как откроется бот, нажмите «Start» — мы пришлём код
-              сюда.
+              Откройте бот, нажмите «Start», затем «Поделиться номером» — мы
+              проверим номер и пришлём код сюда.
             </p>
 
             <form onSubmit={handleVerify} className="mt-6">
@@ -218,8 +218,8 @@ export default function VerifyPage() {
 
             <p className="mt-4 text-[12px] leading-relaxed text-text-3">
               Telegram не открывается? Откройте{" "}
-              <span className="font-mono">@{botUsername}</span> вручную и
-              отправьте <span className="font-mono">{verifyCommand}</span>
+              <span className="font-mono">@{botUsername}</span> вручную, нажмите
+              «Start», затем «Поделиться номером».
             </p>
           </>
         ) : (

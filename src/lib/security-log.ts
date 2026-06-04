@@ -5,6 +5,7 @@ export type SecurityEventType =
   | "auth_account_needs_migration"
   | "auth_rate_limited"
   | "webhook_auth_failed"
+  | "webhook_contact_mismatch"
   | "rpc_unauthorized"
   | "chat_flagged"
   | "rate_limited"
