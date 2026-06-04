@@ -16,24 +16,31 @@ import {
   type Currency,
   type Direction,
   type ListingWithProfile,
-  type TransactionInsert,
 } from "@/lib/types";
 
 const SYMBOL: Record<Currency, string> = { KZT: "₸", KRW: "₩" };
+
+// Maps the RPC's raise-exception codes to user-facing Russian copy.
+function createErrorMessage(raw: string | undefined): string {
+  switch (raw) {
+    case "counterparty_no_payment_method":
+      return "У этого пользователя пока нет реквизитов для получения оплаты. Сделка невозможна.";
+    case "listing_not_available":
+      return "Это объявление больше недоступно.";
+    case "cannot_transact_own_listing":
+      return "Нельзя начать сделку по собственному объявлению.";
+    default:
+      return "Не удалось создать сделку";
+  }
+}
 
 type Props = {
   open: boolean;
   onClose: () => void;
   listing: ListingWithProfile;
-  currentUserId: string;
 };
 
-export function ConfirmTransactionSheet({
-  open,
-  onClose,
-  listing,
-  currentUserId,
-}: Props) {
+export function ConfirmTransactionSheet({ open, onClose, listing }: Props) {
   const router = useRouter();
   const supabase = createClient();
   const { data: rateData } = useRate();
@@ -74,24 +81,16 @@ export function ConfirmTransactionSheet({
   const confirm = async () => {
     setSubmitting(true);
     setError(null);
-    const payload: TransactionInsert = {
-      listing_id: listing.id,
-      initiator_id: currentUserId,
-      counterparty_id: listing.user_id,
-      direction,
-      amount,
-      amount_currency: from,
-      rate: lockedRate,
-    };
-    const { data, error: insertError } = await supabase
-      .from("transactions")
-      .insert(payload)
-      .select("id")
-      .single();
+    // Server derives counterparty/amount/currency/direction from the listing;
+    // only the locked display rate is passed through (see create_transaction).
+    const { data, error: rpcError } = await supabase.rpc("create_transaction", {
+      p_listing_id: listing.id,
+      p_rate: lockedRate,
+    });
 
-    if (insertError || !data) {
+    if (rpcError || !data) {
       setSubmitting(false);
-      setError(insertError?.message ?? "Не удалось создать сделку");
+      setError(createErrorMessage(rpcError?.message));
       return;
     }
     router.push(`/transaction/${(data as { id: string }).id}`);

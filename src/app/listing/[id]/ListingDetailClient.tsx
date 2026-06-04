@@ -226,7 +226,6 @@ export function ListingDetailClient({
             open={confirmOpen}
             onClose={() => setConfirmOpen(false)}
             listing={listing}
-            currentUserId={currentUserId}
           />
           <ProfileGateSheet
             open={gateOpen}
