@@ -245,9 +245,9 @@ button {
   gap: 4px;
   width: 360px;
   max-width: 100%;
-  height: 96px;
-  padding: 0 8px 0 24px;
-  border-radius: 40px;
+  height: 46px;
+  padding: 0 8px 0 18px;
+  border-radius: 23px;
   background: var(--rate-widget-bg);
   border: 1.2px solid var(--rate-widget-border);
   white-space: nowrap;
@@ -262,19 +262,19 @@ button {
 .oz-rate__row {
   display: inline-flex;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
 }
 
 .oz-rate__icons {
   display: inline-flex;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
   animation: oz-rate-icons-in 200ms ease-out both;
 }
 
 /* ₸ / ₩ — heavier than v1 (was 600); the SVG glyphs are chunky. */
 .oz-rate__sym {
-  font-size: 32px;
+  font-size: 18px;
   font-weight: 800;
   line-height: 1;
   color: var(--rate-fg);
@@ -283,6 +283,8 @@ button {
 
 .oz-rate__tri {
   display: block;
+  width: 11px;
+  height: 11px;
   color: var(--rate-fg);
   opacity: 0.6; /* SVG fill-opacity 0.6 */
 }
@@ -291,7 +293,7 @@ button {
   display: inline-block;
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 30px;
+  font-size: 18px;
   line-height: 1;
   letter-spacing: -0.01em;
   color: var(--rate-fg);
@@ -316,9 +318,9 @@ button {
 
 .oz-rate__num-skel {
   display: inline-block;
-  width: 72px;
-  height: 26px;
-  border-radius: 8px;
+  width: 56px;
+  height: 18px;
+  border-radius: 6px;
 }
 
 .oz-rate__sub {
@@ -331,11 +333,11 @@ button {
    edge fades via a mask so the line appears to emerge. */
 .oz-rate__spark {
   position: absolute;
-  right: 8px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  width: 200px;
-  height: 60px;
+  width: 150px;
+  height: 34px;
   overflow: visible;
 }
 
@@ -391,28 +393,28 @@ button {
 
 @media (max-width: 479px) {
   .oz-rate {
-    height: 80px;
-    padding: 0 8px 0 16px;
-    border-radius: 32px;
+    height: 42px;
+    padding: 0 8px 0 14px;
+    border-radius: 21px;
   }
   .oz-rate__row,
   .oz-rate__icons {
-    gap: 14px;
+    gap: 10px;
   }
   .oz-rate__sym {
-    font-size: 28px;
+    font-size: 16px;
   }
   .oz-rate__tri {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
   }
   .oz-rate__num {
-    font-size: 28px; /* SPEC: rate number stays ≥ 28px on mobile */
+    font-size: 16px;
   }
   /* Sparkline reduces to ~30% of the widget width. */
   .oz-rate__spark {
-    width: 110px;
-    height: 48px;
+    width: 96px;
+    height: 28px;
   }
   .oz-rate__note {
     font-size: 10.5px;
@@ -437,17 +439,11 @@ button {
   }
 }
 
-/* Brand mark */
+/* Brand mark — inline single-stroke öz glyph (see BrandMark.tsx).
+   `color` drives the SVG via currentColor; matches the rate-widget green. */
 .oz-brand-mark {
-  border-radius: 7px;
-  background: var(--primary);
-  color: var(--bg);
-  display: grid;
-  place-items: center;
-  font-family: var(--font-sans);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.04em;
+  display: block;
+  color: #43A772;
 }
 
 /* ===== Feed ===== */
@@ -700,18 +696,18 @@ button {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--rate-fg);
   color: #fff;
   border: 0;
   display: grid;
   place-items: center;
   cursor: pointer;
-  box-shadow: 0 6px 16px rgba(26, 122, 74, 0.30), 0 2px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 16px rgba(66, 158, 113, 0.32), 0 2px 4px rgba(0, 0, 0, 0.08);
   transition: transform 0.08s, background 0.15s;
   z-index: 20;
 }
 
-.oz-fab:hover { background: var(--primary-hover); }
+.oz-fab:hover { background: #38875F; }
 .oz-fab:active { transform: translateY(1px) scale(0.97); }
 .oz-fab[disabled] { opacity: 0.7; cursor: not-allowed; }
 
