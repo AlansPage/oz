@@ -175,12 +175,54 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
           fetchMessages();
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        // Realtime is the primary live-update path, but a postgres_changes
+        // subscription only starts delivering once it reaches SUBSCRIBED — and
+        // with RLS, an unauthenticated/stale socket can silently deliver
+        // nothing. On every (re)subscribe, catch up on anything that arrived
+        // before the channel was live so the thread self-heals after reconnects.
+        if (status === "SUBSCRIBED") {
+          fetchMessages();
+          fetchTx();
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
   }, [supabase, id, fetchTx, fetchReceipts, fetchRatings, fetchMessages]);
+
+  // Fallback sync: chat must never depend on a single socket staying healthy.
+  // If realtime silently misses an INSERT (dropped/unauthenticated socket), the
+  // receiving party would otherwise never see the message until a full reload —
+  // the asymmetric "one side can't receive" bug. Re-sync when the tab regains
+  // focus/visibility, and on a light interval while the tab is visible.
+  useEffect(() => {
+    const syncMessages = () => {
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState !== "visible"
+      ) {
+        return;
+      }
+      fetchMessages();
+    };
+    const syncOnFocus = () => {
+      fetchMessages();
+      fetchTx();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") syncOnFocus();
+    };
+    window.addEventListener("focus", syncOnFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    const interval = window.setInterval(syncMessages, 15000);
+    return () => {
+      window.removeEventListener("focus", syncOnFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.clearInterval(interval);
+    };
+  }, [fetchMessages, fetchTx]);
 
   useEffect(() => {
     if (!tx) {
