@@ -6,6 +6,7 @@ import {
   removeKeyboard,
 } from "@/lib/telegram";
 import { logSecurityEvent } from "@/lib/security-log";
+import { secretsMatch } from "@/lib/secure-compare";
 
 export const dynamic = "force-dynamic";
 
@@ -332,7 +333,7 @@ async function trySend(
 export async function POST(req: Request) {
   const expected = process.env.TELEGRAM_WEBHOOK_SECRET;
   const provided = req.headers.get("x-telegram-bot-api-secret-token");
-  if (!expected || provided !== expected) {
+  if (!secretsMatch(provided, expected)) {
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
     void logSecurityEvent({

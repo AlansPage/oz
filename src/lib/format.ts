@@ -83,9 +83,7 @@ export function formatRelativeTime(iso: string): string {
   const abs = Math.abs(diffSec);
 
   if (abs < 45) return "только что";
-  if (abs < 90) return relativeFormatter.format(Math.round(diffSec / 60), "minute");
   if (abs < 60 * 60) return relativeFormatter.format(Math.round(diffSec / 60), "minute");
-  if (abs < 60 * 90) return relativeFormatter.format(Math.round(diffSec / 3600), "hour");
   if (abs < 60 * 60 * 24) return relativeFormatter.format(Math.round(diffSec / 3600), "hour");
   if (abs < 60 * 60 * 24 * 7) return relativeFormatter.format(Math.round(diffSec / 86400), "day");
   return relativeFormatter.format(Math.round(diffSec / (86400 * 7)), "week");

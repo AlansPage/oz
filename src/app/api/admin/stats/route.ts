@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { secretsMatch } from "@/lib/secure-compare";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export async function GET(req: Request) {
   const expected = process.env.OZ_ADMIN_TOKEN;
   const auth = req.headers.get("authorization") ?? "";
   const provided = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-  if (!expected || !provided || provided !== expected) {
+  if (!secretsMatch(provided, expected)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

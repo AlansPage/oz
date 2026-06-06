@@ -33,6 +33,26 @@ function envOrThrow(name: string): string {
   return v;
 }
 
+// Constant-time secret comparison. A plain `a !== b` short-circuits on the
+// first differing byte, leaking the matching-prefix length through timing.
+// Hashing to fixed-length digests first also avoids leaking the secret length.
+async function secretsMatch(
+  provided: string | null,
+  expected: string | null,
+): Promise<boolean> {
+  if (!provided || !expected) return false;
+  const enc = new TextEncoder();
+  const [a, b] = await Promise.all([
+    crypto.subtle.digest("SHA-256", enc.encode(provided)),
+    crypto.subtle.digest("SHA-256", enc.encode(expected)),
+  ]);
+  const av = new Uint8Array(a);
+  const bv = new Uint8Array(b);
+  let diff = 0;
+  for (let i = 0; i < av.length; i++) diff |= av[i] ^ bv[i];
+  return diff === 0;
+}
+
 async function sendTelegram(
   token: string,
   chatId: number,
@@ -57,7 +77,7 @@ async function sendTelegram(
 Deno.serve(async (req) => {
   const expected = Deno.env.get("LISTING_INSERT_WEBHOOK_SECRET");
   const provided = req.headers.get("x-listing-webhook-secret");
-  if (!expected || provided !== expected) {
+  if (!(await secretsMatch(provided, expected))) {
     return new Response(JSON.stringify({ error: "unauthorized" }), {
       status: 401,
       headers: { "content-type": "application/json" },
