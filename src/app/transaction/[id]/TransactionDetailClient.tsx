@@ -125,70 +125,101 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
   }, [fetchTx, fetchReceipts, fetchRatings, fetchMessages]);
 
   useEffect(() => {
-    const channel = supabase
-      .channel(`transaction:${id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "transactions",
-          filter: `id=eq.${id}`,
-        },
-        () => {
-          fetchTx();
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "receipts",
-          filter: `transaction_id=eq.${id}`,
-        },
-        () => {
-          fetchReceipts();
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "ratings",
-          filter: `transaction_id=eq.${id}`,
-        },
-        () => {
-          fetchRatings();
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "chat_messages",
-          filter: `transaction_id=eq.${id}`,
-        },
-        () => {
-          fetchMessages();
-        },
-      )
-      .subscribe((status) => {
-        // Realtime is the primary live-update path, but a postgres_changes
-        // subscription only starts delivering once it reaches SUBSCRIBED — and
-        // with RLS, an unauthenticated/stale socket can silently deliver
-        // nothing. On every (re)subscribe, catch up on anything that arrived
-        // before the channel was live so the thread self-heals after reconnects.
-        if (status === "SUBSCRIBED") {
-          fetchMessages();
-          fetchTx();
-        }
-      });
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    // Hand the user's JWT to the realtime socket. postgres_changes are filtered
+    // by RLS using the token on the socket — if it carries only the anon key
+    // (the default until setAuth runs), the chat_messages SELECT policy yields
+    // zero rows and the socket silently delivers nothing. This is the root
+    // cause of the asymmetric "one side never receives" bug; the focus/poll
+    // fallback masks it, this prevents it.
+    const refreshRealtimeAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      await supabase.realtime.setAuth(session?.access_token ?? null);
+    };
+
+    (async () => {
+      await refreshRealtimeAuth();
+      if (cancelled) return;
+
+      channel = supabase
+        .channel(`transaction:${id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "transactions",
+            filter: `id=eq.${id}`,
+          },
+          () => {
+            fetchTx();
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "receipts",
+            filter: `transaction_id=eq.${id}`,
+          },
+          () => {
+            fetchReceipts();
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "ratings",
+            filter: `transaction_id=eq.${id}`,
+          },
+          () => {
+            fetchRatings();
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "chat_messages",
+            filter: `transaction_id=eq.${id}`,
+          },
+          () => {
+            fetchMessages();
+          },
+        )
+        .subscribe((status) => {
+          // Realtime is the primary live-update path, but a postgres_changes
+          // subscription only starts delivering once it reaches SUBSCRIBED — and
+          // with RLS, an unauthenticated/stale socket can silently deliver
+          // nothing. On every (re)subscribe, catch up on anything that arrived
+          // before the channel was live so the thread self-heals after reconnects.
+          if (status === "SUBSCRIBED") {
+            fetchMessages();
+            fetchTx();
+          }
+        });
+    })();
+
+    // Keep the socket's token current: a refresh rotates the access token, and
+    // a stale token on the socket would quietly stop RLS-gated delivery.
+    const { data: authSub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
+        void refreshRealtimeAuth();
+      }
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      authSub.subscription.unsubscribe();
+      if (channel) supabase.removeChannel(channel);
     };
   }, [supabase, id, fetchTx, fetchReceipts, fetchRatings, fetchMessages]);
 
