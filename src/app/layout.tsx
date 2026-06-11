@@ -37,10 +37,12 @@ export const metadata: Metadata = {
   },
 };
 
+// No maximumScale: blocking pinch zoom is an accessibility violation, and
+// the old iOS input-zoom motivation is gone now that text inputs are 16px
+// on touch devices (see globals.css).
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   themeColor: "#F5F0E8",
 };
 

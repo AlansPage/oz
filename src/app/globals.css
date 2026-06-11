@@ -1770,3 +1770,55 @@ button {
 .oz-feed__disclaimer a:hover {
   color: var(--text-2);
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+   Mobile ergonomics
+   ───────────────────────────────────────────────────────────────────── */
+
+/* 44px minimum touch targets below 640px (Apple HIG). Heights grow via
+   min-height + centered content so text sizes stay unchanged. */
+@media (max-width: 639px) {
+  .oz-segmented__btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .oz-sortselect {
+    min-height: 44px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .oz-secondary-btn-sm,
+  .oz-soft-btn-sm {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  /* The avatar stays 28px visually; negative margin grows the hit area
+     to 44x44 without shifting the header layout. */
+  .oz-headeravatar__btn {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+    margin: -8px;
+  }
+}
+
+/* iOS Safari auto-zooms focused inputs whose font-size is under 16px.
+   Bump text-entry controls to 16px on touch devices only; desktop keeps
+   the 13-15px spec sizes. (.oz-otp-box is already 22px — exempt.) */
+@media (pointer: coarse) {
+  .oz-input,
+  .oz-textarea,
+  .oz-chat__textarea,
+  .oz-sortselect {
+    font-size: 16px;
+  }
+}
