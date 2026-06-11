@@ -26,7 +26,14 @@ type NotifyRow = {
   message_text: string;
 };
 
-type TxRecord = { id?: string; listing_id?: string; status?: string };
+type TxRecord = {
+  id?: string;
+  listing_id?: string;
+  status?: string;
+  // Phase 4 name-match checkpoint: set when a sender reports that the
+  // recipient name doesn't match, cleared when the counterparty resolves.
+  name_mismatch_at?: string | null;
+};
 
 type WebhookPayload = {
   type?: "INSERT" | "UPDATE" | "DELETE";
@@ -95,6 +102,13 @@ function resolveEventType(payload: WebhookPayload): string | null {
     if (next === "disputed") return "disputed";
     if (next === "cancelled") return "cancelled";
     if (next && prev && next !== prev) return "advanced";
+    // No status movement: check the name-match freeze flag. The report and
+    // resolve RPCs never move status in the same UPDATE, so this branch
+    // can't shadow a status notification.
+    const nextMismatch = payload.record?.name_mismatch_at ?? null;
+    const prevMismatch = payload.old_record?.name_mismatch_at ?? null;
+    if (nextMismatch && !prevMismatch) return "name_mismatch";
+    if (!nextMismatch && prevMismatch) return "name_mismatch_resolved";
   }
   return null;
 }

@@ -29,6 +29,7 @@ import { ReceiptUploadSheet } from "./ReceiptUploadSheet";
 import { DisputeSheet } from "./DisputeSheet";
 import { RateForm, RatingReadOnly } from "./RatingCard";
 import { ChatThread } from "./ChatThread";
+import { NameMismatchPanel } from "./NameMismatchPanel";
 import { useTransactionChat } from "./useTransactionChat";
 import { ReceiptViewerSheet } from "./ReceiptViewerSheet";
 import { SendScreen } from "./screens/SendScreen";
@@ -337,6 +338,21 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
     await fetchRatings();
   };
 
+  // The sender flagged a recipient-name mismatch and this viewer is the
+  // party who must fix their payout details (the reporter's own view shows
+  // the frozen state inside SendScreen instead).
+  const showMismatchPanel =
+    tx.name_mismatch_at !== null &&
+    tx.name_mismatch_by !== null &&
+    tx.name_mismatch_by !== currentUserId;
+  const mismatchPanel = showMismatchPanel ? (
+    <NameMismatchPanel
+      tx={tx}
+      currentUserId={currentUserId}
+      onResolved={() => fetchTx()}
+    />
+  ) : null;
+
   // v0.4 redesigned visual layers. Other status × viewer combinations keep
   // the legacy layout below.
   const isSend =
@@ -460,6 +476,7 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
       {isRedesigned ? (
         <div className="tx-route">
           <div className="tx-route__col">
+            {mismatchPanel}
             {screen}
             {chatSection}
           </div>
@@ -476,6 +493,8 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
             </span>
             <span>Сделка #{shortId}</span>
           </button>
+
+      {mismatchPanel}
 
       <StatusBanner
         status={tx.status}

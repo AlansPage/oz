@@ -1446,6 +1446,45 @@ button {
   border-radius: 0 0 var(--r-md) var(--r-md);
 }
 
+/* Name-mismatch recovery panel (Phase 4): shown to the party whose payout
+   details the sender flagged. Warning-tinted, not alarmist. */
+.oz-mismatch {
+  background: var(--surface);
+  border: 1px solid var(--warning);
+  border-left-width: 3px;
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.oz-mismatch__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.oz-mismatch__copy {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+  margin: 0;
+}
+
+.oz-mismatch__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.oz-mismatch__error {
+  font-size: 12px;
+  color: var(--error);
+  margin: 0;
+}
+
 .oz-headeravatar {
   position: relative;
 }
