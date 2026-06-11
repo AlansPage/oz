@@ -20,7 +20,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 type NotifyRow = {
   user_id: string;
-  telegram_user_id: number;
+  // null = recipient resolved but has no telegram_links row; logged as a
+  // 'no_telegram_link' failure instead of silently skipped.
+  telegram_user_id: number | null;
   message_text: string;
 };
 
@@ -159,6 +161,18 @@ Deno.serve(async (req) => {
   let failed = 0;
 
   for (const row of rows) {
+    if (row.telegram_user_id == null) {
+      failed += 1;
+      const { error: logErr } = await supabase.from("notification_log").insert({
+        user_id: row.user_id,
+        listing_id: listingId,
+        channel: "telegram",
+        status: "failed",
+        error_detail: "no_telegram_link",
+      });
+      if (logErr) console.error("notification_log insert (no_telegram_link) failed", logErr);
+      continue;
+    }
     const result = await sendTelegram(botToken, row.telegram_user_id, row.message_text);
     if (result.ok) {
       dispatched += 1;
