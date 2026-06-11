@@ -94,7 +94,8 @@ export default function PhonePage() {
           Введите номер телефона
         </h1>
         <p className="mt-2 text-[14px] text-text-2">
-          Мы отправим код через Telegram-бот.
+          Мы отправим код через Telegram-бот. Для входа нужен
+          Telegram-аккаунт, привязанный к казахстанскому номеру +7.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8">

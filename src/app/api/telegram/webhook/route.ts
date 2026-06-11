@@ -246,7 +246,7 @@ async function handleContactShared(
   if (!phone || !PHONE_RE.test(phone)) {
     await trySend(
       chatId,
-      "Этот номер не поддерживается. Используйте номер +7…",
+      "Вход в öz работает только с Telegram-аккаунтом, привязанным к казахстанскому номеру +7. Ваш Telegram привязан к другому номеру.",
       removeKeyboard,
     );
     return;
