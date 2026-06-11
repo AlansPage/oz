@@ -1376,6 +1376,69 @@ button {
   gap: var(--s-3);
 }
 
+/* Bank picker: an input-shaped button that opens the stacked bank sheet */
+.oz-bankpicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.oz-bankpicker--placeholder {
+  color: var(--text-mute);
+}
+
+.oz-bankpicker__chevron {
+  color: var(--text-3);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.oz-banklist {
+  display: flex;
+  flex-direction: column;
+  margin: 0 -8px;
+  max-height: 60dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.oz-banklist__item {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: var(--text);
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: var(--r-md);
+  padding: 13px 8px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .oz-banklist__item:hover {
+    background: var(--surface-2);
+  }
+}
+
+.oz-banklist__item:active {
+  background: var(--surface-2);
+}
+
+.oz-banklist__item--active {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.oz-banklist__item--other {
+  color: var(--text-2);
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 var(--r-md) var(--r-md);
+}
+
 .oz-headeravatar {
   position: relative;
 }

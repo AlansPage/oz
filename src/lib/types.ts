@@ -187,6 +187,7 @@ export type PaymentMethod = {
   user_id: string;
   currency: Currency;
   bank_name: string;
+  bank_code: string | null;
   holder_name: string;
   account_number: string;
   is_default: boolean;
