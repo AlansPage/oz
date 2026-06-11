@@ -14,7 +14,6 @@ import { PROFILE_COLUMNS } from "@/lib/profile-columns";
 import {
   directionFrom,
   directionTo,
-  type ChatMessage,
   type Currency,
   type Profile,
   type Rating,
@@ -30,6 +29,7 @@ import { ReceiptUploadSheet } from "./ReceiptUploadSheet";
 import { DisputeSheet } from "./DisputeSheet";
 import { RateForm, RatingReadOnly } from "./RatingCard";
 import { ChatThread } from "./ChatThread";
+import { useTransactionChat } from "./useTransactionChat";
 import { ReceiptViewerSheet } from "./ReceiptViewerSheet";
 import { SendScreen } from "./screens/SendScreen";
 import { WaitScreen } from "./screens/WaitScreen";
@@ -62,7 +62,10 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
   const [tx, setTx] = useState<TransactionWithProfiles | null>(null);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [ratings, setRatings] = useState<Rating[]>([]);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { messages, unreadCount, appendMessage } = useTransactionChat({
+    transactionId: id,
+    currentUserId,
+  });
   const [counterpartyAvatarUrl, setCounterpartyAvatarUrl] = useState<
     string | null
   >(null);
@@ -99,30 +102,16 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
     setRatings((data as unknown as Rating[] | null) ?? []);
   }, [supabase, id]);
 
-  const fetchMessages = useCallback(async () => {
-    const { data } = await supabase
-      .from("chat_messages")
-      .select("*")
-      .eq("transaction_id", id)
-      .order("created_at", { ascending: true });
-    setMessages((data as unknown as ChatMessage[] | null) ?? []);
-  }, [supabase, id]);
-
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      await Promise.all([
-        fetchTx(),
-        fetchReceipts(),
-        fetchRatings(),
-        fetchMessages(),
-      ]);
+      await Promise.all([fetchTx(), fetchReceipts(), fetchRatings()]);
       if (!cancelled) setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [fetchTx, fetchReceipts, fetchRatings, fetchMessages]);
+  }, [fetchTx, fetchReceipts, fetchRatings]);
 
   useEffect(() => {
     let cancelled = false;
@@ -183,26 +172,13 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
             fetchRatings();
           },
         )
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "chat_messages",
-            filter: `transaction_id=eq.${id}`,
-          },
-          () => {
-            fetchMessages();
-          },
-        )
         .subscribe((status) => {
           // Realtime is the primary live-update path, but a postgres_changes
           // subscription only starts delivering once it reaches SUBSCRIBED — and
           // with RLS, an unauthenticated/stale socket can silently deliver
           // nothing. On every (re)subscribe, catch up on anything that arrived
-          // before the channel was live so the thread self-heals after reconnects.
+          // before the channel was live so the page self-heals after reconnects.
           if (status === "SUBSCRIBED") {
-            fetchMessages();
             fetchTx();
           }
         });
@@ -221,39 +197,25 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
       authSub.subscription.unsubscribe();
       if (channel) supabase.removeChannel(channel);
     };
-  }, [supabase, id, fetchTx, fetchReceipts, fetchRatings, fetchMessages]);
+  }, [supabase, id, fetchTx, fetchReceipts, fetchRatings]);
 
-  // Fallback sync: chat must never depend on a single socket staying healthy.
-  // If realtime silently misses an INSERT (dropped/unauthenticated socket), the
-  // receiving party would otherwise never see the message until a full reload —
-  // the asymmetric "one side can't receive" bug. Re-sync when the tab regains
-  // focus/visibility, and on a light interval while the tab is visible.
+  // Fallback sync for the transaction itself: re-read status when the tab
+  // regains focus/visibility, in case realtime missed an UPDATE. The chat
+  // thread runs its own equivalent fallback inside useTransactionChat.
   useEffect(() => {
-    const syncMessages = () => {
-      if (
-        typeof document !== "undefined" &&
-        document.visibilityState !== "visible"
-      ) {
-        return;
-      }
-      fetchMessages();
-    };
-    const syncOnFocus = () => {
-      fetchMessages();
+    const onFocus = () => {
       fetchTx();
     };
     const onVisibility = () => {
-      if (document.visibilityState === "visible") syncOnFocus();
+      if (document.visibilityState === "visible") fetchTx();
     };
-    window.addEventListener("focus", syncOnFocus);
+    window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onVisibility);
-    const interval = window.setInterval(syncMessages, 15000);
     return () => {
-      window.removeEventListener("focus", syncOnFocus);
+      window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onVisibility);
-      window.clearInterval(interval);
     };
-  }, [fetchMessages, fetchTx]);
+  }, [fetchTx]);
 
   useEffect(() => {
     if (!tx) {
@@ -341,10 +303,6 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
         : tx.status === "disputed"
           ? "disputed"
           : null;
-  const counterpartyUnreadCount = messages.filter(
-    (m) => m.sender_id !== currentUserId && m.read_at === null,
-  ).length;
-
   const onBack = () => router.push("/feed");
   const onDispute = () => setDisputeOpen(true);
   const handleCancel = async () => {
@@ -471,8 +429,8 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
     <section className="oz-listing-about" aria-label="Чат">
       <div className="oz-chat__header">
         <span className="oz-chat__title">Чат с контрагентом</span>
-        {counterpartyUnreadCount > 0 && (
-          <span className="oz-chat__unread">{counterpartyUnreadCount}</span>
+        {unreadCount > 0 && (
+          <span className="oz-chat__unread">{unreadCount}</span>
         )}
       </div>
       <ChatThread
@@ -484,11 +442,7 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
         messages={messages}
         isClosed={chatClosedReason !== null}
         closedReason={chatClosedReason}
-        onSent={(msg) =>
-          setMessages((prev) =>
-            prev.some((m) => m.id === msg.id) ? prev : [...prev, msg],
-          )
-        }
+        onSent={appendMessage}
       />
     </section>
   );
