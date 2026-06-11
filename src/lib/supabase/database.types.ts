@@ -535,6 +535,8 @@ export type Database = {
           initiator_id: string
           initiator_paid_at: string | null
           listing_id: string
+          name_mismatch_at: string | null
+          name_mismatch_by: string | null
           rate: number | null
           rate_locked_at: string
           status: string
@@ -557,6 +559,8 @@ export type Database = {
           initiator_id: string
           initiator_paid_at?: string | null
           listing_id: string
+          name_mismatch_at?: string | null
+          name_mismatch_by?: string | null
           rate?: number | null
           rate_locked_at?: string
           status?: string
@@ -579,6 +583,8 @@ export type Database = {
           initiator_id?: string
           initiator_paid_at?: string | null
           listing_id?: string
+          name_mismatch_at?: string | null
+          name_mismatch_by?: string | null
           rate?: number | null
           rate_locked_at?: string
           status?: string
@@ -612,6 +618,13 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "transactions_name_mismatch_by_fkey"
+            columns: ["name_mismatch_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -639,6 +652,8 @@ export type Database = {
           initiator_id: string
           initiator_paid_at: string | null
           listing_id: string
+          name_mismatch_at: string | null
+          name_mismatch_by: string | null
           rate: number | null
           rate_locked_at: string
           status: string
@@ -671,6 +686,8 @@ export type Database = {
           initiator_id: string
           initiator_paid_at: string | null
           listing_id: string
+          name_mismatch_at: string | null
+          name_mismatch_by: string | null
           rate: number | null
           rate_locked_at: string
           status: string
@@ -738,6 +755,74 @@ export type Database = {
           initiator_id: string
           initiator_paid_at: string | null
           listing_id: string
+          name_mismatch_at: string | null
+          name_mismatch_by: string | null
+          rate: number | null
+          rate_locked_at: string
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      report_recipient_name_mismatch: {
+        Args: { p_transaction_id: string }
+        Returns: {
+          amount: number
+          amount_currency: string
+          completed_at: string | null
+          counterparty_confirmed_at: string | null
+          counterparty_id: string
+          counterparty_paid_at: string | null
+          created_at: string
+          direction: string
+          dispute_description: string | null
+          dispute_reason: string | null
+          disputed_at: string | null
+          disputed_by: string | null
+          id: string
+          initiator_confirmed_at: string | null
+          initiator_id: string
+          initiator_paid_at: string | null
+          listing_id: string
+          name_mismatch_at: string | null
+          name_mismatch_by: string | null
+          rate: number | null
+          rate_locked_at: string
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      resolve_recipient_name_mismatch: {
+        Args: { p_transaction_id: string }
+        Returns: {
+          amount: number
+          amount_currency: string
+          completed_at: string | null
+          counterparty_confirmed_at: string | null
+          counterparty_id: string
+          counterparty_paid_at: string | null
+          created_at: string
+          direction: string
+          dispute_description: string | null
+          dispute_reason: string | null
+          disputed_at: string | null
+          disputed_by: string | null
+          id: string
+          initiator_confirmed_at: string | null
+          initiator_id: string
+          initiator_paid_at: string | null
+          listing_id: string
+          name_mismatch_at: string | null
+          name_mismatch_by: string | null
           rate: number | null
           rate_locked_at: string
           status: string
