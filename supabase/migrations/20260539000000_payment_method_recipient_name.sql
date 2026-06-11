@@ -181,7 +181,8 @@ begin
 
   -- Structural number validation, mirrored from src/lib/payment-validation.ts.
   if p_currency = 'KZT' then
-    -- Any KZT rail: a Luhn-valid 16-digit card or a mod-97-valid KZ IBAN.
+    -- Any KZT rail: a Luhn-valid 16-digit card, a mod-97-valid KZ IBAN, or a
+    -- Kazakh mobile number (transfer-by-phone is the dominant Kaspi rail).
     if v_account ~ '^[0-9]{16}$' then
       if not public.luhn_valid(v_account) then
         raise exception 'invalid_account_number';
@@ -190,6 +191,10 @@ begin
       if not public.kz_iban_valid(v_account) then
         raise exception 'invalid_account_number';
       end if;
+    elsif v_account ~ '^(\+77|87)[0-9]{9}$' then
+      -- Canonicalize to E.164 so the same phone rail is one value across
+      -- rows (duplicate-rail detection in Phase 6 compares these).
+      v_account := '+7' || right(v_account, 10);
     else
       raise exception 'invalid_account_number';
     end if;

@@ -66,7 +66,12 @@ export function accountNumberError(
         ? null
         : "IBAN не проходит проверку. Проверьте символы.";
     }
-    return "Введите 16-значный номер карты или IBAN-счёт (KZ…).";
+    // Transfer by phone number is the dominant Kaspi rail (and supported by
+    // every KZ bank app); the server canonicalizes it to the +7 form.
+    if (/^(\+77|87)\d{9}$/.test(value)) {
+      return null;
+    }
+    return "Введите номер карты (16 цифр), IBAN (KZ…) или телефон (+7…).";
   }
 
   // KRW: digits only, per-bank length/shape.
