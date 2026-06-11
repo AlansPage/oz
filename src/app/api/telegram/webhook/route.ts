@@ -7,6 +7,7 @@ import {
 } from "@/lib/telegram";
 import { logSecurityEvent } from "@/lib/security-log";
 import { secretsMatch } from "@/lib/secure-compare";
+import { canonicalPhone } from "@/lib/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -241,9 +242,8 @@ async function handleContactShared(
     return;
   }
 
-  const digits = String(contact.phone_number).replace(/\D/g, "");
-  const phone = `+${digits}`;
-  if (!PHONE_RE.test(phone)) {
+  const phone = canonicalPhone(String(contact.phone_number));
+  if (!phone || !PHONE_RE.test(phone)) {
     await trySend(
       chatId,
       "Этот номер не поддерживается. Используйте номер +7…",

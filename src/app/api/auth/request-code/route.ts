@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { generateOtp, sendTelegramMessage } from "@/lib/telegram";
 import { checkAuthCodeRequestLimit } from "@/lib/rate-limit";
 import { logSecurityEvent } from "@/lib/security-log";
+import { canonicalPhone } from "@/lib/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
 
-  const phone = typeof body.phone === "string" ? body.phone : "";
+  const phone =
+    canonicalPhone(typeof body.phone === "string" ? body.phone : null) ?? "";
   if (!PHONE_RE.test(phone)) {
     return NextResponse.json({ error: "invalid_phone" }, { status: 400 });
   }

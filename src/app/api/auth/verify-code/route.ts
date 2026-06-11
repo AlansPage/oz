@@ -24,6 +24,7 @@ import { createClient as createSsrClient } from "@/lib/supabase/server";
 import { derivePassword } from "@/lib/auth/password";
 import { checkAuthCodeAttemptsLimit } from "@/lib/rate-limit";
 import { logSecurityEvent } from "@/lib/security-log";
+import { canonicalPhone } from "@/lib/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +61,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "bad_request" }, { status: 400 });
     }
 
-    const phone = typeof body.phone === "string" ? body.phone : "";
+    const phone =
+      canonicalPhone(typeof body.phone === "string" ? body.phone : null) ?? "";
     const code = typeof body.code === "string" ? body.code : "";
     const phoneValid = PHONE_RE.test(phone);
     const codeValid = CODE_RE.test(code);
@@ -317,11 +319,7 @@ async function repairProfileIfMissing(
     .eq("id", user.id)
     .maybeSingle();
   if (existing) return;
-  const phoneE164 = user.phone
-    ? user.phone.startsWith("+")
-      ? user.phone
-      : `+${user.phone}`
-    : null;
+  const phoneE164 = canonicalPhone(user.phone);
   const { error } = await supabaseAdmin
     .from("profiles")
     .upsert({ id: user.id, phone: phoneE164 }, { onConflict: "id" });
