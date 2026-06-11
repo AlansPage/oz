@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 import type { AlertSubscription, Direction } from "@/lib/types";
 import { AlertCreateSheet } from "./AlertCreateSheet";
 
@@ -58,6 +59,9 @@ export function AlertsClient({
     initialDirection,
   );
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  // The delete-confirm sheet below renders inline (not a *Sheet component),
+  // so it takes the body scroll lock here.
+  useBodyScrollLock(pendingDeleteId !== null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 

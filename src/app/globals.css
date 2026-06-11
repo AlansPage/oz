@@ -741,8 +741,15 @@ button {
   box-shadow: var(--shadow-pop);
   z-index: 31;
   padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
-  max-height: 90vh;
+  /* dvh tracks mobile Safari's dynamic toolbar (vh ignores it and lets the
+     keyboard cover focused inputs); vh line is the older-browser fallback. */
+  max-height: 85vh;
+  max-height: 85dvh;
   overflow-y: auto;
+  /* Don't chain scroll to the page behind, and keep focused inputs visible
+     above the on-screen keyboard when the sheet auto-scrolls to them. */
+  overscroll-behavior: contain;
+  scroll-padding-bottom: 80px;
   animation: oz-sheet-up 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 

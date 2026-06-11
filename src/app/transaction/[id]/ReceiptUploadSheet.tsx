@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 import { createClient } from "@/lib/supabase/client";
 import { formatAmountInput, parseAmount } from "@/lib/format";
 import type { Currency, ReceiptSide } from "@/lib/types";
@@ -76,6 +77,8 @@ export function ReceiptUploadSheet({
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+
+  useBodyScrollLock(open);
 
   if (!open || !mounted) return null;
 

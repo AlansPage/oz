@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 import { createClient } from "@/lib/supabase/client";
 import { signAvatar } from "@/lib/avatar-url";
 import { AvatarPicker } from "@/components/AvatarPicker";
@@ -62,6 +63,8 @@ export function ProfileGateSheet({
       cancelled = true;
     };
   }, [avatarPath, supabase]);
+
+  useBodyScrollLock(open);
 
   if (!open || !mounted) return null;
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 import { createClient } from "@/lib/supabase/client";
 import type { DisputeReason } from "@/lib/types";
 
@@ -51,6 +52,8 @@ export function DisputeSheet({
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+
+  useBodyScrollLock(open);
 
   if (!open || !mounted) return null;
 

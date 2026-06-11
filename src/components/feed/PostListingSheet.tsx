@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 import { useRate } from "./RateContext";
 import { createClient } from "@/lib/supabase/client";
 import { PaymentMethodGateSheet } from "@/components/PaymentMethodGateSheet";
@@ -58,6 +59,8 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+
+  useBodyScrollLock(open);
 
   if (!open || !mounted) return null;
 

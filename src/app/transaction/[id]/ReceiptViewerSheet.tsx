@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 import { createClient } from "@/lib/supabase/client";
 import type { Receipt } from "@/lib/types";
 
@@ -44,6 +45,8 @@ export function ReceiptViewerSheet({ open, onClose, receipt }: Props) {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+
+  useBodyScrollLock(open);
 
   if (!open || !mounted || !receipt) return null;
 

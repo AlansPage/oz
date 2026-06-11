@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 import type { Currency } from "@/lib/types";
 import { PaymentMethodForm } from "@/components/profile/PaymentMethodForm";
 
@@ -22,6 +23,8 @@ export function PaymentMethodGateSheet({
 }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  useBodyScrollLock(open);
 
   if (!open || !mounted) return null;
 
