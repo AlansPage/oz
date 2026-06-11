@@ -1775,6 +1775,20 @@ button {
    Mobile ergonomics
    ───────────────────────────────────────────────────────────────────── */
 
+/* FAB clears the iPhone home indicator; the feed disclaimer (the page's
+   last element) carries enough bottom padding that the last card and the
+   disclaimer text both clear the FAB zone (56px + offset) at full scroll. */
+@media (max-width: 639px) {
+  .oz-fab {
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .oz-feed__disclaimer {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* 44px minimum touch targets below 640px (Apple HIG). Heights grow via
    min-height + centered content so text sizes stay unchanged. */
 @media (max-width: 639px) {
