@@ -39,15 +39,18 @@ export default async function FeedPage() {
   return (
     <RateProvider>
       <main className="min-h-[100dvh] flex flex-col bg-bg">
-        <header className="grid grid-cols-[1fr_auto_1fr] items-center px-6 py-4 border-b border-border bg-surface">
-          <div className="flex items-center gap-2.5 justify-self-start">
+        {/* Mobile (<640px): two rows — brand + avatar, then the rate widget
+            full-width. Desktop: the original 3-column grid, with min-w-0
+            cells so the fixed-width widget can never force overflow. */}
+        <header className="flex flex-wrap items-center justify-between gap-y-3 px-4 py-3 border-b border-border bg-surface sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-6 sm:py-4">
+          <div className="order-1 flex items-center gap-2.5 min-w-0 sm:order-none sm:justify-self-start">
             <BrandMark size={28} />
             <span className="font-bold text-[16px] tracking-tight">öz</span>
           </div>
-          <div className="justify-self-center">
+          <div className="order-3 w-full flex justify-center min-w-0 sm:order-none sm:w-auto sm:justify-self-center">
             <RateWidget />
           </div>
-          <div className="justify-self-end">
+          <div className="order-2 min-w-0 sm:order-none sm:justify-self-end">
             <HeaderAvatarMenu
               displayName={profile.display_name}
               phone={profile.phone}
