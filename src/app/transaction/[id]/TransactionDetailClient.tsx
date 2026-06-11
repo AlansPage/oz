@@ -319,6 +319,12 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
     });
     fetchTx();
   };
+  const handleReportMismatch = async () => {
+    await supabase.rpc("report_recipient_name_mismatch", {
+      p_transaction_id: tx.id,
+    });
+    await fetchTx();
+  };
   const handleSubmitRating = async (stars: number) => {
     await supabase.from("ratings").insert({
       transaction_id: tx.id,
@@ -353,6 +359,8 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
         from={from}
         to={to}
         rateLockedAt={tx.rate_locked_at}
+        nameMismatchAt={tx.name_mismatch_at}
+        onReportMismatch={handleReportMismatch}
         onConfirmSent={() => setUploadOpen(true)}
         onCancel={handleCancel}
         onBack={onBack}

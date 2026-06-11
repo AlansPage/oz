@@ -27,6 +27,11 @@ type Props = {
   from: Currency;
   to: Currency;
   rateLockedAt: string;
+  // Set when either party reported that the recipient name doesn't match
+  // the bank's transfer screen; freezes the send affordance until the
+  // counterparty resolves it (transactions.name_mismatch_at).
+  nameMismatchAt: string | null;
+  onReportMismatch: () => Promise<void>;
   onConfirmSent: () => void;
   onCancel: () => void;
   onBack: () => void;
@@ -63,6 +68,8 @@ export function SendScreen({
   from,
   to,
   rateLockedAt,
+  nameMismatchAt,
+  onReportMismatch,
   onConfirmSent,
   onCancel,
   onBack,
@@ -71,6 +78,25 @@ export function SendScreen({
   const [pm, setPm] = useState<CounterpartyPaymentMethod | null>(null);
   const [pmLoading, setPmLoading] = useState(true);
   const [pmError, setPmError] = useState(false);
+  // The name-match checkpoint: the press-and-hold confirm stays hidden
+  // until the sender explicitly confirms the recipient name they see in
+  // their banking app matches recipient_name. Resets if the freeze is
+  // lifted, so the name gets re-verified against the fixed details.
+  const [nameChecked, setNameChecked] = useState(false);
+  const [reporting, setReporting] = useState(false);
+
+  useEffect(() => {
+    if (nameMismatchAt) setNameChecked(false);
+  }, [nameMismatchAt]);
+
+  const reportMismatch = async () => {
+    setReporting(true);
+    try {
+      await onReportMismatch();
+    } finally {
+      setReporting(false);
+    }
+  };
 
   // Reveal the counterparty's real bank details for this transaction. The RPC
   // enforces that the caller is a party and audit-logs the reveal. Treat both
@@ -147,8 +173,14 @@ export function SendScreen({
       </div>
 
       <div className="tx-statusline">
-        <span className="tx-statusline__dot" />
-        <span>Сделка активна · переведите средства</span>
+        <span
+          className={`tx-statusline__dot${nameMismatchAt ? " tx-statusline__dot--warn" : ""}`}
+        />
+        <span>
+          {nameMismatchAt
+            ? "Перевод остановлен · реквизиты проверяются"
+            : "Сделка активна · переведите средства"}
+        </span>
       </div>
 
       <div
@@ -264,6 +296,16 @@ export function SendScreen({
         </p>
       )}
 
+      {nameMismatchAt && (
+        <div className="tx-card tx-freeze">
+          <div className="tx-freeze__title">Перевод остановлен</div>
+          <p className="tx-freeze__copy">
+            Не отправляйте деньги. Контрагент получил уведомление и исправит
+            реквизиты — мы сообщим, когда они обновятся.
+          </p>
+        </div>
+      )}
+
       <div
         style={{
           padding: "20px 16px 0",
@@ -272,7 +314,37 @@ export function SendScreen({
           gap: 10,
         }}
       >
-        {!pmError && (
+        {!pmError && !nameMismatchAt && pm && !nameChecked && (
+          <div className="tx-namecheck">
+            <p className="tx-namecheck__question">
+              В приложении банка перед отправкой вы увидите имя получателя.
+              Оно совпадает с:{" "}
+              <strong className="tx-namecheck__name">
+                {pm.recipient_name}
+              </strong>
+              ?
+            </p>
+            <div className="tx-namecheck__actions">
+              <button
+                type="button"
+                className="tx-actions__primary"
+                disabled={reporting}
+                onClick={() => setNameChecked(true)}
+              >
+                Да, совпадает
+              </button>
+              <button
+                type="button"
+                className="tx-namecheck__no"
+                disabled={reporting}
+                onClick={reportMismatch}
+              >
+                {reporting ? "Останавливаем…" : "Имя не совпадает"}
+              </button>
+            </div>
+          </div>
+        )}
+        {!pmError && !nameMismatchAt && nameChecked && (
           <>
             <PressAndHold label="Я отправил деньги" onConfirm={onConfirmSent} />
             <p className="tx-hold-hint">

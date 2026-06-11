@@ -84,6 +84,10 @@
   font-weight: 400;
   color: rgba(14, 61, 36, 0.5);
 }
+.tx-statusline__dot--warn {
+  background: var(--warning);
+  box-shadow: 0 0 0 4px rgba(180, 83, 9, 0.15);
+}
 
 /* White cards floating on the tint — replaces .oz-card visually but keeps
    the same shadow recipe. Extra padding for Stripe-style breathing room. */
@@ -1055,6 +1059,64 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   font-weight: 500;
+  margin: 0;
+}
+
+/* ── Name-match checkpoint (Phase 4): gate before the press-and-hold ──── */
+.tx-namecheck {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.tx-namecheck__question {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+  text-align: center;
+  margin: 0;
+  padding: 0 8px;
+}
+.tx-namecheck__name {
+  color: var(--text);
+  font-weight: 700;
+}
+.tx-namecheck__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tx-namecheck__no {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: var(--r-md);
+  padding: 12px 20px;
+  background: transparent;
+  color: var(--warning);
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+}
+@media (hover: hover) and (pointer: fine) {
+  .tx-namecheck__no:hover { border-color: var(--warning); }
+}
+.tx-namecheck__no:active { transform: translateY(1px); }
+
+/* Frozen state after a reported mismatch: calm, explicit "do not send". */
+.tx-freeze {
+  padding: 16px 20px;
+  border-left: 3px solid var(--warning);
+}
+.tx-freeze__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.tx-freeze__copy {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
   margin: 0;
 }
 

@@ -56,6 +56,8 @@ export type Transaction = {
   disputed_by: string | null;
   dispute_reason: DisputeReason | null;
   dispute_description: string | null;
+  name_mismatch_at: string | null;
+  name_mismatch_by: string | null;
 };
 
 export type TransactionInsert = {
