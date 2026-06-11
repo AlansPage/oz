@@ -492,6 +492,13 @@ button {
   align-items: center;
   gap: 8px;
   min-width: 0;
+  /* Take the spare width so a long display name ellipsizes here instead of
+     squeezing the verification badge. */
+  flex: 1;
+}
+
+.oz-card__top .oz-vbadge {
+  flex-shrink: 0;
 }
 
 .oz-card__identity {
@@ -1817,6 +1824,33 @@ button {
 
   .oz-feed__disclaimer {
     padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Mobile rhythm: the 22px mono amount is each card's focal point, so the
+   supporting rate line drops one color step. (.oz-card__equivalent already
+   sits at the lowest step, --text-3.) */
+@media (max-width: 639px) {
+  .oz-card__rateline {
+    color: var(--text-3);
+  }
+}
+
+/* At 320px the segmented control + sort select can't share one row; let the
+   filter bar scroll horizontally with the scrollbar hidden instead of
+   wrapping. Harmless at widths where everything fits. */
+@media (max-width: 639px) {
+  .oz-filterbar {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .oz-filterbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .oz-filterbar > * {
+    flex-shrink: 0;
   }
 }
 
