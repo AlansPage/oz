@@ -5,15 +5,32 @@ import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 import { bankByCode, banksFor } from "@/lib/banks";
+import { accountNumberError } from "@/lib/payment-validation";
 import type { Currency, PaymentMethod } from "@/lib/types";
 
 const SAVE_FAILED = "Не удалось сохранить реквизиты. Попробуйте ещё раз.";
+
+// Server-side rejections from upsert_payment_method. The client validates
+// first, so hitting these means the two validators disagree (or the client
+// was bypassed) — keep the copy generic but actionable.
+function rpcErrorMessage(raw: string | undefined): string {
+  switch (raw) {
+    case "invalid_account_number":
+      return "Номер не проходит проверку. Проверьте цифры.";
+    case "invalid_holder_name":
+      return "Укажите имя получателя.";
+    case "invalid_bank_code":
+    case "invalid_bank_name":
+      return "Выберите банк из списка или укажите название.";
+    default:
+      return SAVE_FAILED;
+  }
+}
 
 // "other" = «Другой банк» escape hatch (free-text bank name, bank_code null).
 type BankSelection = string | "other" | null;
 
 type Props = {
-  userId: string;
   currency: Currency;
   initial?: PaymentMethod | null;
   onSaved: (pm: PaymentMethod) => void;
@@ -21,7 +38,6 @@ type Props = {
 };
 
 export function PaymentMethodForm({
-  userId,
   currency,
   initial,
   onSaved,
@@ -41,6 +57,7 @@ export function PaymentMethodForm({
   const [accountNumber, setAccountNumber] = useState(
     initial?.account_number ?? "",
   );
+  const [accountError, setAccountError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -51,7 +68,6 @@ export function PaymentMethodForm({
   const isOther = bankSel === "other";
 
   const customBankTrimmed = customBank.trim();
-  const bankName = selectedBank?.label ?? customBankTrimmed;
   const holder = holderName.trim();
   const account = accountNumber.trim();
   const bankChosen =
@@ -67,48 +83,42 @@ export function PaymentMethodForm({
 
   function pickBank(sel: BankSelection) {
     setBankSel(sel);
+    setAccountError(null);
     setPickerOpen(false);
   }
 
   async function save() {
     if (!canSubmit) return;
+
+    // Structural per-rail check (Luhn / IBAN mod-97 / KRW shapes); the server
+    // mirrors it in upsert_payment_method, this is the friendly first line.
+    const numberError = accountNumberError(
+      currency,
+      selectedBank?.code ?? null,
+      account,
+    );
+    if (numberError) {
+      setAccountError(numberError);
+      return;
+    }
+
     setSaving(true);
     setError(null);
 
-    // Resolve the existing default row for this currency, if any.
-    let existingId = initial?.id ?? null;
-    if (!existingId) {
-      const { data: existing } = await supabase
-        .from("payment_methods")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("currency", currency)
-        .eq("is_default", true)
-        .maybeSingle();
-      existingId = (existing as { id: string } | null)?.id ?? null;
-    }
-
-    const fields = {
-      bank_name: bankName,
-      bank_code: selectedBank?.code ?? null,
-      holder_name: holder,
-      account_number: account,
-    };
-
-    const query = existingId
-      ? supabase.from("payment_methods").update(fields).eq("id", existingId)
-      : supabase.from("payment_methods").insert({
-          user_id: userId,
-          currency,
-          is_default: true,
-          ...fields,
-        });
-
-    const { data, error: saveError } = await query.select().single();
+    const { data, error: saveError } = await supabase.rpc(
+      "upsert_payment_method",
+      {
+        p_currency: currency,
+        p_bank_code: selectedBank?.code ?? null,
+        p_bank_name: isOther ? customBankTrimmed : null,
+        p_holder_name: holder,
+        p_account_number: account,
+      },
+    );
     setSaving(false);
 
     if (saveError || !data) {
-      setError(SAVE_FAILED);
+      setError(rpcErrorMessage(saveError?.message));
       return;
     }
     onSaved(data as PaymentMethod);
@@ -177,15 +187,20 @@ export function PaymentMethodForm({
         <input
           id="oz-pm-account"
           type="text"
-          className="oz-input font-mono"
+          className={`oz-input font-mono${accountError ? " is-error" : ""}`}
           inputMode="numeric"
           autoComplete="off"
           placeholder={currency === "KZT" ? "4400 4302 1234 5678" : "1000-0000-0000"}
           value={accountNumber}
           maxLength={40}
-          onChange={(e) => setAccountNumber(e.target.value)}
+          onChange={(e) => {
+            setAccountNumber(e.target.value);
+            setAccountError(null);
+          }}
           disabled={saving}
+          aria-invalid={accountError !== null}
         />
+        {accountError && <p className="oz-field-error">{accountError}</p>}
       </div>
 
       {error && <p className="oz-sheet__error">{error}</p>}

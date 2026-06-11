@@ -245,7 +245,6 @@ export function ListingDetailClient({
           />
           <PaymentMethodGateSheet
             open={paymentGateOpen}
-            userId={currentUserId}
             currency={directionTo(listing.direction as Direction)}
             onReady={() => {
               setPaymentGateOpen(false);

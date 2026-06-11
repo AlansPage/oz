@@ -219,7 +219,6 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
 
       <PaymentMethodGateSheet
         open={paymentGateOpen}
-        userId={userId}
         currency={to}
         onReady={() => {
           setPaymentGateOpen(false);

@@ -83,7 +83,6 @@ export function PaymentMethodsSection({ userId }: Props) {
         <p className="oz-pm__muted">Загрузка…</p>
       ) : editing ? (
         <PaymentMethodForm
-          userId={userId}
           currency={active}
           initial={current ?? null}
           onSaved={handleSaved}

@@ -8,7 +8,6 @@ import { PaymentMethodForm } from "@/components/profile/PaymentMethodForm";
 
 type Props = {
   open: boolean;
-  userId: string;
   currency: Currency;
   onReady: () => void;
   onCancel: () => void;
@@ -16,7 +15,6 @@ type Props = {
 
 export function PaymentMethodGateSheet({
   open,
-  userId,
   currency,
   onReady,
   onCancel,
@@ -50,7 +48,6 @@ export function PaymentMethodGateSheet({
         </p>
 
         <PaymentMethodForm
-          userId={userId}
           currency={currency}
           onSaved={onReady}
           onCancel={onCancel}

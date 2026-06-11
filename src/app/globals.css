@@ -1386,6 +1386,13 @@ button {
   cursor: pointer;
 }
 
+.oz-field-error {
+  font-size: 12px;
+  color: var(--error);
+  line-height: 1.4;
+  margin-top: 6px;
+}
+
 .oz-bankpicker--placeholder {
   color: var(--text-mute);
 }
