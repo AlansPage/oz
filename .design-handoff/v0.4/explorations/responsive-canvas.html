@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>öz — 3 screens · mobile-web + desktop</title>
+  <link rel="icon" href="../assets/oz-icon.svg" />
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <link rel="stylesheet" href="../ui_kits/oz-mobile/components.css" />
+  <link rel="stylesheet" href="transaction-confirm.css" />
+  <link rel="stylesheet" href="responsive-web.css" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Canvas + primitives -->
+  <script type="text/babel" data-presets="react" src="design-canvas.jsx"></script>
+  <script type="text/babel" data-presets="react" src="WebFrames.jsx"></script>
+
+  <!-- Shared components used by the finalized screens -->
+  <script type="text/babel" data-presets="react" src="KaspiReceiptMock.jsx"></script>
+  <script type="text/babel" data-presets="react" src="SlideToConfirm.jsx"></script>
+  <script type="text/babel" data-presets="react" src="PressAndHold.jsx"></script>
+  <script type="text/babel" data-presets="react" src="CopyRow.jsx"></script>
+  <script type="text/babel" data-presets="react" src="SubmittedReceiptCard.jsx"></script>
+  <script type="text/babel" data-presets="react" src="WaitingPulse.jsx"></script>
+
+  <!-- The finalized screen components -->
+  <script type="text/babel" data-presets="react" src="ApproachC2.jsx"></script>
+  <script type="text/babel" data-presets="react" src="SendApproachC.jsx"></script>
+  <script type="text/babel" data-presets="react" src="WaitApproachA.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    function App() {
+      // Each row pairs a 390-wide mobile artboard with a 1280-wide desktop
+      // artboard. Heights are matched per screen so the row reads as one
+      // surface at two viewports.
+      const SCREEN1_H = 904;
+      const SCREEN2_H = 996;
+      const SCREEN3_H = 630;
+
+      return (
+        <DesignCanvas>
+          <DCSection
+            id="r1-confirm"
+            title="1 · Counterparty review · sender_paid (counterparty view)"
+            subtitle="The finalized C2. Mobile-web at 390px · Desktop at 1280px with 480px column centered."
+          >
+            <DCArtboard id="r1m" label="Mobile · 390px" width={390} height={SCREEN1_H}
+                         data-screen-label="01 Confirm mobile">
+              <WebMobile><ApproachC2 /></WebMobile>
+            </DCArtboard>
+            <DCArtboard id="r1d" label="Desktop · 1280px (480 col)" width={1280} height={SCREEN1_H}
+                         data-screen-label="01 Confirm desktop">
+              <WebDesktop bg="var(--primary-soft)"><ApproachC2 /></WebDesktop>
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection
+            id="r2-send"
+            title="2 · Bank transfer details · pending_sender_payment (sender view)"
+            subtitle="Same component, edge-to-edge mobile vs. centered 480 column on desktop."
+          >
+            <DCArtboard id="r2m" label="Mobile · 390px" width={390} height={SCREEN2_H}
+                         data-screen-label="02 Send mobile">
+              <WebMobile><SendApproachC /></WebMobile>
+            </DCArtboard>
+            <DCArtboard id="r2d" label="Desktop · 1280px (480 col)" width={1280} height={SCREEN2_H}
+                         data-screen-label="02 Send desktop">
+              <WebDesktop bg="var(--primary-soft)"><SendApproachC /></WebDesktop>
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection
+            id="r3-wait"
+            title="3 · Waiting for confirmation · sender_paid (sender view)"
+            subtitle="The shortest of the three — proves the design doesn't stretch awkwardly when the screen has less content."
+          >
+            <DCArtboard id="r3m" label="Mobile · 390px" width={390} height={SCREEN3_H}
+                         data-screen-label="03 Wait mobile">
+              <WebMobile><WaitApproachA /></WebMobile>
+            </DCArtboard>
+            <DCArtboard id="r3d" label="Desktop · 1280px (480 col)" width={1280} height={SCREEN3_H}
+                         data-screen-label="03 Wait desktop">
+              <WebDesktop bg="var(--primary-soft)"><WaitApproachA /></WebDesktop>
+            </DCArtboard>
+          </DCSection>
+        </DesignCanvas>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>

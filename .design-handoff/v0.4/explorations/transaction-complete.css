@@ -1,0 +1,319 @@
+/* öz transaction complete + rating screen — three approaches.
+   Lives on the warm canvas (var(--bg)). Reuses tx-card, tx-money tokens. */
+
+.tc-stage {
+  background: var(--bg);
+  min-height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Top bar (back arrow + transaction id) ──────────────────────────── */
+.tc-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px 8px;
+}
+.tc-topbar__back {
+  background: transparent;
+  border: 0;
+  padding: 4px 4px 4px 0;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.tc-topbar__id {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* ── Success check ──────────────────────────────────────────────────── */
+.tc-success {
+  display: grid;
+  place-items: center;
+  margin: 0 auto;
+}
+.tc-success--lg { width: 96px; height: 96px; }
+.tc-success--md { width: 64px; height: 64px; }
+.tc-success--sm { width: 44px; height: 44px; }
+
+.tc-success__ring {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  display: grid;
+  place-items: center;
+  animation: tc-success-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.tc-success__tick {
+  display: block;
+  border-left: 3px solid var(--primary);
+  border-bottom: 3px solid var(--primary);
+  transform: rotate(-45deg) translate(2px, -2px);
+}
+.tc-success--lg .tc-success__tick { width: 30px; height: 16px; }
+.tc-success--md .tc-success__tick { width: 22px; height: 12px; border-width: 2.5px; }
+.tc-success--sm .tc-success__tick { width: 16px; height: 9px; border-width: 2px; }
+
+@keyframes tc-success-in {
+  from { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.05); }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ── Heading + subline (centered) ──────────────────────────────────── */
+.tc-heading {
+  text-align: center;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  margin: 16px 0 0;
+}
+.tc-heading--md { font-size: 20px; margin-top: 12px; }
+.tc-subline {
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 8px 24px 0;
+}
+.tc-subline .mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ── Transaction summary card ──────────────────────────────────────── */
+.tc-summary {
+  margin: 0 16px;
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.tc-summary__row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+.tc-summary__row:first-child { border-top: 0; }
+.tc-summary__label {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.tc-summary__value {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+  word-break: break-all;
+}
+.tc-summary__value--mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.tc-summary__value--lg {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.tc-summary__row--hero {
+  background: var(--surface-2);
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.tc-summary__row--hero .tc-summary__value {
+  font-size: 18px;
+  font-weight: 700;
+}
+.tc-summary__row--receive .tc-summary__value {
+  color: var(--primary-ink);
+}
+
+/* Compact-summary variant — used in approach A where the card is small */
+.tc-summary--compact .tc-summary__row {
+  padding: 10px 16px;
+}
+
+/* ── Rating card ───────────────────────────────────────────────────── */
+.tc-rating {
+  margin: 0 16px;
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+}
+.tc-rating__prompt {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-2);
+  margin: 0;
+  line-height: 1.4;
+}
+.tc-rating__prompt strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.tc-rating__prompt--lg {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.tc-stars {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  user-select: none;
+}
+.tc-star {
+  background: transparent;
+  border: 0;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--border-strong);
+  transition: color 0.12s, transform 0.08s;
+  line-height: 0;
+}
+.tc-star:hover,
+.tc-star.is-hovered { transform: translateY(-1px); }
+.tc-star.is-filled { color: var(--gold); }
+.tc-star.is-preview { color: rgba(185, 138, 58, 0.4); }
+.tc-star svg { display: block; }
+
+.tc-stars--lg .tc-star svg { width: 40px; height: 40px; }
+.tc-stars--md .tc-star svg { width: 32px; height: 32px; }
+.tc-stars--sm .tc-star svg { width: 24px; height: 24px; }
+
+.tc-rating__chosen-label {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-3);
+  font-weight: 500;
+  min-height: 18px;
+}
+.tc-rating__chosen-label.is-on { color: var(--gold); font-weight: 600; }
+
+.tc-comment {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  resize: none;
+  min-height: 64px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.tc-comment:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+.tc-comment::placeholder { color: var(--text-mute); }
+
+/* ── Receipt reveal (gated) ────────────────────────────────────────── */
+.tc-receipt-reveal {
+  align-self: center;
+  background: transparent;
+  border: 0;
+  padding: 8px 4px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tc-receipt-reveal:hover { color: var(--text); }
+.tc-receipt-reveal__lock {
+  width: 12px; height: 12px;
+  display: inline-block;
+}
+
+/* ── Action bar ────────────────────────────────────────────────────── */
+.tc-actions {
+  padding: 8px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Collapsible details (BC merged) ───────────────────────────────── */
+/* Stripe-style "Show details" disclosure: small button row that toggles
+   open the full transaction summary. Closed by default — the rating is
+   the hero, the record is one tap away when wanted. */
+.tc-details {
+  margin: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.tc-details__toggle {
+  background: transparent;
+  border: 0;
+  padding: 12px 4px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  align-self: center;
+}
+.tc-details__toggle:hover { color: var(--text); }
+.tc-details__caret {
+  display: inline-block;
+  width: 0; height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  transition: transform 0.15s;
+}
+.tc-details__toggle[aria-expanded="true"] .tc-details__caret {
+  transform: rotate(180deg);
+}
+.tc-details__body {
+  overflow: hidden;
+  transition: max-height 0.25s ease-out;
+}
+.tc-details__body.is-collapsed { max-height: 0; }
+.tc-details__body.is-open { max-height: 600px; padding-bottom: 8px; }
+.tc-actions__primary {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: var(--r-md);
+  padding: 16px 20px;
+  background: var(--primary);
+  color: #fff;
+  border: 0;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s, transform 0.05s;
+}
+.tc-actions__primary:hover { background: var(--primary-hover); }
+.tc-actions__primary:active { transform: translateY(1px); }

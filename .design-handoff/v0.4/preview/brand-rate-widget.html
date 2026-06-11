@@ -1,0 +1,43 @@
+<!-- @dsCard group="Brand" -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="_card.css" />
+<link rel="stylesheet" href="../ui_kits/oz-mobile/components.css" />
+<title>Rate widget v2 — calm status surface</title>
+</head>
+<body>
+<div class="ds-card" style="min-height: 220px; padding: 28px;">
+  <div class="ds-label">Rate widget v2 — the aesthetic anchor</div>
+  <div style="display:flex; justify-content:center;">
+    <div class="oz-rate" aria-label="1 тенге = 3,19 вон">
+      <div class="oz-rate__row">
+        <span class="oz-rate__icons">
+          <span class="oz-rate__sym">₸</span>
+          <svg class="oz-rate__tri" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M6 4.5 L15 10 L6 15.5 Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" /></svg>
+          <span class="oz-rate__sym">₩</span>
+        </span>
+        <span class="oz-rate__num"><span class="oz-rate__num-inner">3,19</span></span>
+        <svg class="oz-rate__spark" viewBox="0 0 120 44" role="presentation" aria-hidden>
+          <defs>
+            <linearGradient id="ozrf2" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="120" y2="0">
+              <stop offset="0" stop-color="#fff" stop-opacity="0" />
+              <stop offset="0.28" stop-color="#fff" stop-opacity="1" />
+            </linearGradient>
+            <mask id="ozrfm2"><rect x="0" y="0" width="120" height="44" fill="url(#ozrf2)" /></mask>
+          </defs>
+          <g mask="url(#ozrfm2)">
+            <path class="oz-rate__spark-path" d="M6,22 L20,18 L34,24 L48,16 L62,20 L76,12 L90,16 L104,10 L114,8" pathLength="1" />
+          </g>
+          <circle class="oz-rate__spark-dot" cx="114" cy="8" r="4" />
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="ds-hint" style="text-align:center;">
+    primary @ 8% tint · 24px radius · 1px border @ 20% · hollow triangle · sparkline draws over 800ms
+  </div>
+</div>
+</body>
+</html>

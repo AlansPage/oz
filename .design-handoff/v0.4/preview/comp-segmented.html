@@ -1,0 +1,28 @@
+<!-- @dsCard group="Components" -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="_card.css" />
+<link rel="stylesheet" href="../ui_kits/oz-mobile/components.css" />
+<title>Segmented control + sort select</title>
+</head>
+<body>
+<div class="ds-card" style="min-height: 170px;">
+  <div class="ds-label">Segmented control — direction filter · sort select</div>
+  <div style="display:flex; gap: 16px; align-items:center; flex-wrap:wrap;">
+    <div class="oz-segmented" role="tablist">
+      <button class="oz-segmented__btn oz-segmented__btn--active">Все</button>
+      <button class="oz-segmented__btn">₸ → ₩</button>
+      <button class="oz-segmented__btn">₩ → ₸</button>
+    </div>
+    <select class="oz-sortselect">
+      <option>Сначала новые</option>
+      <option>По курсу</option>
+      <option>Активные</option>
+    </select>
+  </div>
+  <div class="ds-hint">.oz-segmented (pill track over surface-sunken) · .oz-sortselect</div>
+</div>
+</body>
+</html>

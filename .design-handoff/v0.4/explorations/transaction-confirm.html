@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>öz — Transaction confirm screen · 3 approaches</title>
+  <link rel="icon" href="../assets/oz-icon.svg" />
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <link rel="stylesheet" href="../ui_kits/oz-mobile/components.css" />
+  <link rel="stylesheet" href="transaction-confirm.css" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react" src="design-canvas.jsx"></script>
+  <script type="text/babel" data-presets="react" src="KaspiReceiptMock.jsx"></script>
+  <script type="text/babel" data-presets="react" src="SlideToConfirm.jsx"></script>
+  <script type="text/babel" data-presets="react" src="ApproachA.jsx"></script>
+  <script type="text/babel" data-presets="react" src="ApproachB.jsx"></script>
+  <script type="text/babel" data-presets="react" src="ApproachC.jsx"></script>
+  <script type="text/babel" data-presets="react" src="ApproachC2.jsx"></script>
+  <script type="text/babel" data-presets="react" src="ApproachC3.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    function App() {
+      return (
+        <DesignCanvas>
+          <DCSection
+            id="tx-confirm"
+            title="öz — Transaction confirm (counterparty view, sender_paid)"
+            subtitle="One nailed-it design + two probes on the receipt-size axis. Click an artboard to focus."
+          >
+            <DCArtboard id="a" label="A · Nailed — receipt at card scale" width={390} height={920} data-screen-label="A Nailed">
+              <ApproachA />
+            </DCArtboard>
+            <DCArtboard id="b" label="B · Tighter — receipt as auxiliary evidence" width={390} height={820} data-screen-label="B Tighter">
+              <ApproachB />
+            </DCArtboard>
+            <DCArtboard id="c" label="C · Receipt-as-hero — pinned action bar" width={390} height={920} data-screen-label="C Receipt-first">
+              <ApproachC />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection
+            id="tx-confirm-c-iterations"
+            title="Iterating on C — the chosen direction"
+            subtitle="C2 gates the action behind verification. C3 adds calm patience for slow transfers."
+          >
+            <DCArtboard id="c2" label="C2 · Open-Kaspi prompt + checkbox + slide-to-confirm" width={390} height={1020} data-screen-label="C2 Verify gate">
+              <ApproachC2 />
+            </DCArtboard>
+            <DCArtboard id="c3" label="C3 · Time-since-sent + patience callout" width={390} height={980} data-screen-label="C3 Patience">
+              <ApproachC3 />
+            </DCArtboard>
+          </DCSection>
+        </DesignCanvas>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>

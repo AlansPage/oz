@@ -1,0 +1,107 @@
+/* Layer specific to the responsive-web reframe canvas.
+   The transaction screens are mobile-first responsive web, not native app.
+   Strip phone frame / status bar; let the warm canvas extend edge-to-edge.
+   On desktop, content sits at 480 max-width centered on the same canvas. */
+
+/* Container used for the desktop column.
+   1280 wide, full --bg, with a faint left/right hairline at the 480 column
+   edges to suggest the breathing room without redesigning anything. */
+.web-desktop {
+  width: 100%;
+  min-height: 100%;
+  background: var(--bg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.web-desktop__col {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Faint guides at the column edges — barely-there beige hairlines so the
+   user can see the 480px constraint without it dominating. */
+.web-desktop__col::before,
+.web-desktop__col::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: var(--border);
+  opacity: 0.5;
+}
+.web-desktop__col::before { left: 0; }
+.web-desktop__col::after  { right: 0; }
+
+/* Browser-ish address bar across the top of desktop frames so the user
+   reads them as "this is rendered in Chrome", not a custom app shell.
+   Very minimal — three dots, a URL, that's it. */
+.web-chrome {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.web-chrome__lights {
+  display: inline-flex;
+  gap: 6px;
+}
+.web-chrome__lights span {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+}
+.web-chrome__url {
+  flex: 1;
+  background: var(--surface);
+  border-radius: var(--r-full);
+  padding: 4px 12px;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  max-width: 360px;
+  text-align: center;
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+
+/* Mobile frame: lightweight chrome — just a slim URL strip across the top,
+   no status bar, no notch, no home indicator. The artboard is a real
+   browser viewport. */
+.web-mobile {
+  width: 100%;
+  min-height: 100%;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+.web-mobile__chrome {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+/* The artboard caption rendered at the bottom of each card */
+.web-caption {
+  font-size: 11px;
+  color: var(--text-3);
+  text-align: center;
+  margin-top: 0;
+  font-family: var(--font-mono);
+}

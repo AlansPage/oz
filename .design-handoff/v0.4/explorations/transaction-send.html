@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>öz — Send screen · 3 approaches</title>
+  <link rel="icon" href="../assets/oz-icon.svg" />
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <link rel="stylesheet" href="../ui_kits/oz-mobile/components.css" />
+  <link rel="stylesheet" href="transaction-confirm.css" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react" src="design-canvas.jsx"></script>
+  <script type="text/babel" data-presets="react" src="PressAndHold.jsx"></script>
+  <script type="text/babel" data-presets="react" src="CopyRow.jsx"></script>
+  <script type="text/babel" data-presets="react" src="SendApproachA.jsx"></script>
+  <script type="text/babel" data-presets="react" src="SendApproachB.jsx"></script>
+  <script type="text/babel" data-presets="react" src="SendApproachC.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    function App() {
+      return (
+        <DesignCanvas>
+          <DCSection
+            id="tx-send"
+            title="öz — Send screen (sender view, pending_sender_payment)"
+            subtitle="Three angles on what dominates: bank details, the timer, or the trust resume. Click an artboard to focus."
+          >
+            <DCArtboard id="sa" label="A · Calm — bank details dominate" width={390} height={945} data-screen-label="A Calm">
+              <SendApproachA />
+            </DCArtboard>
+            <DCArtboard id="sb" label="B · Urgency — animated timer is the hero" width={390} height={975} data-screen-label="B Urgency">
+              <SendApproachB />
+            </DCArtboard>
+            <DCArtboard id="sc" label="C · Trust resume — large counterparty card up top" width={390} height={1000} data-screen-label="C Trust">
+              <SendApproachC />
+            </DCArtboard>
+          </DCSection>
+        </DesignCanvas>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>

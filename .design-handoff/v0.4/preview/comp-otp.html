@@ -1,0 +1,24 @@
+<!-- @dsCard group="Components" -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="_card.css" />
+<link rel="stylesheet" href="../ui_kits/oz-mobile/components.css" />
+<title>OTP boxes</title>
+</head>
+<body>
+<div class="ds-card" style="min-height: 170px;">
+  <div class="ds-label">OTP — 6 digits, JetBrains Mono, focus ring on the active box</div>
+  <div class="oz-otp-row" style="justify-content:flex-start;">
+    <input class="oz-otp-box" value="4" readonly />
+    <input class="oz-otp-box" value="2" readonly />
+    <input class="oz-otp-box" value="9" readonly />
+    <input class="oz-otp-box" value="1" readonly />
+    <input class="oz-otp-box" autofocus />
+    <input class="oz-otp-box" />
+  </div>
+  <div class="ds-hint">44 × 52 · 1.5px border · primary focus ring · auto-advance + paste</div>
+</div>
+</body>
+</html>

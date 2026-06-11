@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>öz — Transaction complete + rating · 3 approaches</title>
+  <link rel="icon" href="../assets/oz-icon.svg" />
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <link rel="stylesheet" href="../ui_kits/oz-mobile/components.css" />
+  <link rel="stylesheet" href="transaction-confirm.css" />
+  <link rel="stylesheet" href="responsive-web.css" />
+  <link rel="stylesheet" href="transaction-complete.css" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react" src="design-canvas.jsx"></script>
+  <script type="text/babel" data-presets="react" src="WebFrames.jsx"></script>
+
+  <script type="text/babel" data-presets="react" src="CompleteParts.jsx"></script>
+  <script type="text/babel" data-presets="react" src="CompleteApproachA.jsx"></script>
+  <script type="text/babel" data-presets="react" src="CompleteApproachB.jsx"></script>
+  <script type="text/babel" data-presets="react" src="CompleteApproachC.jsx"></script>
+  <script type="text/babel" data-presets="react" src="CompleteApproachBC.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    function App() {
+      const H_A = 770;
+      const H_B = 700;
+      const H_C = 855;
+      const H_BC = 745;
+
+      return (
+        <DesignCanvas>
+          <DCSection
+            id="tc-final"
+            title="BC · Merged — rating hero + collapsible record"
+            subtitle="The resolved direction: B's rating capture stays the hero; C's full transaction record lives behind a Stripe-style 'Подробности сделки' disclosure."
+          >
+            <DCArtboard id="tc-bcm" label="Mobile · 390px" width={390} height={H_BC}
+                         data-screen-label="BC Merged · mobile">
+              <WebMobile><CompleteApproachBC /></WebMobile>
+            </DCArtboard>
+            <DCArtboard id="tc-bcd" label="Desktop · 1280px (480 col)" width={1280} height={H_BC}
+                         data-screen-label="BC Merged · desktop">
+              <WebDesktop bg="var(--bg)"><CompleteApproachBC /></WebDesktop>
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection
+            id="tc-a"
+            title="A · Celebration-forward — calm success leads"
+            subtitle="Big check + heading dominate. Rating sits below as the inviting next step."
+          >
+            <DCArtboard id="tc-am" label="Mobile · 390px" width={390} height={H_A}
+                         data-screen-label="A Celebration · mobile">
+              <WebMobile><CompleteApproachA /></WebMobile>
+            </DCArtboard>
+            <DCArtboard id="tc-ad" label="Desktop · 1280px (480 col)" width={1280} height={H_A}
+                         data-screen-label="A Celebration · desktop">
+              <WebDesktop bg="var(--bg)"><CompleteApproachA /></WebDesktop>
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection
+            id="tc-b"
+            title="B · Rating-forward — capture is the goal"
+            subtitle="Success is brief. The rating card is the visual center; skip is still available."
+          >
+            <DCArtboard id="tc-bm" label="Mobile · 390px" width={390} height={H_B}
+                         data-screen-label="B Rating · mobile">
+              <WebMobile><CompleteApproachB /></WebMobile>
+            </DCArtboard>
+            <DCArtboard id="tc-bd" label="Desktop · 1280px (480 col)" width={1280} height={H_B}
+                         data-screen-label="B Rating · desktop">
+              <WebDesktop bg="var(--bg)"><CompleteApproachB /></WebDesktop>
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection
+            id="tc-c"
+            title="C · Receipt-forward — the permanent record is the hero"
+            subtitle="Full summary card dominates. Rating closes the loop below."
+          >
+            <DCArtboard id="tc-cm" label="Mobile · 390px" width={390} height={H_C}
+                         data-screen-label="C Record · mobile">
+              <WebMobile><CompleteApproachC /></WebMobile>
+            </DCArtboard>
+            <DCArtboard id="tc-cd" label="Desktop · 1280px (480 col)" width={1280} height={H_C}
+                         data-screen-label="C Record · desktop">
+              <WebDesktop bg="var(--bg)"><CompleteApproachC /></WebDesktop>
+            </DCArtboard>
+          </DCSection>
+        </DesignCanvas>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>

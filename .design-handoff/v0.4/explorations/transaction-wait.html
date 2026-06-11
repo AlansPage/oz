@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>öz — Wait screen · 3 approaches</title>
+  <link rel="icon" href="../assets/oz-icon.svg" />
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <link rel="stylesheet" href="../ui_kits/oz-mobile/components.css" />
+  <link rel="stylesheet" href="transaction-confirm.css" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react" src="design-canvas.jsx"></script>
+  <script type="text/babel" data-presets="react" src="SubmittedReceiptCard.jsx"></script>
+  <script type="text/babel" data-presets="react" src="WaitingPulse.jsx"></script>
+  <script type="text/babel" data-presets="react" src="ProgressStepper.jsx"></script>
+  <script type="text/babel" data-presets="react" src="WaitApproachA.jsx"></script>
+  <script type="text/babel" data-presets="react" src="WaitApproachB.jsx"></script>
+  <script type="text/babel" data-presets="react" src="WaitApproachC.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    function App() {
+      return (
+        <DesignCanvas>
+          <DCSection
+            id="tx-wait"
+            title="öz — Waiting screen (sender view, sender_paid)"
+            subtitle="Three angles on the calm-patience state. Click an artboard to focus."
+          >
+            <DCArtboard id="wa" label="A · Receipt-as-captured-evidence" width={390} height={630} data-screen-label="A Receipt-hero">
+              <WaitApproachA />
+            </DCArtboard>
+            <DCArtboard id="wb" label="B · Progress stepper as hero" width={390} height={765} data-screen-label="B Stepper">
+              <WaitApproachB />
+            </DCArtboard>
+            <DCArtboard id="wc" label="C · Counterparty live-status hero" width={390} height={620} data-screen-label="C Counterparty">
+              <WaitApproachC />
+            </DCArtboard>
+          </DCSection>
+        </DesignCanvas>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>

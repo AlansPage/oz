@@ -1,0 +1,146 @@
+/* Mobile-web phone frame used by ui_kits/oz-mobile/index.html.
+   Not a real iOS/Android bezel — öz is a mobile-web app, so the frame is
+   web-chrome (status bar + 100dvh viewport) sized like an iPhone 14 viewport. */
+
+html, body {
+  margin: 0;
+  background: #1f1d1a;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background:
+    radial-gradient(1200px 600px at 50% 0%, #2a2723, transparent 60%),
+    radial-gradient(900px 700px at 50% 100%, #1c1a17, #14120f);
+  background-attachment: fixed;
+}
+
+.oz-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+}
+
+.oz-stage__title {
+  color: rgba(245, 240, 232, 0.72);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.oz-stage__title .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 12px var(--primary);
+}
+
+.oz-stage__hint {
+  color: rgba(245, 240, 232, 0.4);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+/* Phone — a soft rounded rectangle that holds the page */
+.oz-device {
+  width: 390px;
+  height: 800px;
+  max-height: calc(100vh - 120px);
+  background: var(--bg);
+  border-radius: 48px;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 0 0 10px #0a0907,
+    0 0 0 11px rgba(245, 240, 232, 0.06),
+    0 40px 80px rgba(0, 0, 0, 0.5),
+    0 8px 24px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+}
+
+.oz-device__statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 32px 4px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.oz-device__statusbar::after {
+  /* dynamic-island-ish bar */
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 26px;
+  border-radius: 16px;
+  background: #0a0907;
+}
+.oz-device__time { z-index: 2; }
+.oz-device__signal {
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: -0.02em;
+}
+
+.oz-device__viewport {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+  background: var(--bg);
+}
+
+/* Override fixed positioning of FAB / sheet to be local to the phone */
+.oz-device__viewport .oz-fab {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
+.oz-device__viewport .oz-sheet-scrim,
+.oz-device__viewport .oz-sheet {
+  position: absolute;
+}
+.oz-device__viewport .oz-sheet {
+  border-radius: 24px 24px 0 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  top: auto !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  transform: none !important;
+  animation: oz-sheet-up 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+@keyframes ozPulseOnce {
+  0%   { background: var(--primary-soft); }
+  100% { background: transparent; }
+}
+
+/* Hide scrollbars inside the phone for cleanliness */
+.oz-device__viewport::-webkit-scrollbar { display: none; }
+.oz-device__viewport { scrollbar-width: none; }

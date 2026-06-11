@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>öz — Design System v0.4</title>
+  <link rel="icon" href="assets/oz-icon.svg" />
+  <link rel="stylesheet" href="colors_and_type.css" />
+  <link rel="stylesheet" href="ui_kits/oz-mobile/components.css" />
+  <link rel="stylesheet" href="explorations/transaction-confirm.css" />
+  <link rel="stylesheet" href="explorations/transaction-complete.css" />
+  <link rel="stylesheet" href="explorations/responsive-web.css" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <style>
+    /* ── Doc shell — sits OUTSIDE the design system; uses öz tokens but
+       structural classes are doc-specific (.ds-* prefix). ───────────── */
+
+    html, body { margin: 0; background: var(--bg); color: var(--text);
+      font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+
+    .ds-shell {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      max-width: 1320px;
+      margin: 0 auto;
+      gap: 0;
+    }
+
+    /* ── Sidebar / TOC ─────────────────────────────────────────────── */
+    .ds-toc {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 32px 24px;
+      border-right: 1px solid var(--border);
+      background: var(--bg);
+      font-size: 13px;
+    }
+    .ds-toc__brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .ds-toc__mark {
+      width: 36px; height: 36px;
+      border-radius: 9px;
+      background: var(--primary);
+      color: var(--bg);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 24px;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+    .ds-toc__wordmark {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .ds-toc__version {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border-radius: var(--r-full);
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      margin: 8px 0 24px;
+    }
+    .ds-toc__group {
+      margin-top: 22px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+    .ds-toc__group:first-of-type { margin-top: 0; }
+    .ds-toc__link {
+      display: block;
+      padding: 5px 0;
+      color: var(--text-2);
+      text-decoration: none;
+      line-height: 1.35;
+      font-weight: 500;
+    }
+    .ds-toc__link:hover { color: var(--text); }
+
+    /* ── Main column ───────────────────────────────────────────────── */
+    .ds-main {
+      padding: 40px 48px 120px;
+      min-width: 0;
+    }
+
+    .ds-hero {
+      padding: 24px 0 36px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+    .ds-hero h1 {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 12px;
+      line-height: 1.1;
+    }
+    .ds-hero__lede {
+      font-size: 17px;
+      line-height: 1.55;
+      color: var(--text-2);
+      max-width: 60ch;
+      margin: 0;
+    }
+    .ds-hero__lede strong { color: var(--text); font-weight: 600; }
+    .ds-hero__meta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    /* ── Sections ──────────────────────────────────────────────────── */
+    .ds-section {
+      padding: 24px 0 56px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .ds-section:last-of-type { border-bottom: 0; margin-bottom: 0; }
+    .ds-section__eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin: 0 0 8px;
+    }
+    .ds-section h2 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      margin: 0 0 8px;
+      line-height: 1.15;
+    }
+    .ds-section__intro {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-2);
+      max-width: 70ch;
+      margin: 0 0 24px;
+    }
+    .ds-section__intro strong { color: var(--text); font-weight: 600; }
+
+    .ds-sub {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 28px 0 10px;
+      color: var(--text);
+    }
+
+    .ds-prose {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--text-2);
+      max-width: 70ch;
+    }
+    .ds-prose p { margin: 0 0 12px; }
+    .ds-prose strong { color: var(--text); font-weight: 600; }
+    .ds-prose code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--surface-2);
+      color: var(--text);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    .ds-prose ul {
+      margin: 0 0 16px;
+      padding-left: 20px;
+    }
+    .ds-prose li { margin-bottom: 4px; }
+    .ds-prose .note {
+      background: var(--surface-2);
+      border-left: 3px solid var(--primary);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .ds-prose .note strong { color: var(--primary-ink); }
+
+    /* ── Demo blocks ───────────────────────────────────────────────── */
+    .ds-demo {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 32px;
+      margin: 16px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-card);
+    }
+    .ds-demo--canvas { background: var(--bg); }
+    .ds-demo--primary-soft { background: var(--primary-soft); }
+    .ds-demo--align-start { align-items: flex-start; }
+    .ds-demo--row {
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .ds-demo__caption {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    /* Code chip showing class name / file path */
+    .ds-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--surface-2);
+      color: var(--text-2);
+      padding: 4px 10px;
+      border-radius: var(--r-full);
+      border: 1px solid var(--border);
+    }
+
+    /* ── Token grids ───────────────────────────────────────────────── */
+    .ds-tokens {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .ds-token {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .ds-token__swatch {
+      width: 100%;
+      height: 64px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .ds-token__name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .ds-token__hex {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-3);
+    }
+
+    .ds-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .ds-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    /* ── Anatomy block — used for components ──────────────────────── */
+    .ds-anatomy {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+      margin: 20px 0 8px;
+    }
+    .ds-anatomy__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 14px;
+    }
+    .ds-anatomy__list li {
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 12px;
+    }
+    .ds-anatomy__list li:first-child { border-top: 0; }
+    .ds-anatomy__list .num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .ds-anatomy__list .what { color: var(--text); font-weight: 500; }
+    .ds-anatomy__list .why  { color: var(--text-2); font-size: 13px; line-height: 1.5; }
+
+    /* ── Changelog ─────────────────────────────────────────────────── */
+    .ds-changelog {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .ds-changelog__entry {
+      padding: 20px 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+    }
+    .ds-changelog__head {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .ds-changelog__ver {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .ds-changelog__date {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .ds-changelog__title {
+      font-size: 14px;
+      color: var(--text-2);
+      font-weight: 500;
+    }
+    .ds-changelog ul { font-size: 14px; }
+
+    /* ── Screen scaffolds ─────────────────────────────────────────── */
+    .ds-screen-frame {
+      width: 390px;
+      max-width: 100%;
+      min-height: 720px;
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-pop);
+      border: 1px solid var(--border);
+    }
+
+    /* When showing a screen on a primary-soft demo, hide the WebFrames */
+    .ds-screen-frame .web-mobile { background: transparent; }
+
+    .ds-screen-row {
+      display: grid;
+      grid-template-columns: 390px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    .ds-screen-row__notes {
+      padding-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="ds-shell">
+
+    <!-- ═══ TOC ═══════════════════════════════════════════════════════ -->
+    <nav class="ds-toc">
+      <div class="ds-toc__brand">
+        <div class="ds-toc__mark">ö</div>
+        <div class="ds-toc__wordmark">öz</div>
+      </div>
+      <div class="ds-toc__version">v0.4 · 28 May 2026</div>
+
+      <div class="ds-toc__group">Foundations</div>
+      <a class="ds-toc__link" href="#colors">Colors</a>
+      <a class="ds-toc__link" href="#type">Type</a>
+      <a class="ds-toc__link" href="#spacing">Spacing · radius · shadow</a>
+
+      <div class="ds-toc__group">Primitives</div>
+      <a class="ds-toc__link" href="#brand-mark">Brand mark</a>
+      <a class="ds-toc__link" href="#buttons">Buttons</a>
+      <a class="ds-toc__link" href="#inputs">Inputs</a>
+      <a class="ds-toc__link" href="#otp">OTP boxes</a>
+      <a class="ds-toc__link" href="#avatars">Avatars</a>
+      <a class="ds-toc__link" href="#vbadges">Verification badges</a>
+
+      <div class="ds-toc__group">Composites</div>
+      <a class="ds-toc__link" href="#rate-widget">Rate widget</a>
+      <a class="ds-toc__link" href="#status-banner">Status banner</a>
+      <a class="ds-toc__link" href="#submitted-receipt">Submitted-receipt card</a>
+      <a class="ds-toc__link" href="#copy-row">Copy row</a>
+      <a class="ds-toc__link" href="#slide-confirm">Slide-to-confirm</a>
+      <a class="ds-toc__link" href="#press-hold">Press-and-hold</a>
+      <a class="ds-toc__link" href="#star-rating">Star rating</a>
+      <a class="ds-toc__link" href="#waiting-pulse">Waiting pulse</a>
+      <a class="ds-toc__link" href="#kaspi-mock">Kaspi receipt mock</a>
+
+      <div class="ds-toc__group">Patterns</div>
+      <a class="ds-toc__link" href="#p-receipt">Receipt-as-evidence</a>
+      <a class="ds-toc__link" href="#p-user-submitted">User-submitted-receipt framing</a>
+      <a class="ds-toc__link" href="#p-verify-gate">Verify gate → swipe</a>
+      <a class="ds-toc__link" href="#p-press-hold">Press-and-hold for irreversible</a>
+      <a class="ds-toc__link" href="#p-patient">Patient waiting (no spinners)</a>
+      <a class="ds-toc__link" href="#p-responsive">Mobile-first responsive</a>
+
+      <div class="ds-toc__group">Screens</div>
+      <a class="ds-toc__link" href="#s-confirm">Counterparty review</a>
+      <a class="ds-toc__link" href="#s-send">Sender pays</a>
+      <a class="ds-toc__link" href="#s-wait">Sender waits</a>
+      <a class="ds-toc__link" href="#s-complete">Complete + rating</a>
+
+      <div class="ds-toc__group">Reference</div>
+      <a class="ds-toc__link" href="#iconography">Iconography</a>
+      <a class="ds-toc__link" href="#voice">Voice + copy</a>
+      <a class="ds-toc__link" href="#changelog">Changelog</a>
+      <a class="ds-toc__link" href="#sources">Source files</a>
+    </nav>
+
+    <!-- ═══ MAIN ═════════════════════════════════════════════════════ -->
+    <main class="ds-main">
+
+      <header class="ds-hero">
+        <h1>öz Design System</h1>
+        <p class="ds-hero__lede">
+          The visual + interaction system for öz — a peer-to-peer marketplace
+          where <strong>Kazakhstanis in Korea exchange KZT ↔ KRW directly with
+          each other</strong>, bank-to-bank. öz never holds funds. Trust is
+          carried by receipts and ratings.
+        </p>
+        <p class="ds-hero__lede" style="margin-top:12px;">
+          This document is the source of truth for any new öz surface —
+          production, prototype, slide, or static mock. It supersedes earlier
+          design-system docs (which still referenced an old internal codename,
+          <em>Saiqal</em>; that name is removed everywhere in v0.4).
+        </p>
+        <div class="ds-hero__meta">
+          <span>Mobile-first responsive web · Next.js 14 + Supabase</span>
+          <span>Russian UI · English documentation</span>
+          <span>Inter + JetBrains Mono</span>
+        </div>
+      </header>
+
+      <!-- ═══ COLORS ════════════════════════════════════════════════ -->
+      <section class="ds-section" id="colors">
+        <p class="ds-section__eyebrow">Foundations</p>
+        <h2>Colors</h2>
+        <p class="ds-section__intro">
+          The öz palette is built around <strong>one warm canvas, one
+          confident green, three warm status colors</strong>. White is never
+          a background — only an elevated surface. Green is reserved for
+          trust and confirmation.
+        </p>
+
+        <h3 class="ds-sub">Canvas + surfaces</h3>
+        <p class="ds-prose">
+          <span class="ds-prose"><strong>The background is <code>#F5F0E8</code>. Never pure white.</strong>
+          White is for elevated surfaces only (cards, sheets, inputs).</span>
+        </p>
+        <div class="ds-tokens">
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#F5F0E8"></div>
+            <span class="ds-token__name">--bg</span><span class="ds-token__hex">#F5F0E8 · canvas</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#FFFFFF"></div>
+            <span class="ds-token__name">--surface</span><span class="ds-token__hex">#FFFFFF · cards</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#FAF6EE"></div>
+            <span class="ds-token__name">--surface-2</span><span class="ds-token__hex">#FAF6EE · note bg, hover</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#EDE6D8"></div>
+            <span class="ds-token__name">--surface-sunken</span><span class="ds-token__hex">#EDE6D8 · segmented track</span></div>
+        </div>
+
+        <h3 class="ds-sub">Primary green — trust + confirmation only</h3>
+        <p class="ds-prose">
+          <code>--primary</code> appears at full saturation only at moments
+          of trust: primary CTAs, OTP focus rings, success states, the FAB
+          (acting commits), the icon mark. There is no decorative green
+          anywhere in the product.
+        </p>
+        <div class="ds-tokens">
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#1A7A4A"></div>
+            <span class="ds-token__name">--primary</span><span class="ds-token__hex">#1A7A4A</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#156138"></div>
+            <span class="ds-token__name">--primary-hover</span><span class="ds-token__hex">#156138</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#E3F1E8"></div>
+            <span class="ds-token__name">--primary-soft</span><span class="ds-token__hex">#E3F1E8 · tinted page bg, focus ring</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#0E3D24"></div>
+            <span class="ds-token__name">--primary-ink</span><span class="ds-token__hex">#0E3D24 · on primary-soft</span></div>
+        </div>
+        <div class="ds-prose">
+          <div class="note">
+            <strong>New in v0.4 — primary-soft as a page background.</strong>
+            The transaction-confirm screen uses <code>--primary-soft</code> as
+            the whole-page canvas (not the warm <code>--bg</code>). This signals
+            "you're inside a trust-relevant flow" — the page itself is tinted
+            with the confirmation color. White cards float on top.
+          </div>
+        </div>
+
+        <h3 class="ds-sub">Text + borders</h3>
+        <div class="ds-tokens">
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#111827"></div>
+            <span class="ds-token__name">--text</span><span class="ds-token__hex">#111827</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#4B5563"></div>
+            <span class="ds-token__name">--text-2</span><span class="ds-token__hex">#4B5563</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#6B7280"></div>
+            <span class="ds-token__name">--text-3</span><span class="ds-token__hex">#6B7280</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#6B6557"></div>
+            <span class="ds-token__name">--text-mute</span><span class="ds-token__hex">#6B6557 · warm placeholder</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#E5DDCB"></div>
+            <span class="ds-token__name">--border</span><span class="ds-token__hex">#E5DDCB</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#D5C9AF"></div>
+            <span class="ds-token__name">--border-strong</span><span class="ds-token__hex">#D5C9AF · inputs</span></div>
+        </div>
+
+        <h3 class="ds-sub">Status colors</h3>
+        <p class="ds-prose">
+          Warm, calibrated to sit on the beige canvas. Cool blue
+          (<code>--info</code>) is rarely used — öz states, doesn't inform.
+          Gold is reserved for the verified-trader badge.
+        </p>
+        <div class="ds-tokens">
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#B45309"></div>
+            <span class="ds-token__name">--warning</span><span class="ds-token__hex">#B45309</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#FEF3C7"></div>
+            <span class="ds-token__name">--warning-soft</span><span class="ds-token__hex">#FEF3C7</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#B42318"></div>
+            <span class="ds-token__name">--error</span><span class="ds-token__hex">#B42318</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#FEE4E2"></div>
+            <span class="ds-token__name">--error-soft</span><span class="ds-token__hex">#FEE4E2</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#B98A3A"></div>
+            <span class="ds-token__name">--gold</span><span class="ds-token__hex">#B98A3A · трейдер + stars</span></div>
+          <div class="ds-token"><div class="ds-token__swatch" style="background:#0B5FB8"></div>
+            <span class="ds-token__name">--info</span><span class="ds-token__hex">#0B5FB8 · sparingly</span></div>
+        </div>
+      </section>
+
+      <!-- ═══ TYPE ══════════════════════════════════════════════════ -->
+      <section class="ds-section" id="type">
+        <p class="ds-section__eyebrow">Foundations</p>
+        <h2>Type</h2>
+        <p class="ds-section__intro">
+          Two families, no exceptions. <strong>Inter</strong> for every UI
+          string. <strong>JetBrains Mono</strong> with
+          <code>font-variant-numeric: tabular-nums</code> for every number,
+          identifier, and currency glyph in the product.
+        </p>
+
+        <div class="ds-grid-2">
+          <div class="ds-demo ds-demo--canvas" style="flex-direction:column; align-items:flex-start; gap:8px;">
+            <div style="font-family: 'Inter', sans-serif; font-size:46px; font-weight:700; letter-spacing:-0.01em; line-height:1;">Inter</div>
+            <div style="font-size:13px; color:var(--text-2);">400 · 500 · 600 · 700</div>
+            <div style="font-size:13px; color:var(--text-3); font-family:'Inter', sans-serif;">Aa Bb · Аа Бб · Гг Дд Ёё</div>
+          </div>
+          <div class="ds-demo ds-demo--canvas" style="flex-direction:column; align-items:flex-start; gap:8px;">
+            <div style="font-family:'JetBrains Mono', monospace; font-size:46px; font-weight:700; letter-spacing:-0.01em; line-height:1;">JBMono</div>
+            <div style="font-size:13px; color:var(--text-2);">500 · 600 · 700 · tabular-nums</div>
+            <div style="font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--text-3);">0 1 2 3 4 5 6 7 8 9 · ₸ ₩ → ≈ ★</div>
+          </div>
+        </div>
+
+        <h3 class="ds-sub">Inter — UI scale</h3>
+        <div class="ds-demo" style="flex-direction:column; align-items:flex-start; gap:6px;">
+          <div class="oz-display">Откройте Telegram-бот</div>
+          <div class="oz-h1">Введите код из Telegram</div>
+          <div class="oz-h2">Новое объявление</div>
+          <div class="oz-h3">Сделка завершена</div>
+          <div class="oz-body">Переведите 750 000 ₸ контрагенту, затем загрузите чек.</div>
+          <div class="oz-body-2">Контрагент проверяет поступление в своём банке.</div>
+          <div class="oz-caption">Опубликовано 5 минут назад</div>
+          <div class="oz-eyebrow">О пользователе</div>
+        </div>
+
+        <h3 class="ds-sub">JetBrains Mono — numerics</h3>
+        <div class="ds-demo" style="flex-direction:column; align-items:flex-start; gap:8px;">
+          <div class="oz-num-xl">750 000 ₸</div>
+          <div class="oz-num-lg">2 392 500 ₩</div>
+          <div class="oz-num-md">+7 (777) 123-45-67</div>
+          <div class="oz-num-sm">по курсу 3,19 · ≈ 2 392 500 ₩</div>
+        </div>
+
+        <div class="ds-prose">
+          <div class="note">
+            <strong>Russian formatting:</strong> comma as decimal
+            (<code>3,19</code>, never <code>3.19</code>), thin space
+            (<code>\u202F</code>) between digit groups (<code>750&#x202f;000&nbsp;₸</code>).
+            Helpers live in <code>ui_kits/oz-mobile/oz-shared.jsx</code> as
+            <code>fmtAmount</code> / <code>fmtRate</code>.
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ SPACING ═══════════════════════════════════════════════ -->
+      <section class="ds-section" id="spacing">
+        <p class="ds-section__eyebrow">Foundations</p>
+        <h2>Spacing · radius · shadow</h2>
+        <p class="ds-section__intro">
+          4px base spacing scale. Five radii — never invent a new one.
+          Two shadow recipes, both warm-brown-toned (never grey).
+        </p>
+
+        <h3 class="ds-sub">Spacing scale</h3>
+        <div class="ds-demo" style="flex-direction:column; align-items:flex-start; gap:8px;">
+          <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3); width:50px;">--s-1</span><span style="background:var(--primary); height:10px; width:4px;"></span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">4px</span></div>
+          <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3); width:50px;">--s-2</span><span style="background:var(--primary); height:10px; width:8px;"></span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">8px</span></div>
+          <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3); width:50px;">--s-3</span><span style="background:var(--primary); height:10px; width:12px;"></span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">12px</span></div>
+          <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3); width:50px;">--s-4</span><span style="background:var(--primary); height:10px; width:16px;"></span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">16px · card padding</span></div>
+          <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3); width:50px;">--s-5</span><span style="background:var(--primary); height:10px; width:20px;"></span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">20px · hero padding</span></div>
+          <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3); width:50px;">--s-6</span><span style="background:var(--primary); height:10px; width:24px;"></span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">24px · sheet padding</span></div>
+          <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3); width:50px;">--s-8</span><span style="background:var(--primary); height:10px; width:32px;"></span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">32px</span></div>
+          <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3); width:50px;">--s-12</span><span style="background:var(--primary); height:10px; width:48px;"></span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">48px</span></div>
+        </div>
+
+        <h3 class="ds-sub">Radii</h3>
+        <div class="ds-demo ds-demo--row" style="justify-content:flex-start;">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <div style="width:72px; height:50px; background:#fff; border:1px solid var(--border-strong); border-radius:8px;"></div>
+            <div style="font-family:'JetBrains Mono', monospace; font-size:11px;">--r-sm · 8 · chip</div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <div style="width:72px; height:50px; background:#fff; border:1px solid var(--border-strong); border-radius:12px;"></div>
+            <div style="font-family:'JetBrains Mono', monospace; font-size:11px;">--r-md · 12 · input</div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <div style="width:72px; height:50px; background:#fff; border:1px solid var(--border-strong); border-radius:16px;"></div>
+            <div style="font-family:'JetBrains Mono', monospace; font-size:11px;">--r-lg · 16 · card</div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <div style="width:72px; height:50px; background:#fff; border:1px solid var(--border-strong); border-radius:24px;"></div>
+            <div style="font-family:'JetBrains Mono', monospace; font-size:11px;">--r-xl · 24 · sheet, rate</div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <div style="width:50px; height:50px; background:#fff; border:1px solid var(--border-strong); border-radius:9999px;"></div>
+            <div style="font-family:'JetBrains Mono', monospace; font-size:11px;">--r-full · pill · FAB</div>
+          </div>
+        </div>
+
+        <h3 class="ds-sub">Shadows — warm brown, never grey</h3>
+        <div class="ds-demo ds-demo--canvas ds-demo--row" style="justify-content:space-around;">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="width:160px; height:64px; background:#fff; border-radius:16px; box-shadow: 0 1px 2px rgba(60,40,10,0.04), 0 8px 24px rgba(60,40,10,0.06);"></div>
+            <div style="font-family:'JetBrains Mono', monospace; font-size:11px;">--shadow-card</div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="width:160px; height:64px; background:#fff; border-radius:16px; box-shadow: 0 4px 12px rgba(60,40,10,0.08), 0 24px 60px rgba(60,40,10,0.12);"></div>
+            <div style="font-family:'JetBrains Mono', monospace; font-size:11px;">--shadow-pop</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ BRAND MARK ════════════════════════════════════════════ -->
+      <section class="ds-section" id="brand-mark">
+        <p class="ds-section__eyebrow">Primitives</p>
+        <h2>Brand mark</h2>
+        <p class="ds-section__intro">
+          A <code>--primary</code> square with a lowercase
+          <strong>ö</strong> in Inter Bold, rendered in the canvas color
+          (<code>--bg</code>) — so the mark feels like the brand made of the
+          page itself. Radius scales linearly with size (≈25% of dimension).
+        </p>
+        <div class="ds-demo ds-demo--row" style="gap:32px; align-items:center;">
+          <div class="oz-brand-mark" style="width:96px; height:96px; font-size:62px; border-radius:24px;">ö</div>
+          <div class="oz-brand-mark" style="width:56px; height:56px; font-size:36px; border-radius:14px;">ö</div>
+          <div class="oz-brand-mark" style="width:28px; height:28px; font-size:18px; border-radius:7px;">ö</div>
+          <div class="oz-brand-mark" style="width:16px; height:16px; font-size:11px; border-radius:4px;">ö</div>
+        </div>
+        <div class="ds-prose">
+          <p><strong>Don'ts.</strong> Never invert the mark (white square / green ö).
+          Never put it on a non-canvas surface without a generous bleed area.
+          Never use the umlaut as a separate decorative element.</p>
+        </div>
+        <div class="ds-prose">
+          <span class="ds-chip">.oz-brand-mark</span>
+          &nbsp; <span class="ds-chip">assets/oz-icon.svg</span>
+        </div>
+      </section>
+
+      <!-- ═══ BUTTONS ═══════════════════════════════════════════════ -->
+      <section class="ds-section" id="buttons">
+        <p class="ds-section__eyebrow">Primitives</p>
+        <h2>Buttons</h2>
+        <p class="ds-section__intro">
+          Three families: <strong>primary</strong> (green, for trust /
+          confirmation), <strong>secondary outline</strong>, <strong>ghost
+          link</strong>. Press response is a 1px translateY — no scale, no
+          ripple, no bounce.
+        </p>
+        <div class="ds-demo ds-demo--canvas ds-demo--row" style="justify-content:flex-start;">
+          <button class="oz-btn oz-btn--primary oz-btn--lg">Войти</button>
+          <button class="oz-btn oz-btn--primary">Опубликовать</button>
+          <button class="oz-btn oz-btn--secondary">Назад</button>
+          <button class="oz-btn oz-btn--ghost">Отмена</button>
+          <button class="oz-btn oz-btn--primary" disabled>Подтвердить</button>
+        </div>
+        <div class="ds-demo ds-demo--canvas ds-demo--row" style="justify-content:flex-start;">
+          <button class="oz-secondary-btn-sm">Редактировать</button>
+          <button class="oz-secondary-btn-sm">Снять</button>
+          <button class="oz-soft-btn-sm">Связаться</button>
+        </div>
+        <div class="ds-prose">
+          <span class="ds-chip">.oz-btn .oz-btn--primary</span>
+          &nbsp; <span class="ds-chip">.oz-soft-btn-sm</span>
+          &nbsp; <span class="ds-chip">.tx-actions__ghost-link</span>
+        </div>
+      </section>
+
+      <!-- ═══ INPUTS ════════════════════════════════════════════════ -->
+      <section class="ds-section" id="inputs">
+        <p class="ds-section__eyebrow">Primitives</p>
+        <h2>Inputs</h2>
+        <p class="ds-section__intro">
+          Single recipe across the product: 13×14 padding, 1px
+          <code>--border-strong</code>, 12px radius, 15px Inter, white
+          surface. Focus turns the border <code>--primary</code> with a 3px
+          <code>--primary-soft</code> ring.
+        </p>
+        <div class="ds-demo ds-demo--canvas">
+          <div class="ds-grid-2" style="width:100%; gap:16px;">
+            <div>
+              <label class="oz-sheet__label">Сумма</label>
+              <input class="oz-input" placeholder="0" />
+            </div>
+            <div>
+              <label class="oz-sheet__label">Сумма (focused)</label>
+              <input class="oz-input is-focused" value="750 000" />
+            </div>
+            <div>
+              <label class="oz-sheet__label">Курс</label>
+              <div class="oz-input--withsuffix">
+                <input class="oz-input" value="3,19" />
+                <span class="oz-input__suffix">₩/₸</span>
+              </div>
+            </div>
+            <div>
+              <label class="oz-sheet__label">Код</label>
+              <input class="oz-input is-error" value="000000" />
+              <div class="oz-sheet__helper" style="color: var(--error);">Неверный или истёкший код.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ OTP ═══════════════════════════════════════════════════ -->
+      <section class="ds-section" id="otp">
+        <p class="ds-section__eyebrow">Primitives</p>
+        <h2>OTP boxes</h2>
+        <p class="ds-section__intro">
+          Six 44×52 boxes in JetBrains Mono 22px. Auto-advance on input,
+          backspace to previous, paste fills all six. The active box gets
+          the <code>--primary</code> border + 3px soft-green ring.
+        </p>
+        <div class="ds-demo ds-demo--canvas">
+          <div class="oz-otp-row">
+            <input class="oz-otp-box" value="4" readonly />
+            <input class="oz-otp-box" value="2" readonly />
+            <input class="oz-otp-box" value="9" readonly />
+            <input class="oz-otp-box" value="1" readonly />
+            <input class="oz-otp-box" autofocus />
+            <input class="oz-otp-box" />
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ AVATARS ═══════════════════════════════════════════════ -->
+      <section class="ds-section" id="avatars">
+        <p class="ds-section__eyebrow">Primitives</p>
+        <h2>Avatars</h2>
+        <p class="ds-section__intro">
+          Circular. Four sizes. Initials are the first alpha-or-digit
+          character from the display name (uppercase), or from the phone if
+          no name. <code>--surface-sunken</code> bg, <code>--text-2</code>
+          text, 600 weight Inter.
+        </p>
+        <div class="ds-demo ds-demo--canvas ds-demo--row" style="justify-content:flex-start; align-items:center;">
+          <div class="oz-avatar oz-avatar--xs">A</div>
+          <div class="oz-avatar">A</div>
+          <div class="oz-avatar oz-avatar--lg">А</div>
+          <div class="oz-avatar oz-avatar--xl">Д</div>
+        </div>
+      </section>
+
+      <!-- ═══ VERIFICATION BADGES ═════════════════════════════════ -->
+      <section class="ds-section" id="vbadges">
+        <p class="ds-section__eyebrow">Primitives</p>
+        <h2>Verification badges</h2>
+        <p class="ds-section__intro">
+          Three trust tiers with deliberate visual weight escalation:
+          <strong>phone</strong> (soft tint, no shimmer — the floor),
+          <strong>ID</strong> (solid primary, shimmering),
+          <strong>verified trader</strong> (gold, shimmering). The shimmer
+          says "this tier is alive / earned."
+        </p>
+        <div class="ds-demo ds-demo--canvas ds-demo--row" style="justify-content:flex-start;">
+          <span class="oz-vbadge oz-vbadge--phone">тел.</span>
+          <span class="oz-vbadge oz-vbadge--id">ID</span>
+          <span class="oz-vbadge oz-vbadge--trader">трейдер</span>
+          <span class="oz-vbadge oz-vbadge--phone">Телефон подтверждён</span>
+          <span class="oz-vbadge oz-vbadge--id">Удостоверение проверено</span>
+          <span class="oz-vbadge oz-vbadge--trader">Верифицированный трейдер</span>
+        </div>
+      </section>
+
+      <!-- ═══ RATE WIDGET ═════════════════════════════════════════ -->
+      <section class="ds-section" id="rate-widget">
+        <p class="ds-section__eyebrow">Composites</p>
+        <h2>Rate widget</h2>
+        <p class="ds-section__intro">
+          The aesthetic anchor of the product. A calm
+          <code>--primary @ 8%</code> tinted surface (with <code>r-xl
+          24px</code> — one step bigger than cards) showing the live
+          <code>₸ ▷ ₩</code> rate with an animated sparkline.
+        </p>
+
+        <div class="ds-demo ds-demo--canvas">
+          <div id="demo-rate" style="display:flex; justify-content:center;"></div>
+        </div>
+
+        <div class="ds-anatomy">
+          <ol class="ds-anatomy__list">
+            <li><span class="num">1</span><div><div class="what">Surface</div><div class="why"><code>--rate-widget-bg</code> = primary @ 8% on canvas. Border at 20%. Radius 24px (one step bigger than cards).</div></div></li>
+            <li><span class="num">2</span><div><div class="what">Currency glyphs</div><div class="why"><code>₸</code> and <code>₩</code> set in Inter at 32px / 600 weight in <code>--primary</code>. NOT icons — type.</div></div></li>
+            <li><span class="num">3</span><div><div class="what">Direction triangle</div><div class="why">Hollow outline right-pointing triangle, 20×20, 1.6px stroke, <code>currentColor</code>. Defined inline — sets the icon vocabulary for the rest of the product.</div></div></li>
+            <li><span class="num">4</span><div><div class="what">Rate number</div><div class="why">JetBrains Mono 36px / 700, <code>--primary</code>, tabular-nums. Russian decimal comma (<code>3,19</code>).</div></div></li>
+            <li><span class="num">5</span><div><div class="what">Sparkline</div><div class="why">Animated <code>stroke-dasharray</code> draws over 800ms ease-out on mount. Open-circle marker fades in at 800ms. Soft left-edge fade-mask so the line emerges rather than starting abruptly.</div></div></li>
+            <li><span class="num">6</span><div><div class="what">Hover state</div><div class="why"><code>transform: scale(1.01)</code>. One percent — imperceptible until compared. Read-only widget, minimal affordance.</div></div></li>
+          </ol>
+        </div>
+
+        <div class="ds-prose">
+          <span class="ds-chip">.oz-rate</span>
+          &nbsp; <span class="ds-chip">ui_kits/oz-mobile/oz-shared.jsx → RateWidget</span>
+        </div>
+      </section>
+
+      <!-- ═══ STATUS BANNER ═══════════════════════════════════════ -->
+      <section class="ds-section" id="status-banner">
+        <p class="ds-section__eyebrow">Composites</p>
+        <h2>Status banner</h2>
+        <p class="ds-section__intro">
+          Colors the page tone for the current transaction step. Replaced
+          in v0.4 by the <strong>inline status line</strong> on
+          receipt-as-evidence screens — the heavier banner now appears only
+          on warning / dispute states.
+        </p>
+        <div class="ds-demo ds-demo--canvas" style="flex-direction:column; gap:12px; align-items:stretch;">
+          <div style="display:flex; align-items:center; gap:8px; padding:8px 20px 16px; font-size:13px; font-weight:500; color:var(--primary-ink);">
+            <span style="width:8px; height:8px; border-radius:50%; background:var(--primary); box-shadow: 0 0 0 4px rgba(26,122,74,0.15);"></span>
+            <span>Контрагент отправил перевод · 14 мин назад</span>
+          </div>
+          <div class="oz-statusbanner oz-statusbanner--warning">
+            <div class="oz-statusbanner__title">Спор открыт</div>
+            <div class="oz-statusbanner__body">Мы свяжемся с обеими сторонами в течение 24 часов.</div>
+          </div>
+        </div>
+        <div class="ds-prose">
+          <span class="ds-chip">.tx-statusline</span> &nbsp;
+          <span class="ds-chip">.oz-statusbanner.oz-statusbanner--warning</span>
+        </div>
+      </section>
+
+      <!-- ═══ SUBMITTED RECEIPT CARD ═════════════════════════════ -->
+      <section class="ds-section" id="submitted-receipt">
+        <p class="ds-section__eyebrow">Composites · new in v0.4</p>
+        <h2>Submitted-receipt card</h2>
+        <p class="ds-section__intro">
+          A <strong>structured summary</strong> of the receipt the user
+          just uploaded — bank, amount, timestamp, masked card — with the
+          actual screenshot available behind "Открыть полностью →". Reads as
+          captured data, not a fuzzy image.
+        </p>
+
+        <div class="ds-demo ds-demo--canvas">
+          <div id="demo-submitted" style="max-width:380px; width:100%;"></div>
+        </div>
+
+        <div class="ds-prose">
+          <p><strong>Anatomy.</strong></p>
+          <ul>
+            <li><strong>Eyebrow</strong> — <code>ВАШ ЧЕК</code> in JBMono uppercase, <code>--text-3</code></li>
+            <li><strong>Status pill</strong> — <code>чек получен</code> on <code>--warning-soft</code>. Warm-amber, not green: the receipt is captured but not yet validated by the counterparty.</li>
+            <li><strong>Bank row</strong> — Kaspi logo (28×28) + bank name</li>
+            <li><strong>Amount</strong> — 32px JBMono <code>--text</code>, tabular-nums</li>
+            <li><strong>Meta line</strong> — JBMono <code>--text-3</code>: <code>отправлено в 14:34 · с карты •••• 8821</code></li>
+            <li><strong>Reveal link</strong> — <code>Открыть полностью →</code> in <code>--primary</code>, opens the full screenshot in an overlay</li>
+          </ul>
+        </div>
+
+        <div class="ds-prose">
+          <span class="ds-chip">.tx-receipt-summary</span>
+          &nbsp; <span class="ds-chip">explorations/SubmittedReceiptCard.jsx</span>
+        </div>
+      </section>
+
+      <!-- ═══ COPY ROW ═════════════════════════════════════════════ -->
+      <section class="ds-section" id="copy-row">
+        <p class="ds-section__eyebrow">Composites · new in v0.4</p>
+        <h2>Copy row</h2>
+        <p class="ds-section__intro">
+          Bank-detail row with a copy-to-clipboard button on the right. Real
+          <code>navigator.clipboard.writeText</code> on tap. Briefly flips to a
+          primary-green "copied" state for 1.4s.
+        </p>
+        <div class="ds-demo ds-demo--canvas">
+          <div style="width:100%; max-width:420px; background:var(--surface); border-radius:var(--r-lg); box-shadow:var(--shadow-card);" class="tx-bank">
+            <div class="tx-bank__title">Реквизиты получателя</div>
+            <div id="demo-copy"></div>
+          </div>
+        </div>
+        <div class="ds-prose">
+          <span class="ds-chip">.tx-bank · .tx-bank__row · .tx-bank__copy</span>
+          &nbsp; <span class="ds-chip">explorations/CopyRow.jsx</span>
+        </div>
+      </section>
+
+      <!-- ═══ SLIDE TO CONFIRM ════════════════════════════════════ -->
+      <section class="ds-section" id="slide-confirm">
+        <p class="ds-section__eyebrow">Composites · new in v0.4</p>
+        <h2>Slide-to-confirm</h2>
+        <p class="ds-section__intro">
+          Drag the thumb to 85% of track width and release to fire confirm.
+          Designed for <strong>destructive or trust-relevant
+          confirmations</strong> — the counterparty's "I received the
+          transfer" tap. Adds friction that protects against accidental
+          confirms. Disabled = no interaction.
+        </p>
+
+        <div class="ds-demo ds-demo--canvas" style="padding:24px;">
+          <div id="demo-slide" style="width:100%; max-width:380px;"></div>
+        </div>
+
+        <div class="ds-prose">
+          <div class="note">
+            <strong>Always gate the slider</strong> behind an upstream check
+            — a checkbox ("я сверил"), a step in a stepper, or a precondition
+            like "receipt uploaded." On its own, the slider is just a fancy
+            button. Gated, it becomes a real two-step confirmation pattern.
+            See <a href="#p-verify-gate">Verify gate → swipe</a>.
+          </div>
+        </div>
+
+        <div class="ds-prose">
+          <span class="ds-chip">.tx-slide</span>
+          &nbsp; <span class="ds-chip">explorations/SlideToConfirm.jsx</span>
+        </div>
+      </section>
+
+      <!-- ═══ PRESS AND HOLD ═════════════════════════════════════ -->
+      <section class="ds-section" id="press-hold">
+        <p class="ds-section__eyebrow">Composites · new in v0.4</p>
+        <h2>Press-and-hold</h2>
+        <p class="ds-section__intro">
+          A button that requires a 2-second hold before firing. White fill
+          animates left→right over the hold duration. Release early aborts
+          + resets. Use when <strong>the user is declaring something
+          already irreversible</strong> (e.g. "I sent the money from my
+          bank app") — the hold signals "lock this in."
+        </p>
+
+        <div class="ds-demo ds-demo--canvas" style="padding:24px;">
+          <div id="demo-hold" style="width:100%; max-width:380px;"></div>
+        </div>
+
+        <div class="ds-prose">
+          <p>
+            <strong>Hold duration thresholds.</strong> Default 2000ms for
+            amounts &gt; 500 000 ₸. For smaller transfers, 1200ms is
+            sufficient — enough to defeat accidental taps without feeling
+            slow.
+          </p>
+        </div>
+
+        <div class="ds-prose">
+          <span class="ds-chip">.tx-hold</span>
+          &nbsp; <span class="ds-chip">explorations/PressAndHold.jsx</span>
+        </div>
+      </section>
+
+      <!-- ═══ STAR RATING ═════════════════════════════════════════ -->
+      <section class="ds-section" id="star-rating">
+        <p class="ds-section__eyebrow">Composites · new in v0.4</p>
+        <h2>Star rating</h2>
+        <p class="ds-section__intro">
+          Five tappable stars in <code>--gold</code>. Hover preview (40%
+          opacity fill before commit), accessible <code>aria-label</code>
+          on each. The label below switches from "Нажмите, чтобы оценить"
+          to the chosen-rating word — feedback that closes the loop.
+        </p>
+        <div class="ds-demo ds-demo--canvas">
+          <div id="demo-stars" style="display:flex; flex-direction:column; gap:14px; align-items:center;"></div>
+        </div>
+        <div class="ds-prose">
+          <p>Labels: <code>Плохо · Так себе · Нормально · Хорошо · Отлично</code>.</p>
+          <span class="ds-chip">.tc-stars · .tc-star</span>
+          &nbsp; <span class="ds-chip">explorations/CompleteParts.jsx</span>
+        </div>
+      </section>
+
+      <!-- ═══ WAITING PULSE ═══════════════════════════════════════ -->
+      <section class="ds-section" id="waiting-pulse">
+        <p class="ds-section__eyebrow">Composites · new in v0.4</p>
+        <h2>Waiting pulse</h2>
+        <p class="ds-section__intro">
+          Three primary-green dots breathing at 1.6s with staggered phase.
+          <strong>Not a spinner.</strong> The slow cycle reads as "we are
+          here, no rush" — calm patience, never anxiety.
+        </p>
+        <div class="ds-demo ds-demo--canvas">
+          <div id="demo-wait" style="width:100%; max-width:380px;"></div>
+        </div>
+        <div class="ds-prose">
+          <p>The same dot pattern recurs in the
+          <a href="#screens">progress-stepper</a> active node — at different
+          sizes, both reading as "this is the active waiting point."</p>
+          <span class="ds-chip">.tx-wait · .tx-wait__dots</span>
+          &nbsp; <span class="ds-chip">explorations/WaitingPulse.jsx</span>
+        </div>
+      </section>
+
+      <!-- ═══ KASPI MOCK ═══════════════════════════════════════════ -->
+      <section class="ds-section" id="kaspi-mock">
+        <p class="ds-section__eyebrow">Composites · new in v0.4</p>
+        <h2>Kaspi receipt mock</h2>
+        <p class="ds-section__intro">
+          CSS-only Kaspi.kz screenshot — green check, big amount, receipt
+          fields. Used during prototyping when no real screenshot exists.
+          The counterparty visually matches THIS surface against their own
+          bank app, so realism matters.
+        </p>
+        <div class="ds-demo ds-demo--canvas">
+          <div style="width:280px;"><div id="demo-kaspi" style="border-radius:12px; border:1px solid var(--border); overflow:hidden;"></div></div>
+        </div>
+        <div class="ds-prose">
+          <div class="note">
+            <strong>In production, replace this mock with a real
+            <code>&lt;img&gt;</code> tag pointing at the user's uploaded
+            screenshot.</strong> The mock exists so prototypes don't depend
+            on real PII screenshots.
+          </div>
+          <span class="ds-chip">.kaspi</span>
+          &nbsp; <span class="ds-chip">explorations/KaspiReceiptMock.jsx</span>
+        </div>
+      </section>
+
+      <!-- ═══════ PATTERNS ════════════════════════════════════════════ -->
+      <section class="ds-section" id="p-receipt">
+        <p class="ds-section__eyebrow">Patterns</p>
+        <h2>Receipt-as-evidence</h2>
+        <p class="ds-section__intro">
+          The core trust mechanic. <strong>öz never holds funds.</strong>
+          Two strangers swap currency through their own bank apps. The
+          receipt screenshot is the only artifact the platform handles —
+          and even the screenshot is custody of an image, not custody of
+          money.
+        </p>
+        <div class="ds-prose">
+          <p>This shapes every transaction screen:</p>
+          <ul>
+            <li>The <strong>sender</strong> screen shows the recipient's
+              bank details with copy buttons, framed by a press-and-hold
+              "Я отправил деньги" lock-in.</li>
+            <li>The <strong>upload screen</strong> captures the bank
+              receipt screenshot. (Out of scope for v0.4 doc — handled by a
+              standard image-upload sheet.)</li>
+            <li>The <strong>counterparty review</strong> screen
+              <em>(see <a href="#s-confirm">Counterparty review</a>)</em>
+              displays the receipt + gates the confirm action behind a
+              checkbox ("я сверил в моём банке") and a swipe.</li>
+            <li>The <strong>wait state</strong> for the sender shows their
+              own receipt captured back to them as reassurance.</li>
+          </ul>
+          <p>The whole point: the receipt is <em>evidence the
+          counterparty visually verifies against their own bank app</em>.
+          The platform never claims to know whether money arrived.</p>
+        </div>
+      </section>
+
+      <section class="ds-section" id="p-user-submitted">
+        <p class="ds-section__eyebrow">Patterns · new in v0.4</p>
+        <h2>User-submitted-receipt framing</h2>
+        <p class="ds-section__intro">
+          When showing a receipt to the counterparty, the design MUST
+          reframe it from "platform-verified evidence" to "user-submitted
+          screenshot you must verify." This is critical to scam prevention.
+        </p>
+
+        <div class="ds-demo ds-demo--primary-soft" style="padding:20px;">
+          <p style="font-family:var(--font-sans); font-size:13px; font-style:italic; color:var(--text-3); line-height:1.4; margin:0; max-width:340px; text-align:center;">
+            Чек предоставлен контрагентом. Откройте банк, чтобы проверить поступление.
+          </p>
+        </div>
+
+        <div class="ds-prose">
+          <p><strong>Rules.</strong></p>
+          <ul>
+            <li>Above every counterparty-visible receipt: a small italic
+              line in <code>--text-3</code> at 12px that includes both
+              <strong>who provided the receipt</strong> and <strong>what
+              the user is expected to do next</strong>.</li>
+            <li>Never use the word "подтверждено" or "проверено" near a
+              user-submitted receipt. Those words are reserved for the
+              counterparty's positive confirmation.</li>
+            <li>The submitted-receipt pill says <code>чек получен</code>
+              (received), never <code>проверен</code> (verified). Verification is
+              the user's job, in their bank app — not öz's.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="ds-section" id="p-verify-gate">
+        <p class="ds-section__eyebrow">Patterns · new in v0.4</p>
+        <h2>Verify gate → swipe</h2>
+        <p class="ds-section__intro">
+          Two-step pattern for confirming receipt of money. The user must
+          (1) check a checkbox claiming they verified the deposit in their
+          own bank, before (2) the slide-to-confirm becomes active. The
+          gate isn't redundant — each step represents a distinct claim.
+        </p>
+
+        <div class="ds-anatomy">
+          <ol class="ds-anatomy__list">
+            <li><span class="num">1</span><div><div class="what">"Откройте Kaspi и сверьте" deep-link row</div><div class="why">Logo + label + "Открыть ↗" pill — sends the user out to their bank app to actually check the deposit.</div></div></li>
+            <li><span class="num">2</span><div><div class="what">Checkbox: "Я сверил поступление в моём банке"</div><div class="why">When checked, fills primary green. The slider's <code>disabled</code> state ties to this.</div></div></li>
+            <li><span class="num">3</span><div><div class="what">Hint above slider</div><div class="why">When disabled: <code>Отметьте «Я сверил», чтобы подтвердить получение.</code> Dismissed when checkbox is on.</div></div></li>
+            <li><span class="num">4</span><div><div class="what">Slide-to-confirm</div><div class="why">Active only after checkbox. The drag itself is the "I am committing this transaction" action.</div></div></li>
+          </ol>
+        </div>
+
+        <div class="ds-prose">
+          <div class="note">
+            <strong>Why both?</strong> The checkbox captures the
+            <em>claim</em> ("I checked"). The swipe captures the
+            <em>commitment</em> ("I'm releasing this"). Combining them is
+            slower than a single tap, but for a transaction that releases
+            money to a counterparty, the friction is the feature.
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="p-press-hold">
+        <p class="ds-section__eyebrow">Patterns · new in v0.4</p>
+        <h2>Press-and-hold for irreversible</h2>
+        <p class="ds-section__intro">
+          On the <strong>sender's "Я отправил деньги" confirmation</strong>,
+          a press-and-hold button replaces the tap-CTA. The user has already
+          made the irreversible transfer in their bank app — the hold
+          ergonomically matches the "lock this in" feeling.
+        </p>
+        <div class="ds-prose">
+          <p><strong>Why hold instead of swipe?</strong> Different verbs
+          for different moments. The counterparty's "I received it" is a
+          claim about external reality — swipe reads as "I'm releasing this
+          control." The sender's "I sent it" is a claim about an action
+          they already took — hold reads as "yes, that was real, lock it
+          in."</p>
+        </div>
+      </section>
+
+      <section class="ds-section" id="p-patient">
+        <p class="ds-section__eyebrow">Patterns · new in v0.4</p>
+        <h2>Patient waiting (no spinners)</h2>
+        <p class="ds-section__intro">
+          Money is serious. öz uses no spinners, no progress bars without
+          known durations, no animations under 800ms. When the user is
+          waiting, the indicator tells them <strong>where they are and
+          who's working on it</strong>, not "loading…"
+        </p>
+        <div class="ds-prose">
+          <ul>
+            <li><strong>Waiting pulse</strong> — 3 breathing dots at 1.6s.
+              Used for "we're here" reassurance.</li>
+            <li><strong>Progress stepper</strong> — 4 vertical stages.
+              The active node has the same breathing-dot animation. The
+              user can see what's done, what's next.</li>
+            <li><strong>Live status text</strong> — "Контрагент
+              просматривает чек" instead of "Loading…". Specific human
+              action beats abstract system state.</li>
+            <li><strong>Time-since-sent pill</strong> — calm green up
+              to 5min, warm amber after that. Adds patience without
+              alarm.</li>
+          </ul>
+          <p>If the waiting stretches, surface a <strong>patience
+          callout</strong>: a small warm-amber card explaining that
+          banking delays sometimes happen and the user should not
+          confirm receipt until money actually appears in their bank.</p>
+        </div>
+      </section>
+
+      <section class="ds-section" id="p-responsive">
+        <p class="ds-section__eyebrow">Patterns · new in v0.4</p>
+        <h2>Mobile-first responsive</h2>
+        <p class="ds-section__intro">
+          öz is a Next.js web app. Primary use case is Chrome / Safari on
+          a phone. Secondary is a laptop browser. <strong>The same
+          component code runs at both viewports.</strong>
+        </p>
+        <div class="ds-prose">
+          <p><strong>Mobile (≤768px)</strong> — content fills the viewport
+          edge-to-edge with the screen's canvas color (warm <code>--bg</code>
+          for marketplace screens, <code>--primary-soft</code> for
+          transaction-trust screens). No phone-chrome decoration in the
+          actual web build — that lives only in the design-mock phone
+          frame.</p>
+          <p><strong>Desktop (≥1024px)</strong> — the canvas color extends
+          across the full viewport. Content is constrained to a
+          <strong>480px max-width column</strong> centered on the canvas
+          via a flex container with <code>margin: 0 auto</code>. Same cards,
+          same hierarchy, same components — just centered with breathing
+          room.</p>
+          <p>The transaction screens are intentionally narrow on desktop.
+          They're <em>focused single-task surfaces</em>, not dashboards.
+          Marketplace feed can widen on tablet, but transaction flows stay
+          at the 480 column on every viewport.</p>
+        </div>
+        <div class="ds-prose">
+          <span class="ds-chip">.web-mobile · .web-desktop · .web-desktop__col</span>
+          &nbsp; <span class="ds-chip">explorations/WebFrames.jsx</span>
+        </div>
+      </section>
+
+      <!-- ═══════ SCREENS ═════════════════════════════════════════════ -->
+      <section class="ds-section" id="s-confirm">
+        <p class="ds-section__eyebrow">Screens · sender_paid, counterparty view</p>
+        <h2>Counterparty review</h2>
+        <p class="ds-section__intro">
+          The counterparty has been notified the sender claims to have
+          paid. They view the submitted receipt, check their own bank,
+          and confirm receipt. The most important screen in öz —
+          <strong>the moment the trust mechanic fulfills</strong>.
+        </p>
+
+        <div class="ds-screen-row">
+          <div class="ds-screen-frame">
+            <div class="web-mobile" id="screen-confirm"></div>
+          </div>
+          <div class="ds-screen-row__notes">
+            <h3 class="ds-sub" style="margin-top:0;">What's on it</h3>
+            <ol class="ds-anatomy__list">
+              <li><span class="num">1</span><div><div class="what">Inline status line</div><div class="why">No banner — just a green dot + "Контрагент отправил перевод · 14 мин назад". Calm.</div></div></li>
+              <li><span class="num">2</span><div><div class="what">Framing line</div><div class="why">Italic 12px "Чек предоставлен контрагентом. Откройте банк, чтобы проверить поступление." — reframes the receipt.</div></div></li>
+              <li><span class="num">3</span><div><div class="what">Receipt as hero</div><div class="why">Full Kaspi screenshot card. Natural height — no padded blank space.</div></div></li>
+              <li><span class="num">4</span><div><div class="what">Compact money strip</div><div class="why">"Вы получаете 2 392 500 ₩" single horizontal row in lower hierarchy. Subline shows counterparty + amount + rate.</div></div></li>
+              <li><span class="num">5</span><div><div class="what">Verification station</div><div class="why">"Откройте Kaspi и сверьте" deep-link + "Я сверил" checkbox. Gates the slider.</div></div></li>
+              <li><span class="num">6</span><div><div class="what">Slide-to-confirm</div><div class="why">"Сдвиньте, чтобы подтвердить" — disabled until checkbox.</div></div></li>
+              <li><span class="num">7</span><div><div class="what">Ghost link</div><div class="why">"Сообщить о проблеме ›" — escape hatch, not muted disclaimer.</div></div></li>
+            </ol>
+            <p class="ds-prose" style="margin-top:20px;">Page bg is
+              <strong><code>--primary-soft</code></strong>, not the warm canvas.
+              Cards float as white surfaces.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="s-send">
+        <p class="ds-section__eyebrow">Screens · pending_sender_payment, sender view</p>
+        <h2>Sender pays</h2>
+        <p class="ds-section__intro">
+          The sender has agreed to the exchange and needs to perform the
+          bank transfer through their own app, then come back and confirm
+          with a press-and-hold gesture. Trust-resume framing — the
+          counterparty card is at the top with full credentials.
+        </p>
+
+        <div class="ds-screen-row">
+          <div class="ds-screen-frame">
+            <div class="web-mobile" id="screen-send"></div>
+          </div>
+          <div class="ds-screen-row__notes">
+            <h3 class="ds-sub" style="margin-top:0;">What's on it</h3>
+            <ol class="ds-anatomy__list">
+              <li><span class="num">1</span><div><div class="what">Trust-resume counterparty card</div><div class="why">Larger avatar, full "Удостоверение проверено" badge, "★ 4,9 · 23 сделки · с фев. 2025". Frames the screen as "you've already vetted this person."</div></div></li>
+              <li><span class="num">2</span><div><div class="what">Timer card (understated)</div><div class="why">Hollow ring + label + countdown. The timer is present but quiet — adding patience, not pressure.</div></div></li>
+              <li><span class="num">3</span><div><div class="what">Two-sided money summary</div><div class="why">"Вы отправляете 750 000 ₸ → Получаете 2 392 500 ₩". Receive side tinted primary-soft to emphasize the gain.</div></div></li>
+              <li><span class="num">4</span><div><div class="what">Bank details — load-bearing</div><div class="why">Реквизиты получателя: Банк / Получатель / Номер карты / Сумма. Each row has its own copy button. Сумма row is visually emphasized (surface-2 bg, 22px bold mono) — the wrong number sends the wrong amount.</div></div></li>
+              <li><span class="num">5</span><div><div class="what">Press-and-hold "Я отправил деньги"</div><div class="why">2-second hold. White fill animates left→right. Release-early aborts.</div></div></li>
+              <li><span class="num">6</span><div><div class="what">Hint + ghost link</div><div class="why">"УДЕРЖИВАЙТЕ 2 СЕК. — ДАЛЕЕ ЗАГРУЗКА ЧЕКА" in uppercase tracking + "Отменить сделку ›".</div></div></li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="s-wait">
+        <p class="ds-section__eyebrow">Screens · sender_paid, sender view</p>
+        <h2>Sender waits</h2>
+        <p class="ds-section__intro">
+          The sender uploaded their receipt; now they wait for the
+          counterparty to confirm. Calm patience. The submitted receipt is
+          the visual hero — proof the user fulfilled their part.
+        </p>
+
+        <div class="ds-screen-row">
+          <div class="ds-screen-frame">
+            <div class="web-mobile" id="screen-wait"></div>
+          </div>
+          <div class="ds-screen-row__notes">
+            <h3 class="ds-sub" style="margin-top:0;">What's on it</h3>
+            <ol class="ds-anatomy__list">
+              <li><span class="num">1</span><div><div class="what">Status line</div><div class="why">"Чек получен · ожидаем подтверждения". Positive but not complete.</div></div></li>
+              <li><span class="num">2</span><div><div class="what">Submitted-receipt card</div><div class="why">Structured summary: bank, amount, timestamp, card. "Открыть полностью →" reveals the actual screenshot.</div></div></li>
+              <li><span class="num">3</span><div><div class="what">Compact money row</div><div class="why">"Вы получаете 2 392 500 ₩" reconfirmation.</div></div></li>
+              <li><span class="num">4</span><div><div class="what">Waiting pulse</div><div class="why">3 breathing dots + "Контрагент уведомлён · обычно 2-8 минут".</div></div></li>
+              <li><span class="num">5</span><div><div class="what">Helper text</div><div class="why">"Если контрагент долго не отвечает, мы отправим напоминание." Promises platform presence.</div></div></li>
+              <li><span class="num">6</span><div><div class="what">Ghost link</div><div class="why">"Сообщить о проблеме ›" — no primary CTA. The sender's job is done.</div></div></li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="s-complete">
+        <p class="ds-section__eyebrow">Screens · completed, post-rating</p>
+        <h2>Complete + rating</h2>
+        <p class="ds-section__intro">
+          The exchange succeeded. öz captures the rating that feeds the
+          trust graph. <strong>Rating capture is the hero</strong>, with
+          the full transaction record one tap away behind a "Подробности
+          сделки" disclosure.
+        </p>
+
+        <div class="ds-screen-row">
+          <div class="ds-screen-frame">
+            <div class="web-mobile" id="screen-complete"></div>
+          </div>
+          <div class="ds-screen-row__notes">
+            <h3 class="ds-sub" style="margin-top:0;">What's on it</h3>
+            <ol class="ds-anatomy__list">
+              <li><span class="num">1</span><div><div class="what">Brief success</div><div class="why">44px green check + inline "Сделка завершена" + warm confirmation subline.</div></div></li>
+              <li><span class="num">2</span><div><div class="what">Rating hero</div><div class="why">"Оцените сделку" prompt + "Ваш отзыв помогает сообществу öz" + 5 large gold stars + 88px comment textarea.</div></div></li>
+              <li><span class="num">3</span><div><div class="what">"Подробности сделки ▾" disclosure</div><div class="why">Toggle expands the full 6-row record (Отдано / Получено / Контрагент / Курс / ID / Дата). Closed by default.</div></div></li>
+              <li><span class="num">4</span><div><div class="what">Action stack</div><div class="why">"Отправить отзыв" primary + "Пропустить → готово" gentle skip + "Посмотреть чеки" reveal with lock icon.</div></div></li>
+            </ol>
+            <p class="ds-prose" style="margin-top:20px;"><strong>Calm satisfaction.</strong> No confetti. Money is serious; the success is reassuring, not celebratory.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ ICONOGRAPHY ═════════════════════════════════════════ -->
+      <section class="ds-section" id="iconography">
+        <p class="ds-section__eyebrow">Reference</p>
+        <h2>Iconography</h2>
+        <p class="ds-section__intro">
+          öz uses <strong>almost no icons</strong>. The product is
+          type-led. When an icon appears, it's because no amount of typography
+          would do the same job.
+        </p>
+        <div class="ds-grid-2">
+          <div>
+            <h3 class="ds-sub" style="color:var(--primary);">Used</h3>
+            <div class="ds-prose">
+              <ul>
+                <li>Unicode currency: <strong>₸ ₩</strong> (type, not icons)</li>
+                <li>Hollow outline triangle (rate widget only)</li>
+                <li>Direction arrow: <strong>→</strong></li>
+                <li>Star rating: <strong>★</strong> (gold)</li>
+                <li>Approx: <strong>≈</strong></li>
+                <li>Hairline lock (receipt-reveal)</li>
+                <li>The <code>ö</code> brand mark</li>
+                <li>Kaspi logo (third-party brand on bank-related surfaces only)</li>
+              </ul>
+            </div>
+          </div>
+          <div>
+            <h3 class="ds-sub" style="color:var(--error);">Not used</h3>
+            <div class="ds-prose">
+              <ul>
+                <li>No icon font (Lucide / Heroicons / Phosphor)</li>
+                <li>No emoji</li>
+                <li>No country flags 🇰🇿 / 🇰🇷</li>
+                <li>No filled play / chevron / glyph cards</li>
+                <li>No left-bordered colored callouts</li>
+                <li>No spinners or confetti</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="ds-prose">
+          <p><strong>If you need an icon</strong> — try harder to avoid it.
+          If you must: hollow outline, 1.5–1.6px stroke, rounded line-caps,
+          <code>currentColor</code>, 20×20 viewBox. The rate-widget triangle
+          sets the vocabulary.</p>
+        </div>
+      </section>
+
+      <!-- ═══════ VOICE ═══════════════════════════════════════════════ -->
+      <section class="ds-section" id="voice">
+        <p class="ds-section__eyebrow">Reference</p>
+        <h2>Voice + copy</h2>
+        <div class="ds-prose">
+          <p><strong>Language.</strong> Russian product UI, English DS docs.</p>
+          <p><strong>Tone.</strong> Calm. Competent. A little dry. No exclamation marks. No emoji. Confirmation is a quiet, complete sentence.</p>
+          <p><strong>Person.</strong> Formal "вы" implicit in verb form. The system speaks as "мы" only sparingly ("Ожидаем отправки…", "Мы свяжемся с обеими сторонами…").</p>
+          <p><strong>Buttons.</strong> Imperative single verb: <code>Войти · Отправить · Подтвердить · Опубликовать · Связаться</code>. Past-tense for already-done: <code>Чек отправлен</code>.</p>
+          <p><strong>Loading.</strong> Gerund + ellipsis: <code>Загружаем… · Проверяем… · Публикация…</code>. Always <code>…</code>, never <code>...</code>.</p>
+          <p><strong>Errors.</strong> Specific, blame-free: <code>Неверный или истёкший код.</code> · <code>Не удалось загрузить фото. Попробуйте ещё раз.</code></p>
+          <p><strong>Numbers.</strong> Russian decimal comma (<code>3,19</code>). Thin-space digit groups (<code>750 000 ₸</code>). Direction arrow is <code>→</code>, never <code>↔</code>.</p>
+        </div>
+
+        <h3 class="ds-sub">Six tonal touchstones</h3>
+        <div class="ds-demo ds-demo--canvas" style="flex-direction:column; align-items:flex-start; gap:10px;">
+          <div style="display:flex; gap:12px; align-items:baseline;"><span style="font-size:15px; color:var(--text); font-weight:500;">Вы отправляете первым</span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">— status, role-aware</span></div>
+          <div style="display:flex; gap:12px; align-items:baseline;"><span style="font-size:15px; color:var(--text); font-weight:500;">Чек отправлен</span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">— perfective, no subject</span></div>
+          <div style="display:flex; gap:12px; align-items:baseline;"><span style="font-size:15px; color:var(--text); font-weight:500;">Ожидаем отправки от контрагента</span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">— system as "we", sparingly</span></div>
+          <div style="display:flex; gap:12px; align-items:baseline;"><span style="font-size:15px; color:var(--text); font-weight:500;">Загружаем…</span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">— gerund + ellipsis</span></div>
+          <div style="display:flex; gap:12px; align-items:baseline;"><span style="font-size:15px; color:var(--error); font-weight:500;">Неверный или истёкший код.</span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">— error: specific, blame-free</span></div>
+          <div style="display:flex; gap:12px; align-items:baseline;"><span style="font-size:15px; color:var(--text); font-weight:500;">Новый</span><span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-3);">— new user, never "0 reviews"</span></div>
+        </div>
+      </section>
+
+      <!-- ═══════ CHANGELOG ═══════════════════════════════════════════ -->
+      <section class="ds-section" id="changelog">
+        <p class="ds-section__eyebrow">Reference</p>
+        <h2>Changelog</h2>
+
+        <div class="ds-changelog">
+          <div class="ds-changelog__entry">
+            <div class="ds-changelog__head">
+              <span class="ds-changelog__ver">v0.4</span>
+              <span class="ds-changelog__date">28 May 2026</span>
+              <span class="ds-changelog__title">Transaction flow + receipt mechanic consolidation</span>
+            </div>
+            <div class="ds-prose">
+              <p><strong>Added — new composite components</strong></p>
+              <ul>
+                <li>Submitted-receipt card (structured receipt summary, not a thumbnail)</li>
+                <li>Copy row with real <code>navigator.clipboard.writeText</code></li>
+                <li>Slide-to-confirm (drag-to-confirm, 85% threshold, disabled state)</li>
+                <li>Press-and-hold button (2s hold with white fill, release-aborts)</li>
+                <li>Star rating with hover preview + chosen-label</li>
+                <li>Waiting pulse (3 breathing dots at 1.6s — NOT a spinner)</li>
+                <li>Vertical progress stepper (4-stage transaction)</li>
+                <li>Two-sided money summary (Отдаёте vs Получаете)</li>
+                <li>Kaspi receipt mock (CSS-only prototyping placeholder)</li>
+              </ul>
+              <p><strong>Added — new patterns</strong></p>
+              <ul>
+                <li><a href="#p-user-submitted">User-submitted-receipt framing</a> (italic reframing line)</li>
+                <li><a href="#p-verify-gate">Verify gate → swipe</a> (checkbox-gated swipe pattern)</li>
+                <li><a href="#p-press-hold">Press-and-hold for irreversible actions</a></li>
+                <li><a href="#p-patient">Patient waiting (no spinners)</a></li>
+                <li><a href="#p-responsive">Mobile-first responsive (480 col on desktop)</a></li>
+              </ul>
+              <p><strong>Added — finalized screens</strong></p>
+              <ul>
+                <li><a href="#s-confirm">Counterparty review</a> on <code>--primary-soft</code> canvas</li>
+                <li><a href="#s-send">Sender pays</a> trust-resume layout</li>
+                <li><a href="#s-wait">Sender waits</a> receipt-hero layout</li>
+                <li><a href="#s-complete">Complete + rating</a> with collapsible record</li>
+              </ul>
+              <p><strong>Changed</strong></p>
+              <ul>
+                <li><code>--primary-soft</code> promoted to <em>page background</em> for trust-relevant screens, not just badge fills.</li>
+                <li>Status banner replaced on most screens by an inline status line. Heavy banner reserved for warning/dispute.</li>
+                <li>Inline-status pill style codified (<code>.tx-statusline__dot</code> with 4px soft-halo ring).</li>
+              </ul>
+              <p><strong>Removed</strong></p>
+              <ul>
+                <li>All remaining references to the internal codename <em>Saiqal</em>. The brand is <strong>öz</strong> everywhere.</li>
+                <li>Phone-frame chrome from production screens — kept only as a design-mock device for exploration.</li>
+                <li>Spinner usage on waiting states.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ds-changelog__entry">
+            <div class="ds-changelog__head">
+              <span class="ds-changelog__ver">v0.3</span>
+              <span class="ds-changelog__date">prior</span>
+              <span class="ds-changelog__title">Rate widget v2 + warm-canvas baseline</span>
+            </div>
+            <div class="ds-prose">
+              <p>Established the warm-canvas system, the calm rate widget
+              (replacing the dark-green pill), Inter + JetBrains Mono
+              typography, the OTP boxes, and the original transaction
+              status flow.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ SOURCE FILES ═════════════════════════════════════════ -->
+      <section class="ds-section" id="sources">
+        <p class="ds-section__eyebrow">Reference</p>
+        <h2>Source files</h2>
+        <p class="ds-section__intro">
+          Where to find the canonical code for each piece of the system.
+          All paths are project-relative.
+        </p>
+        <div class="ds-prose">
+          <p><strong>Tokens &amp; type</strong></p>
+          <ul>
+            <li><code>colors_and_type.css</code> — every CSS variable + Inter + JetBrains Mono</li>
+            <li><code>ui_kits/oz-mobile/components.css</code> — every <code>oz-*</code> primitive class</li>
+          </ul>
+          <p><strong>Transaction screens</strong></p>
+          <ul>
+            <li><code>explorations/transaction-confirm.css</code> — confirm + send + wait shared styles (<code>.tx-*</code>)</li>
+            <li><code>explorations/transaction-complete.css</code> — complete screen styles (<code>.tc-*</code>)</li>
+            <li><code>explorations/responsive-web.css</code> — mobile-web + 480-col-desktop frames</li>
+            <li><code>explorations/ApproachC2.jsx</code> — counterparty review (finalized)</li>
+            <li><code>explorations/SendApproachC.jsx</code> — sender pays (finalized)</li>
+            <li><code>explorations/WaitApproachA.jsx</code> — sender waits (finalized)</li>
+            <li><code>explorations/CompleteApproachBC.jsx</code> — complete + rating (finalized)</li>
+          </ul>
+          <p><strong>Composites used inside screens</strong></p>
+          <ul>
+            <li><code>explorations/SlideToConfirm.jsx</code></li>
+            <li><code>explorations/PressAndHold.jsx</code></li>
+            <li><code>explorations/CopyRow.jsx</code></li>
+            <li><code>explorations/SubmittedReceiptCard.jsx</code></li>
+            <li><code>explorations/WaitingPulse.jsx</code></li>
+            <li><code>explorations/ProgressStepper.jsx</code></li>
+            <li><code>explorations/KaspiReceiptMock.jsx</code></li>
+            <li><code>explorations/CompleteParts.jsx</code> — <code>SuccessCheck</code>, <code>StarRating</code>, <code>ReceiptReveal</code></li>
+            <li><code>explorations/WebFrames.jsx</code> — <code>WebMobile</code>, <code>WebDesktop</code></li>
+          </ul>
+          <p><strong>UI kit (auth + feed + standard primitives)</strong></p>
+          <ul>
+            <li><code>ui_kits/oz-mobile/</code> — full click-through prototype with <code>index.html</code>, screens, and shared primitives</li>
+          </ul>
+          <p><strong>Skill / handoff</strong></p>
+          <ul>
+            <li><code>SKILL.md</code> — cross-compatible with Claude Code skills</li>
+            <li><code>README.md</code> — narrative documentation (this file is the structured complement)</li>
+          </ul>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ═══════ LIVE DEMOS ═══════════════════════════════════════════════ -->
+
+  <!-- Shared components used by the demos -->
+  <script type="text/babel" data-presets="react" src="explorations/SlideToConfirm.jsx"></script>
+  <script type="text/babel" data-presets="react" src="explorations/PressAndHold.jsx"></script>
+  <script type="text/babel" data-presets="react" src="explorations/CopyRow.jsx"></script>
+  <script type="text/babel" data-presets="react" src="explorations/SubmittedReceiptCard.jsx"></script>
+  <script type="text/babel" data-presets="react" src="explorations/WaitingPulse.jsx"></script>
+  <script type="text/babel" data-presets="react" src="explorations/KaspiReceiptMock.jsx"></script>
+  <script type="text/babel" data-presets="react" src="explorations/CompleteParts.jsx"></script>
+  <script type="text/babel" data-presets="react" src="explorations/WebFrames.jsx"></script>
+
+  <!-- The four finalized screen components -->
+  <script type="text/babel" data-presets="react" src="explorations/ApproachC2.jsx"></script>
+  <script type="text/babel" data-presets="react" src="explorations/SendApproachC.jsx"></script>
+  <script type="text/babel" data-presets="react" src="explorations/WaitApproachA.jsx"></script>
+  <script type="text/babel" data-presets="react" src="explorations/CompleteApproachBC.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    // ── Rate widget demo ─────────────────────────────────────────────
+    function DemoRate() {
+      return (
+        <div className="oz-rate">
+          <div className="oz-rate__row">
+            <span className="oz-rate__icons">
+              <span className="oz-rate__sym">₸</span>
+              <svg className="oz-rate__tri" width={20} height={20} viewBox="0 0 20 20" fill="none">
+                <path d="M6 4.5 L15 10 L6 15.5 Z" stroke="currentColor" strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" />
+              </svg>
+              <span className="oz-rate__sym">₩</span>
+            </span>
+            <span className="oz-rate__num"><span className="oz-rate__num-inner">3,19</span></span>
+            <svg className="oz-rate__spark" viewBox="0 0 120 44">
+              <defs>
+                <linearGradient id="dsf" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="120" y2="0">
+                  <stop offset="0" stopColor="#fff" stopOpacity="0" />
+                  <stop offset="0.28" stopColor="#fff" stopOpacity="1" />
+                </linearGradient>
+                <mask id="dsm"><rect x="0" y="0" width="120" height="44" fill="url(#dsf)" /></mask>
+              </defs>
+              <g mask="url(#dsm)">
+                <path className="oz-rate__spark-path" d="M6,22 L20,18 L34,24 L48,16 L62,20 L76,12 L90,16 L104,10 L114,8" />
+              </g>
+              <circle className="oz-rate__spark-dot" cx="114" cy="8" r="4" />
+            </svg>
+          </div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById("demo-rate")).render(<DemoRate />);
+
+    // ── Submitted receipt demo ───────────────────────────────────────
+    ReactDOM.createRoot(document.getElementById("demo-submitted")).render(<SubmittedReceiptCard />);
+
+    // ── Copy row demo ────────────────────────────────────────────────
+    ReactDOM.createRoot(document.getElementById("demo-copy")).render(
+      <React.Fragment>
+        <CopyRow label="Банк" value="Kaspi Gold" />
+        <CopyRow label="Получатель" value="А. Нурланова" />
+        <CopyRow label="Номер карты" value="5169 4971 •••• 8821" />
+        <CopyRow label="Сумма" value="750 000 ₸" emphasize />
+      </React.Fragment>
+    );
+
+    // ── Slide-to-confirm demo (gated by a real checkbox above it) ───
+    function DemoSlide() {
+      const [verified, setVerified] = React.useState(false);
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <button
+            type="button"
+            className={"tx-check" + (verified ? " tx-check--on" : "")}
+            onClick={() => setVerified(v => !v)}
+            style={{ borderRadius: 12, border: "1px solid var(--border)" }}
+          >
+            <span className="tx-check__box"><span className="tx-check__tick"></span></span>
+            <span className="tx-check__label">Я сверил поступление в моём банке</span>
+          </button>
+          {!verified && (
+            <p className="tx-hint">Отметьте «Я сверил», чтобы подтвердить получение.</p>
+          )}
+          <SlideToConfirm
+            label="Сдвиньте, чтобы подтвердить"
+            confirmedLabel="Подтверждено"
+            disabled={!verified}
+          />
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById("demo-slide")).render(<DemoSlide />);
+
+    // ── Press-and-hold demo ──────────────────────────────────────────
+    ReactDOM.createRoot(document.getElementById("demo-hold")).render(
+      <PressAndHold label="Я отправил деньги" doneLabel="Подтверждено" />
+    );
+
+    // ── Star rating demo ─────────────────────────────────────────────
+    ReactDOM.createRoot(document.getElementById("demo-stars")).render(
+      <React.Fragment>
+        <StarRating size="lg" />
+      </React.Fragment>
+    );
+
+    // ── Waiting pulse demo ───────────────────────────────────────────
+    ReactDOM.createRoot(document.getElementById("demo-wait")).render(
+      <WaitingPulse hero />
+    );
+
+    // ── Kaspi mock demo ──────────────────────────────────────────────
+    function KaspiBox() {
+      return (
+        <div className="tx-receipt__thumb" style={{ aspectRatio: "1 / 1.05", borderRadius: 12, overflow: "hidden" }}>
+          <KaspiReceiptMock />
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById("demo-kaspi")).render(<KaspiBox />);
+
+    // ── Full-screen demos ────────────────────────────────────────────
+    ReactDOM.createRoot(document.getElementById("screen-confirm")).render(<ApproachC2 />);
+    ReactDOM.createRoot(document.getElementById("screen-send")).render(<SendApproachC />);
+    ReactDOM.createRoot(document.getElementById("screen-wait")).render(<WaitApproachA />);
+    ReactDOM.createRoot(document.getElementById("screen-complete")).render(<CompleteApproachBC />);
+  </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>öz — UI kit (mobile web)</title>
+  <link rel="icon" href="../../assets/oz-icon.svg" />
+  <link rel="stylesheet" href="../../colors_and_type.css" />
+  <link rel="stylesheet" href="components.css" />
+  <link rel="stylesheet" href="frame.css" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="oz-stage">
+    <div class="oz-stage__title">
+      <span class="dot"></span>
+      öz — Mobile web prototype
+    </div>
+
+    <div id="root"></div>
+
+    <div class="oz-stage__hint">
+      Войти → enter any 10 digits → enter any 6-digit code (≠ 000000) → feed.
+      Tap ＋ to post a listing.
+    </div>
+  </div>
+
+  <script type="text/babel" data-presets="react" src="oz-shared.jsx"></script>
+  <script type="text/babel" data-presets="react" src="screens/Landing.jsx"></script>
+  <script type="text/babel" data-presets="react" src="screens/AuthPhone.jsx"></script>
+  <script type="text/babel" data-presets="react" src="screens/AuthVerify.jsx"></script>
+  <script type="text/babel" data-presets="react" src="screens/Feed.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    function App() {
+      return (
+        <RouterProvider initialPath="/">
+          <Phone>
+            <Route />
+          </Phone>
+        </RouterProvider>
+      );
+    }
+
+    function Route() {
+      const { path } = useRouter();
+      if (path === "/") return <LandingScreen />;
+      if (path === "/auth/phone") return <PhoneScreen />;
+      if (path === "/auth/verify") return <VerifyScreen />;
+      if (path === "/feed") return <FeedScreen />;
+      // Catch-all (profile / alerts / listing / transaction not implemented in this kit yet)
+      return (
+        <div style={{
+          padding: 32, height: "100%",
+          display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center",
+        }}>
+          <BrandMark size={48} />
+          <h2 className="oz-h2" style={{ marginTop: 16 }}>Скоро</h2>
+          <p className="oz-body-2" style={{ marginTop: 8 }}>
+            Этот экран ещё не воссоздан в этом UI ките.
+          </p>
+          <p className="oz-caption" style={{ marginTop: 4 }}>
+            <span style={{ fontFamily: "var(--font-mono)" }}>path: {path}</span>
+          </p>
+          <button
+            className="oz-btn oz-btn--secondary"
+            style={{ marginTop: 24 }}
+            onClick={() => useRouter().back()}
+          >Назад</button>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>
