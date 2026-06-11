@@ -259,34 +259,37 @@ export type Database = {
       payment_methods: {
         Row: {
           account_number: string
+          bank_code: string | null
           bank_name: string
           created_at: string
           currency: string
-          holder_name: string
           id: string
           is_default: boolean
+          recipient_name: string
           updated_at: string
           user_id: string
         }
         Insert: {
           account_number: string
+          bank_code?: string | null
           bank_name: string
           created_at?: string
           currency: string
-          holder_name: string
           id?: string
           is_default?: boolean
+          recipient_name: string
           updated_at?: string
           user_id: string
         }
         Update: {
           account_number?: string
+          bank_code?: string | null
           bank_name?: string
           created_at?: string
           currency?: string
-          holder_name?: string
           id?: string
           is_default?: boolean
+          recipient_name?: string
           updated_at?: string
           user_id?: string
         }
@@ -648,6 +651,37 @@ export type Database = {
         }
       }
       cleanup_expired_auth_codes: { Args: never; Returns: undefined }
+      create_transaction: {
+        Args: { p_listing_id: string; p_rate?: number }
+        Returns: {
+          amount: number
+          amount_currency: string
+          completed_at: string | null
+          counterparty_confirmed_at: string | null
+          counterparty_id: string
+          counterparty_paid_at: string | null
+          created_at: string
+          direction: string
+          dispute_description: string | null
+          dispute_reason: string | null
+          disputed_at: string | null
+          disputed_by: string | null
+          id: string
+          initiator_confirmed_at: string | null
+          initiator_id: string
+          initiator_paid_at: string | null
+          listing_id: string
+          rate: number | null
+          rate_locked_at: string
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       find_alert_matches: {
         Args: { p_listing_id: string }
         Returns: {
@@ -671,9 +705,11 @@ export type Database = {
           account_number: string
           bank_name: string
           currency: string
-          holder_name: string
+          recipient_name: string
         }[]
       }
+      kz_iban_valid: { Args: { p_iban: string }; Returns: boolean }
+      luhn_valid: { Args: { p_digits: string }; Returns: boolean }
       mark_messages_read: {
         Args: { p_transaction_id: string }
         Returns: undefined
@@ -749,6 +785,33 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      upsert_payment_method: {
+        Args: {
+          p_account_number: string
+          p_bank_code: string
+          p_bank_name: string
+          p_currency: string
+          p_recipient_name: string
+        }
+        Returns: {
+          account_number: string
+          bank_code: string | null
+          bank_name: string
+          created_at: string
+          currency: string
+          id: string
+          is_default: boolean
+          recipient_name: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payment_methods"
           isOneToOne: true
           isSetofReturn: false
         }
