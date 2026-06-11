@@ -154,8 +154,10 @@ button {
   color: #fff;
 }
 
-.oz-btn--primary:hover {
-  background: var(--primary-hover);
+@media (hover: hover) and (pointer: fine) {
+  .oz-btn--primary:hover {
+    background: var(--primary-hover);
+  }
 }
 
 .oz-btn--primary:disabled {
@@ -170,8 +172,10 @@ button {
   border-color: var(--border-strong);
 }
 
-.oz-btn--secondary:hover {
-  background: var(--surface-2);
+@media (hover: hover) and (pointer: fine) {
+  .oz-btn--secondary:hover {
+    background: var(--surface-2);
+  }
 }
 
 .oz-btn--ghost {
@@ -179,8 +183,10 @@ button {
   color: var(--text);
 }
 
-.oz-btn--ghost:hover {
-  background: var(--surface-2);
+@media (hover: hover) and (pointer: fine) {
+  .oz-btn--ghost:hover {
+    background: var(--surface-2);
+  }
 }
 
 /* OTP boxes */
@@ -258,8 +264,10 @@ button {
 }
 
 /* Only hover affordance is a near-imperceptible lift (widget is read-only). */
-.oz-rate:hover {
-  transform: scale(1.01);
+@media (hover: hover) and (pointer: fine) {
+  .oz-rate:hover {
+    transform: scale(1.01);
+  }
 }
 
 .oz-rate__row {
@@ -716,7 +724,9 @@ button {
   z-index: 20;
 }
 
-.oz-fab:hover { background: #38875F; }
+@media (hover: hover) and (pointer: fine) {
+  .oz-fab:hover { background: #38875F; }
+}
 .oz-fab:active { transform: translateY(1px) scale(0.97); }
 .oz-fab[disabled] { opacity: 0.7; cursor: not-allowed; }
 
@@ -883,7 +893,9 @@ button {
   cursor: pointer;
 }
 
-.oz-secondary-btn-sm:hover { background: var(--surface-2); }
+@media (hover: hover) and (pointer: fine) {
+  .oz-secondary-btn-sm:hover { background: var(--surface-2); }
+}
 
 .oz-soft-btn-sm {
   font-family: inherit;
@@ -897,7 +909,9 @@ button {
   cursor: pointer;
 }
 
-.oz-soft-btn-sm:hover { background: #d6ead9; }
+@media (hover: hover) and (pointer: fine) {
+  .oz-soft-btn-sm:hover { background: #d6ead9; }
+}
 
 /* ===== Listing detail screen ===== */
 
@@ -925,7 +939,9 @@ button {
   cursor: pointer;
 }
 
-.oz-listing-back:hover { color: var(--text); }
+@media (hover: hover) and (pointer: fine) {
+  .oz-listing-back:hover { color: var(--text); }
+}
 
 .oz-listing-back__arrow {
   font-size: 18px;
@@ -1279,8 +1295,10 @@ button {
   font-size: 15px;
 }
 
-.oz-profile__row-link:hover {
-  background: var(--surface-2);
+@media (hover: hover) and (pointer: fine) {
+  .oz-profile__row-link:hover {
+    background: var(--surface-2);
+  }
 }
 
 .oz-profile__logout {
@@ -1391,8 +1409,10 @@ button {
   cursor: pointer;
 }
 
-.oz-headeravatar__item:hover {
-  background: var(--surface-2);
+@media (hover: hover) and (pointer: fine) {
+  .oz-headeravatar__item:hover {
+    background: var(--surface-2);
+  }
 }
 
 .oz-headeravatar__item:disabled {
@@ -1742,9 +1762,11 @@ button {
   cursor: pointer;
 }
 
-.oz-alerts__trash:hover {
-  background: var(--surface-2);
-  color: var(--text);
+@media (hover: hover) and (pointer: fine) {
+  .oz-alerts__trash:hover {
+    background: var(--surface-2);
+    color: var(--text);
+  }
 }
 
 .oz-alerts__create {
@@ -1774,8 +1796,10 @@ button {
   text-decoration: underline;
 }
 
-.oz-feed__disclaimer a:hover {
-  color: var(--text-2);
+@media (hover: hover) and (pointer: fine) {
+  .oz-feed__disclaimer a:hover {
+    color: var(--text-2);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────

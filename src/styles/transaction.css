@@ -192,7 +192,9 @@
   cursor: zoom-in;
   transition: transform 0.1s;
 }
-.tx-receipt__thumb:hover { transform: translateY(-1px); box-shadow: var(--shadow-card); }
+@media (hover: hover) and (pointer: fine) {
+  .tx-receipt__thumb:hover { transform: translateY(-1px); box-shadow: var(--shadow-card); }
+}
 
 .tx-receipt__thumb--md { aspect-ratio: 1 / 1.05; }
 .tx-receipt__thumb--sm { aspect-ratio: 16 / 10; }
@@ -340,7 +342,9 @@
   line-height: 1;
   transition: background 0.15s, transform 0.05s;
 }
-.tx-actions__primary:hover { background: var(--primary-hover); }
+@media (hover: hover) and (pointer: fine) {
+  .tx-actions__primary:hover { background: var(--primary-hover); }
+}
 .tx-actions__primary:active { transform: translateY(1px); }
 
 .tx-actions__ghost {
@@ -354,7 +358,9 @@
   padding: 8px 4px;
   text-align: center;
 }
-.tx-actions__ghost:hover { color: var(--text); }
+@media (hover: hover) and (pointer: fine) {
+  .tx-actions__ghost:hover { color: var(--text); }
+}
 
 .tx-disclaimer {
   font-size: 12px;
@@ -474,8 +480,10 @@
   font-family: var(--font-sans);
   line-height: 1.2;
 }
-.tx-station__open:hover .tx-station__arrow {
-  background: #d6ead9;
+@media (hover: hover) and (pointer: fine) {
+  .tx-station__open:hover .tx-station__arrow {
+    background: #d6ead9;
+  }
 }
 
 /* Sticky-bar hint (only visible while slider is disabled) */
@@ -504,7 +512,9 @@
   gap: 4px;
   align-self: center;
 }
-.tx-actions__ghost-link:hover { color: var(--text); }
+@media (hover: hover) and (pointer: fine) {
+  .tx-actions__ghost-link:hover { color: var(--text); }
+}
 .tx-actions__ghost-link::after {
   content: "›";
   font-size: 16px;
@@ -531,7 +541,9 @@
   font-family: inherit;
   border-bottom: 1px solid var(--border);
 }
-.tx-station__open:hover { background: var(--surface-2); }
+@media (hover: hover) and (pointer: fine) {
+  .tx-station__open:hover { background: var(--surface-2); }
+}
 .tx-station__logo {
   width: 36px; height: 36px;
   border-radius: 8px;
@@ -565,7 +577,9 @@
   user-select: none;
   background: var(--surface);
 }
-.tx-check:hover { background: var(--surface-2); }
+@media (hover: hover) and (pointer: fine) {
+  .tx-check:hover { background: var(--surface-2); }
+}
 .tx-check__box {
   width: 22px; height: 22px;
   border-radius: 6px;
@@ -947,10 +961,12 @@
   color: var(--text-2);
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.tx-bank__copy:hover {
-  background: var(--primary-soft);
-  color: var(--primary);
-  border-color: var(--primary-soft);
+@media (hover: hover) and (pointer: fine) {
+  .tx-bank__copy:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+    border-color: var(--primary-soft);
+  }
 }
 .tx-bank__copy.is-copied {
   background: var(--primary);
@@ -987,7 +1003,9 @@
   touch-action: none;
   transition: background 0.15s;
 }
-.tx-hold:hover { background: var(--primary-hover); }
+@media (hover: hover) and (pointer: fine) {
+  .tx-hold:hover { background: var(--primary-hover); }
+}
 .tx-hold.is-holding { background: var(--primary-hover); }
 .tx-hold.is-done { background: var(--primary); }
 .tx-hold:disabled { background: var(--surface-sunken); color: var(--text-mute); cursor: not-allowed; }
@@ -1110,7 +1128,9 @@
   color: var(--primary);
   cursor: pointer;
 }
-.tx-receipt-summary__open:hover { color: var(--primary-hover); }
+@media (hover: hover) and (pointer: fine) {
+  .tx-receipt-summary__open:hover { color: var(--primary-hover); }
+}
 
 .tx-receipt-summary--compact .tx-receipt-summary__amount {
   font-size: 22px;
@@ -1379,7 +1399,10 @@
   transition: color 0.12s, transform 0.08s;
   line-height: 0;
 }
-.tc-star:hover,
+@media (hover: hover) and (pointer: fine) {
+  .tc-star:hover { transform: translateY(-1px); }
+}
+/* JS-driven (mouse events set it), so it stays outside the hover media. */
 .tc-star.is-hovered { transform: translateY(-1px); }
 .tc-star.is-filled { color: var(--gold); }
 .tc-star.is-preview { color: rgba(185, 138, 58, 0.4); }
@@ -1432,7 +1455,9 @@
   align-items: center;
   gap: 6px;
 }
-.tc-receipt-reveal:hover { color: var(--text); }
+@media (hover: hover) and (pointer: fine) {
+  .tc-receipt-reveal:hover { color: var(--text); }
+}
 .tc-receipt-reveal__lock {
   width: 12px; height: 12px;
   display: inline-block;
@@ -1468,7 +1493,9 @@
   gap: 6px;
   align-self: center;
 }
-.tc-details__toggle:hover { color: var(--text); }
+@media (hover: hover) and (pointer: fine) {
+  .tc-details__toggle:hover { color: var(--text); }
+}
 .tc-details__caret {
   display: inline-block;
   width: 0; height: 0;
@@ -1500,7 +1527,9 @@
   line-height: 1;
   transition: background 0.15s, transform 0.05s;
 }
-.tc-actions__primary:hover { background: var(--primary-hover); }
+@media (hover: hover) and (pointer: fine) {
+  .tc-actions__primary:hover { background: var(--primary-hover); }
+}
 .tc-actions__primary:active { transform: translateY(1px); }
 
 /* ═════════════════════════════════════════════════════════════════════════
