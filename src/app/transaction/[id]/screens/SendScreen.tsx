@@ -240,8 +240,18 @@ export function SendScreen({
 
       <div className="tx-card tx-bank" style={{ padding: 0 }}>
         <div className="tx-bank__title">Реквизиты получателя</div>
+        {/* The recipient name leads the block: it's what the sender's bank
+            shows on its own confirmation screen, so it's the one field they
+            can verify for free before money moves. */}
+        <div className="tx-bank__recipient">
+          <span className="tx-bank__recipient-name">
+            {pm?.recipient_name ?? "—"}
+          </span>
+          <span className="tx-bank__recipient-hint">
+            Банк покажет это имя при переводе — сверьте перед отправкой
+          </span>
+        </div>
         <CopyRow label="Банк" value={pm?.bank_name ?? "—"} />
-        <CopyRow label="Получатель" value={pm?.holder_name ?? name} />
         <CopyRow label="Номер карты" value={pm?.account_number ?? "—"} />
         <CopyRow label="Сумма" value={formatAmount(amount, from)} emphasize />
       </div>

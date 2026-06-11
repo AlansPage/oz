@@ -17,7 +17,7 @@ function rpcErrorMessage(raw: string | undefined): string {
   switch (raw) {
     case "invalid_account_number":
       return "Номер не проходит проверку. Проверьте цифры.";
-    case "invalid_holder_name":
+    case "invalid_recipient_name":
       return "Укажите имя получателя.";
     case "invalid_bank_code":
     case "invalid_bank_name":
@@ -53,7 +53,9 @@ export function PaymentMethodForm({
     initial?.bank_code ? "" : (initial?.bank_name ?? ""),
   );
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [holderName, setHolderName] = useState(initial?.holder_name ?? "");
+  const [recipientName, setRecipientName] = useState(
+    initial?.recipient_name ?? "",
+  );
   const [accountNumber, setAccountNumber] = useState(
     initial?.account_number ?? "",
   );
@@ -68,15 +70,15 @@ export function PaymentMethodForm({
   const isOther = bankSel === "other";
 
   const customBankTrimmed = customBank.trim();
-  const holder = holderName.trim();
+  const recipient = recipientName.trim();
   const account = accountNumber.trim();
   const bankChosen =
     selectedBank !== null ||
     (isOther && customBankTrimmed.length >= 1 && customBankTrimmed.length <= 80);
   const canSubmit =
     bankChosen &&
-    holder.length >= 1 &&
-    holder.length <= 120 &&
+    recipient.length >= 1 &&
+    recipient.length <= 120 &&
     account.length >= 4 &&
     account.length <= 40 &&
     !saving;
@@ -111,7 +113,7 @@ export function PaymentMethodForm({
         p_currency: currency,
         p_bank_code: selectedBank?.code ?? null,
         p_bank_name: isOther ? customBankTrimmed : null,
-        p_holder_name: holder,
+        p_recipient_name: recipient,
         p_account_number: account,
       },
     );
@@ -165,19 +167,23 @@ export function PaymentMethodForm({
       )}
 
       <div className="oz-sheet__field">
-        <label className="oz-sheet__label" htmlFor="oz-pm-holder">
+        <label className="oz-sheet__label" htmlFor="oz-pm-recipient">
           Получатель
         </label>
         <input
-          id="oz-pm-holder"
+          id="oz-pm-recipient"
           type="text"
           className="oz-input"
-          placeholder="Имя владельца счёта"
-          value={holderName}
+          placeholder="Имя, как зарегистрировано в банке"
+          value={recipientName}
           maxLength={120}
-          onChange={(e) => setHolderName(e.target.value)}
+          onChange={(e) => setRecipientName(e.target.value)}
           disabled={saving}
         />
+        <p className="oz-sheet__helper">
+          Банк отправителя покажет это имя при переводе — укажите точно как в
+          банке.
+        </p>
       </div>
 
       <div className="oz-sheet__field">

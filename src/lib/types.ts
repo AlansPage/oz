@@ -188,7 +188,7 @@ export type PaymentMethod = {
   currency: Currency;
   bank_name: string;
   bank_code: string | null;
-  holder_name: string;
+  recipient_name: string;
   account_number: string;
   is_default: boolean;
   created_at: string;
@@ -197,7 +197,7 @@ export type PaymentMethod = {
 
 export type CounterpartyPaymentMethod = {
   bank_name: string;
-  holder_name: string;
+  recipient_name: string;
   account_number: string;
   currency: Currency;
 };

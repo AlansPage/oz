@@ -96,7 +96,7 @@ export function PaymentMethodsSection({ userId }: Props) {
           </div>
           <div className="oz-pm__row">
             <span className="oz-pm__row-label">Получатель</span>
-            <span className="oz-pm__row-value">{current.holder_name}</span>
+            <span className="oz-pm__row-value">{current.recipient_name}</span>
           </div>
           <div className="oz-pm__row">
             <span className="oz-pm__row-label">Счёт / карта</span>
