@@ -307,6 +307,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          deals_count: number
           display_name: string | null
           id: string
           last_active_at: string
@@ -319,6 +320,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          deals_count?: number
           display_name?: string | null
           id: string
           last_active_at?: string
@@ -331,6 +333,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          deals_count?: number
           display_name?: string | null
           id?: string
           last_active_at?: string
@@ -768,6 +771,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      recompute_verification_tier: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       report_recipient_name_mismatch: {
         Args: { p_transaction_id: string }
         Returns: {
@@ -858,6 +865,7 @@ export type Database = {
         Returns: {
           avatar_url: string | null
           created_at: string
+          deals_count: number
           display_name: string | null
           id: string
           last_active_at: string

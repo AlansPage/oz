@@ -8,7 +8,7 @@ import type {
   Profile,
   VerificationTier,
 } from "@/lib/types";
-import { formatAmount } from "@/lib/format";
+import { formatAmount, reputationLine } from "@/lib/format";
 import { VerificationBadge } from "@/components/feed/VerificationBadge";
 import { PressAndHold } from "@/components/transaction/PressAndHold";
 import { CopyRow } from "@/components/transaction/CopyRow";
@@ -41,14 +41,6 @@ function initialOf(name: string | null, phone: string | null): string {
   const source = name?.trim() || phone?.trim();
   const first = source?.match(/[A-Za-zА-Яа-яЁё0-9]/);
   return (first?.[0] ?? "?").toUpperCase();
-}
-
-function pluralDeals(n: number): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return "сделка";
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "сделки";
-  return "сделок";
 }
 
 function joinedLine(createdAt: string): string {
@@ -155,13 +147,10 @@ export function SendScreen({
   const timer = `${mm}:${ss.toString().padStart(2, "0")}`;
 
   const name = counterparty.display_name ?? "Без имени";
-  const ratingLine =
-    counterparty.rating_avg !== null && counterparty.rating_count > 0
-      ? `★ ${counterparty.rating_avg.toLocaleString("ru-RU", {
-          minimumFractionDigits: 1,
-          maximumFractionDigits: 1,
-        })} · ${counterparty.rating_count} ${pluralDeals(counterparty.rating_count)}`
-      : "Новый";
+  const ratingLine = reputationLine(
+    counterparty.rating_avg,
+    counterparty.deals_count,
+  );
 
   return (
     <div className="tx-stage">

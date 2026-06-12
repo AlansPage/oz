@@ -10,6 +10,7 @@ import {
   formatRate,
   formatRelativeTime,
   parseAmount,
+  reputationLine,
 } from "@/lib/format";
 import {
   directionFrom,
@@ -64,10 +65,7 @@ export function ListingHero({ listing, editForm, onEditChange }: Props) {
   const expiresMs = new Date(listing.expires_at).getTime() - Date.now();
   const expiresSoon = expiresMs < HOUR_MS;
 
-  const ratingLine =
-    profile.rating_avg !== null && profile.rating_count > 0
-      ? `★ ${profile.rating_avg.toFixed(1)} · ${profile.rating_count} оценок`
-      : "Новый пользователь";
+  const ratingLine = reputationLine(profile.rating_avg, profile.deals_count);
 
   return (
     <article className="oz-listing-hero">

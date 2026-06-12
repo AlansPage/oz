@@ -7,7 +7,7 @@
 // `profiles(*)` against profiles — selecting `*` errors with
 // "permission denied for column phone" once 20260532 is applied.
 export const PROFILE_COLUMNS =
-  "id, display_name, avatar_url, verification_tier, rating_avg, rating_count, created_at, last_active_at, phone_masked";
+  "id, display_name, avatar_url, verification_tier, rating_avg, rating_count, deals_count, created_at, last_active_at, phone_masked";
 
 // Same set as a PostgREST embed: `listings.select(profileEmbed())`.
 export const profileEmbed = (alias?: string, fk?: string): string => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { reputationLine } from "@/lib/format";
 import type { Profile, VerificationTier } from "@/lib/types";
 
 const TIER_FULL: Record<VerificationTier, string> = {
@@ -15,10 +16,7 @@ const monthYear = new Intl.DateTimeFormat("ru-RU", {
 
 export function AboutUser({ profile }: { profile: Profile }) {
   const tier = profile.verification_tier as VerificationTier;
-  const ratingLine =
-    profile.rating_count > 0
-      ? `${profile.rating_count} оценок`
-      : "Пока без отзывов";
+  const ratingLine = reputationLine(profile.rating_avg, profile.deals_count);
   const memberSince = `В öz с ${monthYear.format(new Date(profile.created_at))}`;
 
   return (

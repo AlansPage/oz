@@ -21,7 +21,12 @@ import {
   type Transaction,
   type TransactionStatus,
 } from "@/lib/types";
-import { equivalentAmount, formatAmount, formatRate } from "@/lib/format";
+import {
+  equivalentAmount,
+  formatAmount,
+  formatRate,
+  reputationLine,
+} from "@/lib/format";
 import { StatusBanner } from "./StatusBanner";
 import { ActionArea } from "./ActionArea";
 import { ReceiptThumbnail } from "./ReceiptThumbnail";
@@ -511,9 +516,10 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
           {counterpartyProfile.display_name ?? "Без имени"}
         </div>
         <div className="oz-listing-about__line">
-          {counterpartyProfile.rating_count > 0
-            ? `${counterpartyProfile.rating_count} оценок`
-            : "Пока без отзывов"}
+          {reputationLine(
+            counterpartyProfile.rating_avg,
+            counterpartyProfile.deals_count,
+          )}
         </div>
       </div>
 

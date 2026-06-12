@@ -7,7 +7,7 @@ import { signAvatar } from "@/lib/avatar-url";
 import { AvatarPicker } from "@/components/AvatarPicker";
 import { VerificationBadge } from "@/components/feed/VerificationBadge";
 import { PaymentMethodsSection } from "@/components/profile/PaymentMethodsSection";
-import { formatPhoneFull } from "@/lib/format";
+import { formatPhoneFull, reputationLine } from "@/lib/format";
 import type { Profile, VerificationTier } from "@/lib/types";
 
 type Props = {
@@ -42,10 +42,7 @@ export function ProfileClient({ userId, profile, initialAvatarUrl }: Props) {
   const [loggingOut, setLoggingOut] = useState(false);
 
   const tier = profile.verification_tier as VerificationTier;
-  const ratingLine =
-    profile.rating_count > 0 && profile.rating_avg !== null
-      ? `★ ${Number(profile.rating_avg).toFixed(1)} · ${profile.rating_count} оценок`
-      : "Новый пользователь";
+  const ratingLine = reputationLine(profile.rating_avg, profile.deals_count);
   const memberSince = `Дата регистрации: ${fullDate.format(new Date(profile.created_at))}`;
 
   async function handleAvatarUploaded(path: string) {

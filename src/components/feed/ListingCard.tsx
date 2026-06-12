@@ -9,6 +9,7 @@ import {
   formatAmountBare,
   formatRate,
   formatRelativeTime,
+  reputationLine,
 } from "@/lib/format";
 import {
   directionFrom,
@@ -67,9 +68,7 @@ export function ListingCard({
           <div className="oz-card__identity">
             <span className="oz-card__name">{displayName}</span>
             <span className="oz-card__rating">
-              {profile.rating_count > 0 && profile.rating_avg !== null
-                ? `★ ${Number(profile.rating_avg).toFixed(1)} · ${profile.rating_count}`
-                : "Новый"}
+              {reputationLine(profile.rating_avg, profile.deals_count)}
             </span>
           </div>
         </div>

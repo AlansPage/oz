@@ -89,6 +89,30 @@ export function formatRelativeTime(iso: string): string {
   return relativeFormatter.format(Math.round(diffSec / (86400 * 7)), "week");
 }
 
+export function pluralDeals(n: number): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "сделка";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "сделки";
+  return "сделок";
+}
+
+/**
+ * The one reputation line: completed-deal counts, not just stars.
+ * Counts are harder to inflate than averages, and zero deals reads as
+ * explicit newness («Новый · 0 сделок») rather than an ambiguous blank.
+ */
+export function reputationLine(
+  ratingAvg: number | string | null,
+  dealsCount: number,
+): string {
+  if (dealsCount === 0) return "Новый · 0 сделок";
+  const deals = `${dealsCount} ${pluralDeals(dealsCount)}`;
+  return ratingAvg !== null
+    ? `★ ${Number(ratingAvg).toFixed(1)} · ${deals}`
+    : deals;
+}
+
 /**
  * Equivalent amount in the OTHER currency.
  *
