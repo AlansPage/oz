@@ -1,0 +1,170 @@
+// Phase 5.4 — notify-payment-method-event edge function.
+//
+// Triggered by the in-migration pg_net triggers on `public.payment_methods`
+// (INSERT, and UPDATE when account_number/recipient_name change) defined in
+// 20260545000000_payment_method_change_alert.sql. The trigger sends the
+// shared secret in `x-payment-method-event-secret`, read from Vault on the
+// database side and from PAYMENT_METHOD_EVENT_WEBHOOK_SECRET here.
+//
+// Calls find_payment_method_event_notification (SECURITY DEFINER) via
+// service-role to resolve the owner + message, sends the Telegram alert,
+// and records the outcome in notification_log — including a loud
+// 'no_telegram_link' failure row when the owner has no bot link.
+//
+// Messages embed bank names, so they are sent as PLAIN TEXT (no
+// parse_mode), same as notify-transaction-event.
+//
+// Always returns 200 for authenticated requests; failures land in
+// notification_log.
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+type NotifyRow = {
+  user_id: string;
+  telegram_user_id: number | null;
+  message_text: string;
+};
+
+type WebhookPayload = {
+  type?: "INSERT" | "UPDATE" | "DELETE";
+  table?: string;
+  record?: { id?: string };
+};
+
+const TG_API = "https://api.telegram.org";
+
+function envOrThrow(name: string): string {
+  const v = Deno.env.get(name);
+  if (!v) throw new Error(`${name} not set`);
+  return v;
+}
+
+// Constant-time secret comparison via fixed-length digests (see
+// notify-transaction-event for the rationale).
+async function secretsMatch(
+  provided: string | null,
+  expected: string | null,
+): Promise<boolean> {
+  if (!provided || !expected) return false;
+  const enc = new TextEncoder();
+  const [a, b] = await Promise.all([
+    crypto.subtle.digest("SHA-256", enc.encode(provided)),
+    crypto.subtle.digest("SHA-256", enc.encode(expected)),
+  ]);
+  const av = new Uint8Array(a);
+  const bv = new Uint8Array(b);
+  let diff = 0;
+  for (let i = 0; i < av.length; i++) diff |= av[i] ^ bv[i];
+  return diff === 0;
+}
+
+async function sendTelegram(
+  token: string,
+  chatId: number,
+  text: string,
+): Promise<{ ok: boolean; messageId?: string; errorDetail?: string }> {
+  const res = await fetch(`${TG_API}/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    return { ok: false, errorDetail: `HTTP ${res.status}: ${body.slice(0, 500)}` };
+  }
+  const json = (await res.json().catch(() => null)) as
+    | { result?: { message_id?: number } }
+    | null;
+  const messageId = json?.result?.message_id;
+  return { ok: true, messageId: messageId != null ? String(messageId) : undefined };
+}
+
+Deno.serve(async (req) => {
+  const expected = Deno.env.get("PAYMENT_METHOD_EVENT_WEBHOOK_SECRET");
+  const provided = req.headers.get("x-payment-method-event-secret");
+  if (!(await secretsMatch(provided, expected))) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { "content-type": "application/json" },
+    });
+  }
+
+  let payload: WebhookPayload;
+  try {
+    payload = (await req.json()) as WebhookPayload;
+  } catch {
+    return new Response(JSON.stringify({ ok: true, ignored: "bad_json" }), {
+      status: 200,
+    });
+  }
+
+  if (payload.table !== "payment_methods" || !payload.record?.id) {
+    return new Response(
+      JSON.stringify({ ok: true, ignored: "not_payment_method_event" }),
+      { status: 200 },
+    );
+  }
+
+  const supabase = createClient(
+    envOrThrow("SUPABASE_URL"),
+    envOrThrow("SUPABASE_SERVICE_ROLE_KEY"),
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+  const botToken = envOrThrow("TELEGRAM_BOT_TOKEN");
+
+  const { data, error } = await supabase.rpc(
+    "find_payment_method_event_notification",
+    { p_payment_method_id: payload.record.id },
+  );
+
+  if (error) {
+    console.error("find_payment_method_event_notification failed", error);
+    return new Response(
+      JSON.stringify({ ok: true, dispatched: 0, failed: 0, rpc_error: error.message }),
+      { status: 200 },
+    );
+  }
+
+  const rows = (data ?? []) as NotifyRow[];
+  let dispatched = 0;
+  let failed = 0;
+
+  for (const row of rows) {
+    if (row.telegram_user_id == null) {
+      failed += 1;
+      const { error: logErr } = await supabase.from("notification_log").insert({
+        user_id: row.user_id,
+        channel: "telegram",
+        status: "failed",
+        error_detail: "no_telegram_link",
+      });
+      if (logErr) console.error("notification_log insert (no_telegram_link) failed", logErr);
+      continue;
+    }
+    const result = await sendTelegram(botToken, row.telegram_user_id, row.message_text);
+    if (result.ok) {
+      dispatched += 1;
+      const { error: logErr } = await supabase.from("notification_log").insert({
+        user_id: row.user_id,
+        channel: "telegram",
+        status: "sent",
+        external_id: result.messageId ?? null,
+      });
+      if (logErr) console.error("notification_log insert (sent) failed", logErr);
+    } else {
+      failed += 1;
+      const { error: logErr } = await supabase.from("notification_log").insert({
+        user_id: row.user_id,
+        channel: "telegram",
+        status: "failed",
+        error_detail: result.errorDetail ?? "unknown_error",
+      });
+      if (logErr) console.error("notification_log insert (failed) failed", logErr);
+    }
+  }
+
+  return new Response(
+    JSON.stringify({ ok: true, dispatched, failed }),
+    { status: 200, headers: { "content-type": "application/json" } },
+  );
+});
