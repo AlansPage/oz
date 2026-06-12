@@ -9,7 +9,6 @@ import { PaymentMethodGateSheet } from "@/components/PaymentMethodGateSheet";
 import { formatAmountInput, formatRate, parseAmount } from "@/lib/format";
 import {
   directionFrom,
-  directionTo,
   type Currency,
   type Direction,
   type ListingInsert,
@@ -65,7 +64,6 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
   if (!open || !mounted) return null;
 
   const from = directionFrom(direction);
-  const to = directionTo(direction);
   const amount = parseAmount(amountStr);
   const rate = rateStr ? Number(rateStr.replace(",", ".")) : null;
   const canSubmit = amount > 0 && !submitting && (rate === null || rate > 0);
@@ -93,13 +91,16 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
     if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
-    // A user posting "exchange X to Y" must have a payment method for Y (the
-    // currency they will RECEIVE) before the listing goes live.
+    // A user posting "exchange X to Y" must have a payment method in the `from`
+    // currency (X) before the listing goes live: the taker (initiator) pays the
+    // listing's amount, denominated in `from`, into the poster's account — so
+    // create_transaction and the SendScreen reveal both require the poster's
+    // payout details in `from`, not `to`.
     const { data: pm } = await supabase
       .from("payment_methods")
       .select("id")
       .eq("user_id", userId)
-      .eq("currency", to)
+      .eq("currency", from)
       .eq("is_default", true)
       .maybeSingle();
     if (!pm) {
@@ -219,7 +220,7 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
 
       <PaymentMethodGateSheet
         open={paymentGateOpen}
-        currency={to}
+        currency={from}
         onReady={() => {
           setPaymentGateOpen(false);
           void doSubmit();
