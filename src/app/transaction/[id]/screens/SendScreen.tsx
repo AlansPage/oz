@@ -70,6 +70,10 @@ export function SendScreen({
   const [pm, setPm] = useState<CounterpartyPaymentMethod | null>(null);
   const [pmLoading, setPmLoading] = useState(true);
   const [pmError, setPmError] = useState(false);
+  // The counterparty edited their payout details after this deal started —
+  // the RPC refuses to reveal them (payment_details_changed_mid_deal) and
+  // the send affordance freezes, mirroring the name-mismatch state.
+  const [detailsChanged, setDetailsChanged] = useState(false);
   // The name-match checkpoint: the press-and-hold confirm stays hidden
   // until the sender explicitly confirms the recipient name they see in
   // their banking app matches recipient_name. Resets if the freeze is
@@ -105,11 +109,16 @@ export function SendScreen({
         if (cancelled) return;
         const row =
           (data as CounterpartyPaymentMethod[] | null)?.[0] ?? null;
-        if (error || !row) {
+        if (error?.message === "payment_details_changed_mid_deal") {
+          setDetailsChanged(true);
+          setPmError(false);
+          setPm(null);
+        } else if (error || !row) {
           setPmError(true);
           setPm(null);
         } else {
           setPmError(false);
+          setDetailsChanged(false);
           setPm(row);
         }
         setPmLoading(false);
@@ -163,12 +172,14 @@ export function SendScreen({
 
       <div className="tx-statusline">
         <span
-          className={`tx-statusline__dot${nameMismatchAt ? " tx-statusline__dot--warn" : ""}`}
+          className={`tx-statusline__dot${nameMismatchAt || detailsChanged ? " tx-statusline__dot--warn" : ""}`}
         />
         <span>
-          {nameMismatchAt
-            ? "Перевод остановлен · реквизиты проверяются"
-            : "Сделка активна · переведите средства"}
+          {detailsChanged
+            ? "Перевод остановлен · реквизиты изменились"
+            : nameMismatchAt
+              ? "Перевод остановлен · реквизиты проверяются"
+              : "Сделка активна · переведите средства"}
         </span>
       </div>
 
@@ -259,6 +270,9 @@ export function SendScreen({
         </div>
       )}
 
+      {/* The details block disappears entirely in the changed-details
+          freeze: stale or swapped payout data must never be on screen. */}
+      {!detailsChanged && (
       <div className="tx-card tx-bank" style={{ padding: 0 }}>
         <div className="tx-bank__title">Реквизиты получателя</div>
         {/* The recipient name leads the block: it's what the sender's bank
@@ -276,13 +290,25 @@ export function SendScreen({
         <CopyRow label="Номер карты" value={pm?.account_number ?? "—"} />
         <CopyRow label="Сумма" value={formatAmount(amount, from)} emphasize />
       </div>
+      )}
 
-      {!pmError && (
+      {!pmError && !detailsChanged && (
         <p className="tx-bank-helper" style={{ padding: "0 20px" }}>
           {pmLoading
             ? "Загружаем реквизиты получателя…"
             : "Получатель видит ваш платёж в течение 2–5 минут."}
         </p>
+      )}
+
+      {detailsChanged && (
+        <div className="tx-card tx-freeze">
+          <div className="tx-freeze__title">Перевод остановлен</div>
+          <p className="tx-freeze__copy">
+            Контрагент изменил реквизиты после начала сделки. Не отправляйте
+            перевод. Отмените сделку или дождитесь подтверждения от команды
+            öz.
+          </p>
+        </div>
       )}
 
       {nameMismatchAt && (
