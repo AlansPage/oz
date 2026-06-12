@@ -30,6 +30,10 @@ function createErrorMessage(raw: string | undefined): string {
       return "Это объявление больше недоступно.";
     case "cannot_transact_own_listing":
       return "Нельзя начать сделку по собственному объявлению.";
+    case "first_deal_limit_exceeded":
+      return "Для новых участников лимит первой сделки — 500 000 ₸";
+    case "payment_method_too_new":
+      return "Реквизиты были изменены недавно. Сделки возможны через 24 часа после изменения.";
     default:
       return "Не удалось создать сделку";
   }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { signAvatar } from "@/lib/avatar-url";
 import { PROFILE_COLUMNS } from "@/lib/profile-columns";
+import { useRate } from "@/components/feed/RateContext";
 import {
   ProfileGateSheet,
   PROFILE_GATE_DISMISS_KEY,
@@ -46,6 +47,11 @@ function initialEditForm(listing: ListingWithProfile): EditForm {
   };
 }
 
+// Mirrors the first-deal cap enforced server-side in create_transaction
+// (20260544): parties with < 3 completed deals are limited to 500 000 ₸.
+const FIRST_DEAL_CAP_KZT = 500_000;
+const FIRST_DEAL_MIN_DEALS = 3;
+
 export function ListingDetailClient({
   id,
   currentUserId,
@@ -53,6 +59,7 @@ export function ListingDetailClient({
 }: Props) {
   const supabase = createClient();
   const router = useRouter();
+  const { data: rateData } = useRate();
   const [listing, setListing] = useState<ListingWithProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -136,6 +143,29 @@ export function ListingDetailClient({
 
   const isOwner = listing?.user_id === currentUserId;
 
+  // Proactive first-deal cap: evaluate the listing in KZT through the same
+  // rate create_transaction would lock (listing rate, else market), and put
+  // the limit on the button instead of letting a capped user hit the error.
+  let capNotice: string | null = null;
+  if (listing && !isOwner) {
+    const capped =
+      profile.deals_count < FIRST_DEAL_MIN_DEALS ||
+      listing.profiles.deals_count < FIRST_DEAL_MIN_DEALS;
+    if (capped) {
+      const rate =
+        listing.rate !== null ? Number(listing.rate) : rateData?.rate ?? null;
+      const kztEquivalent =
+        listing.amount_currency === "KZT"
+          ? Number(listing.amount)
+          : rate !== null && rate > 0
+            ? Number(listing.amount) / rate
+            : null;
+      if (kztEquivalent !== null && kztEquivalent > FIRST_DEAL_CAP_KZT) {
+        capNotice = "Лимит первой сделки — 500 000 ₸";
+      }
+    }
+  }
+
   if (loading) {
     return (
       <section className="oz-listing-page">
@@ -215,7 +245,7 @@ export function ListingDetailClient({
           onWithdrawn={() => router.push("/feed")}
         />
       ) : (
-        <ContactActions onStartDeal={startDealOrGate} />
+        <ContactActions onStartDeal={startDealOrGate} capNotice={capNotice} />
       )}
 
       <AboutUser profile={listing.profiles} />
