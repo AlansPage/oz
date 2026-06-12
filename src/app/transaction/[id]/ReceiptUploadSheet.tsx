@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 import { createClient } from "@/lib/supabase/client";
 import { formatAmountInput, parseAmount } from "@/lib/format";
+import { advanceErrorMessage } from "./advance-error";
 import type { Currency, ReceiptSide } from "@/lib/types";
 
 type Props = {
@@ -117,7 +118,7 @@ export function ReceiptUploadSheet({
     });
     if (rpcErr) {
       setSubmitting(false);
-      setError(rpcErr.message);
+      setError(advanceErrorMessage(rpcErr.message));
       return;
     }
 

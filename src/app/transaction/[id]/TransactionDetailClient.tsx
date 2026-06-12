@@ -35,6 +35,7 @@ import { DisputeSheet } from "./DisputeSheet";
 import { RateForm, RatingReadOnly } from "./RatingCard";
 import { ChatThread } from "./ChatThread";
 import { NameMismatchPanel } from "./NameMismatchPanel";
+import { advanceErrorMessage } from "./advance-error";
 import { useTransactionChat } from "./useTransactionChat";
 import { ReceiptViewerSheet } from "./ReceiptViewerSheet";
 import { SendScreen } from "./screens/SendScreen";
@@ -78,6 +79,7 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
   const [loading, setLoading] = useState(true);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [viewerReceipt, setViewerReceipt] = useState<Receipt | null>(null);
 
   const fetchTx = useCallback(async () => {
@@ -311,20 +313,18 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
           : null;
   const onBack = () => router.push("/feed");
   const onDispute = () => setDisputeOpen(true);
-  const handleCancel = async () => {
-    await supabase.rpc("advance_transaction", {
+  // Errors used to be swallowed here, which made the server-side
+  // name-mismatch freeze look like a dead button — surface them instead.
+  const runAdvance = async (action: string) => {
+    const { error } = await supabase.rpc("advance_transaction", {
       p_transaction_id: tx.id,
-      p_action: "cancel",
+      p_action: action,
     });
+    setActionError(error ? advanceErrorMessage(error.message) : null);
     fetchTx();
   };
-  const handleConfirmReceived = async () => {
-    await supabase.rpc("advance_transaction", {
-      p_transaction_id: tx.id,
-      p_action: "counterparty_confirm",
-    });
-    fetchTx();
-  };
+  const handleCancel = () => runAdvance("cancel");
+  const handleConfirmReceived = () => runAdvance("counterparty_confirm");
   const handleReportMismatch = async () => {
     await supabase.rpc("report_recipient_name_mismatch", {
       p_transaction_id: tx.id,
@@ -483,6 +483,11 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
           <div className="tx-route__col">
             {mismatchPanel}
             {screen}
+            {actionError && (
+              <p className="oz-sheet__error" role="alert">
+                {actionError}
+              </p>
+            )}
             {chatSection}
           </div>
         </div>
@@ -612,28 +617,16 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
         disputeDescription={tx.dispute_description}
         disputedByYou={tx.disputed_by === currentUserId}
         onUpload={() => setUploadOpen(true)}
-        onConfirmCounterpartyReceived={async () => {
-          await supabase.rpc("advance_transaction", {
-            p_transaction_id: tx.id,
-            p_action: "counterparty_confirm",
-          });
-          fetchTx();
-        }}
-        onConfirmInitiatorReceived={async () => {
-          await supabase.rpc("advance_transaction", {
-            p_transaction_id: tx.id,
-            p_action: "initiator_confirm",
-          });
-          fetchTx();
-        }}
-        onCancel={async () => {
-          await supabase.rpc("advance_transaction", {
-            p_transaction_id: tx.id,
-            p_action: "cancel",
-          });
-          fetchTx();
-        }}
+        onConfirmCounterpartyReceived={() => runAdvance("counterparty_confirm")}
+        onConfirmInitiatorReceived={() => runAdvance("initiator_confirm")}
+        onCancel={() => runAdvance("cancel")}
       />
+
+      {actionError && (
+        <p className="oz-sheet__error" role="alert">
+          {actionError}
+        </p>
+      )}
 
       {chatSection}
 
