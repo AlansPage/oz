@@ -263,6 +263,7 @@ export type Database = {
           bank_name: string
           created_at: string
           currency: string
+          details_changed_at: string
           id: string
           is_default: boolean
           recipient_name: string
@@ -275,6 +276,7 @@ export type Database = {
           bank_name: string
           created_at?: string
           currency: string
+          details_changed_at?: string
           id?: string
           is_default?: boolean
           recipient_name: string
@@ -287,6 +289,7 @@ export type Database = {
           bank_name?: string
           created_at?: string
           currency?: string
+          details_changed_at?: string
           id?: string
           is_default?: boolean
           recipient_name?: string
@@ -711,6 +714,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      find_payment_method_event_notification: {
+        Args: { p_payment_method_id: string }
+        Returns: {
+          message_text: string
+          telegram_user_id: number
+          user_id: string
+        }[]
+      }
       find_transaction_event_notifications: {
         Args: { p_event_type: string; p_transaction_id: string }
         Returns: {
@@ -896,6 +907,7 @@ export type Database = {
           bank_name: string
           created_at: string
           currency: string
+          details_changed_at: string
           id: string
           is_default: boolean
           recipient_name: string
