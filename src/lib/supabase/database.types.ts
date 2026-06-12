@@ -635,7 +635,15 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      duplicate_payout_rails: {
+        Row: {
+          bank_codes: string[] | null
+          holders: Json | null
+          normalized_number: string | null
+          user_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       advance_transaction: {

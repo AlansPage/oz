@@ -9,6 +9,21 @@ function rate(numerator: number, denominator: number): number | null {
   return Number((numerator / denominator).toFixed(4));
 }
 
+// One row per bank rail (digits-only normalized account number) that
+// appears on payment_methods rows of more than one user — the
+// synthetic-identity signature. See 20260546000000_duplicate_rails_view.
+type DuplicateRail = {
+  normalized_number: string;
+  user_count: number;
+  bank_codes: string[] | null;
+  holders: {
+    user_id: string;
+    display_name: string | null;
+    currency: string;
+    bank_name: string;
+  }[];
+};
+
 export async function GET(req: Request) {
   const expected = process.env.OZ_ADMIN_TOKEN;
   const auth = req.headers.get("authorization") ?? "";
@@ -40,6 +55,7 @@ export async function GET(req: Request) {
     notifFailed24h,
     secAuthFailures24h,
     secChatFlagged24h,
+    duplicateRails,
   ] = await Promise.all([
     supabaseAdmin.from("profiles").select("*", head),
     supabaseAdmin
@@ -96,6 +112,7 @@ export async function GET(req: Request) {
       .select("*", head)
       .eq("event_type", "chat_flagged")
       .gt("created_at", dayAgo),
+    supabaseAdmin.from("duplicate_payout_rails").select("*"),
   ]);
 
   const n = (r: { count: number | null }) => r.count ?? 0;
@@ -134,6 +151,11 @@ export async function GET(req: Request) {
     security: {
       auth_failures_24h: n(secAuthFailures24h),
       chat_flagged_24h: n(secChatFlagged24h),
+    },
+    duplicate_rails: {
+      count: (duplicateRails.data ?? []).length,
+      rails: (duplicateRails.data ?? []) as DuplicateRail[],
+      error: duplicateRails.error?.message ?? null,
     },
   });
 }
