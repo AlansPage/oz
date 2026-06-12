@@ -1099,6 +1099,12 @@ button {
   color: var(--text);
 }
 
+/* Reputation/number-bearing about-lines align their digits like the other
+   two reputation surfaces (.oz-card__rating, .oz-listing-hero__rating). */
+.oz-listing-about__line--numeric {
+  font-variant-numeric: tabular-nums;
+}
+
 .oz-listing-empty {
   background: var(--surface);
   border-radius: var(--r-lg);
@@ -1987,6 +1993,13 @@ button {
     min-height: 44px;
     padding-top: 0;
     padding-bottom: 0;
+  }
+
+  /* Default-size .oz-btn computes to ~41px (12px padding ×2 + 15px text +
+     borders) — under the 44px floor. --lg is already 50px; only the base
+     size needs the bump. */
+  .oz-btn {
+    min-height: 44px;
   }
 
   /* The avatar stays 28px visually; negative margin grows the hit area

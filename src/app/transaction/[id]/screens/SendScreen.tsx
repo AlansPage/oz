@@ -257,23 +257,17 @@ export function SendScreen({
       </div>
 
       {pmError && (
-        <div
-          className="tx-card"
-          style={{
-            padding: "12px 16px",
-            color: "var(--warning)",
-            fontSize: 13,
-            lineHeight: 1.4,
-          }}
-        >
-          Контрагент ещё не указал реквизиты. Свяжитесь через чат.
+        <div className="tx-card tx-freeze">
+          <p className="tx-freeze__copy">
+            Контрагент ещё не указал реквизиты. Свяжитесь через чат.
+          </p>
         </div>
       )}
 
       {/* The details block disappears entirely in the changed-details
           freeze: stale or swapped payout data must never be on screen. */}
       {!detailsChanged && (
-      <div className="tx-card tx-bank" style={{ padding: 0 }}>
+      <div className="tx-card tx-bank">
         <div className="tx-bank__title">Реквизиты получателя</div>
         {/* The recipient name leads the block: it's what the sender's bank
             shows on its own confirmation screen, so it's the one field they
@@ -293,7 +287,7 @@ export function SendScreen({
       )}
 
       {!pmError && !detailsChanged && (
-        <p className="tx-bank-helper" style={{ padding: "0 20px" }}>
+        <p className="tx-bank-helper">
           {pmLoading
             ? "Загружаем реквизиты получателя…"
             : "Получатель видит ваш платёж в течение 2–5 минут."}
@@ -321,14 +315,7 @@ export function SendScreen({
         </div>
       )}
 
-      <div
-        style={{
-          padding: "20px 16px 0",
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
-        }}
-      >
+      <div className="tx-actions tx-actions--inset">
         {!pmError && !nameMismatchAt && pm && !nameChecked && (
           <div className="tx-namecheck">
             <p className="tx-namecheck__question">
@@ -367,11 +354,7 @@ export function SendScreen({
             </p>
           </>
         )}
-        <button
-          className="tx-actions__ghost-link"
-          style={{ marginTop: 4 }}
-          onClick={onCancel}
-        >
+        <button className="tx-actions__ghost-link" onClick={onCancel}>
           Отменить сделку
         </button>
       </div>

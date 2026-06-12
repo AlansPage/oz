@@ -23,7 +23,9 @@ export function AboutUser({ profile }: { profile: Profile }) {
     <section className="oz-listing-about" aria-label="О пользователе">
       <div className="oz-listing-about__title">О пользователе</div>
       <div className="oz-listing-about__line">{TIER_FULL[tier]}</div>
-      <div className="oz-listing-about__line">{ratingLine}</div>
+      <div className="oz-listing-about__line oz-listing-about__line--numeric">
+        {ratingLine}
+      </div>
       <div className="oz-listing-about__line">{memberSince}</div>
     </section>
   );

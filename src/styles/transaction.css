@@ -24,6 +24,12 @@
   display: flex;
   flex-direction: column;
 }
+/* The counterparty's mismatch banner (an oz-* component) rides inside the
+   redesigned column on some status × viewer combinations; give it the same
+   16px gutter every tx-card carries so it never sits edge-to-edge. */
+.tx-route__col > .oz-mismatch {
+  margin: 12px 16px;
+}
 
 /* ═════════════════════════════════════════════════════════════════════════
    CONFIRM / SEND / WAIT layer (.tx-*)
@@ -331,6 +337,12 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+/* Action zone sitting directly on the tint (SendScreen checkpoint area):
+   16px gutter matches the tx-card margin; 20px top is one --s-5 step of
+   air above the last card. */
+.tx-actions--inset {
+  padding: 20px 16px 0;
 }
 .tx-actions__primary {
   width: 100%;
@@ -908,9 +920,13 @@
 }
 
 /* ── Bank details card — the load-bearing element ─────────────────────── */
+/* Like .tx-station, the rows own their padding, so the card itself is
+   flush; overflow keeps the --surface-2 amount row inside the radius. */
 .tx-bank {
   display: flex;
   flex-direction: column;
+  padding: 0;
+  overflow: hidden;
 }
 .tx-bank__title {
   font-size: 11px;
@@ -996,6 +1012,19 @@
   background: var(--primary);
   border-color: var(--primary);
   color: #fff;
+}
+/* The 32px copy square stays 32px visually; an invisible inset(-6px) layer
+   brings the touch target to 44px — same intent as the negative-margin
+   trick on .oz-headeravatar__btn, without shifting the row layout. */
+@media (max-width: 639px) {
+  .tx-bank__copy {
+    position: relative;
+  }
+  .tx-bank__copy::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+  }
 }
 .tx-bank__row--amount .tx-bank__copy {
   background: var(--surface);
@@ -1087,6 +1116,11 @@
 }
 .tx-namecheck__no {
   width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 12px padding ×2 + 14px text lands at ~43px — keep the 44px floor. */
+  min-height: 44px;
   font-family: var(--font-sans);
   font-weight: 600;
   font-size: 14px;

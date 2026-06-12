@@ -120,7 +120,14 @@ export function PaymentMethodForm({
     setSaving(false);
 
     if (saveError || !data) {
-      setError(rpcErrorMessage(saveError?.message));
+      // The server's number rejection is the same failure the client-side
+      // validator catches — give it the same field-level is-error treatment
+      // instead of a second, sheet-level look.
+      if (saveError?.message === "invalid_account_number") {
+        setAccountError(rpcErrorMessage(saveError.message));
+      } else {
+        setError(rpcErrorMessage(saveError?.message));
+      }
       return;
     }
     onSaved(data as PaymentMethod);

@@ -22,7 +22,7 @@ import { ContactActions } from "./ContactActions";
 import { EditActions } from "./EditActions";
 import { AboutUser } from "./AboutUser";
 import { ConfirmTransactionSheet } from "./ConfirmTransactionSheet";
-import { formatAmountInput } from "@/lib/format";
+import { formatAmount, formatAmountInput } from "@/lib/format";
 
 type Props = {
   id: string;
@@ -161,7 +161,9 @@ export function ListingDetailClient({
             ? Number(listing.amount) / rate
             : null;
       if (kztEquivalent !== null && kztEquivalent > FIRST_DEAL_CAP_KZT) {
-        capNotice = "Лимит первой сделки — 500 000 ₸";
+        // formatAmount gives the NBSP-grouped number every other amount
+        // uses, so the figure can't line-wrap inside the button.
+        capNotice = `Лимит первой сделки — ${formatAmount(FIRST_DEAL_CAP_KZT, "KZT")}`;
       }
     }
   }

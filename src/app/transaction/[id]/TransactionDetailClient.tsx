@@ -483,10 +483,12 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
           <div className="tx-route__col">
             {mismatchPanel}
             {screen}
+            {/* Same severity family as the freeze states, so it wears the
+                same tx-freeze card rather than a bare oz-* text node. */}
             {actionError && (
-              <p className="oz-sheet__error" role="alert">
-                {actionError}
-              </p>
+              <div className="tx-card tx-freeze" role="alert">
+                <p className="tx-freeze__copy">{actionError}</p>
+              </div>
             )}
             {chatSection}
           </div>
