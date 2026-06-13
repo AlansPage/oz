@@ -605,6 +605,15 @@ button {
   margin-top: 1px;
 }
 
+/* Partial fills: remaining is the headline figure; the posted total is muted
+   context a step below the rate line. */
+.oz-card__remaining-note {
+  font-size: 12px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
 .oz-card__note {
   font-size: 13px;
   color: var(--text-2);
@@ -1069,6 +1078,14 @@ button {
   font-size: 14px;
   color: var(--text-2);
   font-variant-numeric: tabular-nums;
+}
+
+/* Partial fills: posted total as muted context under the remaining headline. */
+.oz-listing-hero__remaining-note {
+  font-size: 13px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  margin-top: 4px;
 }
 
 .oz-listing-hero__equivalent {

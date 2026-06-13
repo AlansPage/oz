@@ -18,7 +18,7 @@ const SYMBOL: Record<Currency, string> = { KZT: "₸", KRW: "₩" };
 
 type SubmitPayload = Pick<
   ListingInsert,
-  "direction" | "amount" | "amount_currency" | "rate" | "note"
+  "direction" | "amount" | "amount_currency" | "rate" | "note" | "min_match_amount"
 >;
 
 type Props = {
@@ -36,6 +36,9 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
   const [amountStr, setAmountStr] = useState("");
   const [rateStr, setRateStr] = useState("");
   const [note, setNote] = useState("");
+  // Optional inventory minimum — off by default so retail posters never see it.
+  const [showMin, setShowMin] = useState(false);
+  const [minStr, setMinStr] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -47,6 +50,8 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
       setAmountStr("");
       setRateStr("");
       setNote("");
+      setShowMin(false);
+      setMinStr("");
       setError(null);
       setSubmitting(false);
     }
@@ -66,7 +71,11 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
   const from = directionFrom(direction);
   const amount = parseAmount(amountStr);
   const rate = rateStr ? Number(rateStr.replace(",", ".")) : null;
-  const canSubmit = amount > 0 && !submitting && (rate === null || rate > 0);
+  const minVal = parseAmount(minStr);
+  // A minimum only makes sense as inventory: positive and no larger than the post.
+  const minOk = !showMin || (minVal > 0 && minVal <= amount);
+  const canSubmit =
+    amount > 0 && !submitting && (rate === null || rate > 0) && minOk;
 
   const doSubmit = async () => {
     setSubmitting(true);
@@ -78,6 +87,7 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
         amount_currency: from,
         rate,
         note: note.trim() ? note.trim() : null,
+        min_match_amount: showMin && minVal > 0 ? minVal : null,
       });
       onClose();
     } catch (err) {
@@ -166,6 +176,41 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
               />
               <span className="oz-input__suffix">{SYMBOL[from]}</span>
             </div>
+          </div>
+
+          {/* Inventory minimum — opt-in, hidden by default so retail posters
+              never meet it. Framed as inventory, not a setting. */}
+          <div className="oz-sheet__field">
+            {!showMin ? (
+              <button
+                type="button"
+                className="oz-secondary-btn-sm"
+                onClick={() => setShowMin(true)}
+              >
+                + Минимальная сумма обмена
+              </button>
+            ) : (
+              <>
+                <label className="oz-sheet__label" htmlFor="oz-min">
+                  Минимальная сумма обмена
+                </label>
+                <div className="oz-input--withsuffix">
+                  <input
+                    id="oz-min"
+                    className="oz-input font-mono"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    placeholder="0"
+                    value={minStr}
+                    onChange={(e) => setMinStr(formatAmountInput(e.target.value))}
+                  />
+                  <span className="oz-input__suffix">{SYMBOL[from]}</span>
+                </div>
+                <p className="oz-sheet__helper">
+                  Покупатели смогут брать частями, но не меньше этой суммы.
+                </p>
+              </>
+            )}
           </div>
 
           <div className="oz-sheet__field">

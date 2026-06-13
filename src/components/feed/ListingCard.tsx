@@ -50,10 +50,19 @@ export function ListingCard({
   const displayName =
     profile.display_name?.trim() || (profile.phone_masked ?? "—");
 
+  // Inventory: remaining is what a buyer acts on. remaining_amount is the
+  // trigger-maintained cache (null on listings posted before partial fills =
+  // treat as full). Only divisible listings show the "из total" context.
+  const amount = Number(listing.amount);
+  const remaining =
+    listing.remaining_amount === null ? amount : Number(listing.remaining_amount);
+  const partial = remaining < amount;
+  const shownAmount = partial ? remaining : amount;
+
   const marketRate = rateData?.rate ?? null;
   const equivalent =
     marketRate !== null
-      ? equivalentAmount(Number(listing.amount), from, marketRate, listing.rate)
+      ? equivalentAmount(shownAmount, from, marketRate, listing.rate)
       : null;
 
   return (
@@ -80,8 +89,13 @@ export function ListingCard({
           <span className="oz-card__direction" aria-hidden>
             {SYMBOL[from]} → {SYMBOL[to]}
           </span>
-          {formatAmountBare(Number(listing.amount))}
+          {formatAmountBare(shownAmount)}
         </div>
+        {partial && (
+          <div className="oz-card__remaining-note">
+            осталось из {formatAmount(amount, from)}
+          </div>
+        )}
         <div className="oz-card__rateline">
           {listing.rate !== null
             ? `по курсу ${formatRate(Number(listing.rate))}`

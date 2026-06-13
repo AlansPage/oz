@@ -44,9 +44,20 @@ export function ListingHero({ listing, editForm, onEditChange }: Props) {
 
   const editing = editForm !== null;
 
+  const postedAmount = Number(listing.amount);
+  // Remaining inventory (cache; null = pre-feature listing = full). The hero
+  // shows remaining as the headline when partially filled, never while editing.
+  const remaining =
+    listing.remaining_amount === null
+      ? postedAmount
+      : Number(listing.remaining_amount);
+  const partial = !editing && remaining < postedAmount;
+
   const displayAmount = editing
     ? parseAmount(editForm.amountStr)
-    : Number(listing.amount);
+    : partial
+      ? remaining
+      : postedAmount;
 
   const displayRate = editing
     ? editForm.rateStr
@@ -104,6 +115,12 @@ export function ListingHero({ listing, editForm, onEditChange }: Props) {
         ) : (
           <div className="oz-listing-hero__amount">
             {formatAmount(displayAmount, from)}
+          </div>
+        )}
+
+        {partial && (
+          <div className="oz-listing-hero__remaining-note">
+            осталось из {formatAmount(postedAmount, from)}
           </div>
         )}
 

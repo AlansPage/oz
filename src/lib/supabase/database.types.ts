@@ -157,6 +157,7 @@ export type Database = {
           min_match_amount: number | null
           note: string | null
           rate: number | null
+          remaining_amount: number | null
           status: string
           user_id: string
         }
@@ -171,6 +172,7 @@ export type Database = {
           min_match_amount?: number | null
           note?: string | null
           rate?: number | null
+          remaining_amount?: number | null
           status?: string
           user_id: string
         }
@@ -185,6 +187,7 @@ export type Database = {
           min_match_amount?: number | null
           note?: string | null
           rate?: number | null
+          remaining_amount?: number | null
           status?: string
           user_id?: string
         }
@@ -681,7 +684,7 @@ export type Database = {
       }
       cleanup_expired_auth_codes: { Args: never; Returns: undefined }
       create_transaction: {
-        Args: { p_listing_id: string; p_rate?: number }
+        Args: { p_fill_amount?: number; p_listing_id: string; p_rate?: number }
         Returns: {
           amount: number
           amount_currency: string
@@ -794,6 +797,10 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      refresh_listing_remaining: {
+        Args: { p_listing_id: string }
+        Returns: undefined
+      }
       report_recipient_name_mismatch: {
         Args: { p_transaction_id: string }
         Returns: {
@@ -878,6 +885,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      transaction_claims_inventory: {
+        Args: { p_status: string }
+        Returns: boolean
       }
       update_profile_identity: {
         Args: { p_avatar_path: string; p_display_name: string }
