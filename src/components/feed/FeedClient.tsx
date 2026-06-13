@@ -16,6 +16,7 @@ import { Fab } from "./Fab";
 import { PostListingSheet } from "./PostListingSheet";
 import { SkeletonCard } from "./SkeletonCard";
 import { EmptyState } from "./EmptyState";
+import { MiniAppHint } from "@/components/MiniAppHint";
 import type { ListingInsert, ListingWithProfile, Profile } from "@/lib/types";
 
 const PAGE_SIZE = 50;
@@ -204,10 +205,13 @@ export function FeedClient({ currentUserId, currentProfile }: Props) {
       </section>
 
       <footer className="oz-feed__disclaimer">
-        öz — сообщество для прямого обмена. Платформа не участвует в передаче средств.{" "}
-        <Link href="/terms">условия</Link>
-        {" "}/{" "}
-        <Link href="/privacy">конфиденциальность</Link>
+        <span className="block">
+          öz — сообщество для прямого обмена. Платформа не участвует в передаче средств.{" "}
+          <Link href="/terms">условия</Link>
+          {" "}/{" "}
+          <Link href="/privacy">конфиденциальность</Link>
+        </span>
+        <MiniAppHint className="mt-2" />
       </footer>
 
       <Fab onClick={gateOrOpenPostSheet} />
