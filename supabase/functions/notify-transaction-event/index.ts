@@ -91,6 +91,26 @@ async function sendTelegram(
   return { ok: true, messageId: messageId != null ? String(messageId) : undefined };
 }
 
+// Send via the app bot first (so the message can deep-link into the Mini App),
+// then fall back to @ozauth_bot — which every linked user has started, so it can
+// always reach them. A bot CANNOT message a user who never started it, so the
+// app bot alone would silently drop notifications for users who haven't opened
+// the Mini App yet; the fallback closes that gap. When appToken is null this is
+// just the original @ozauth_bot send.
+async function dispatch(
+  appToken: string | null,
+  ozToken: string,
+  chatId: number,
+  text: string,
+): Promise<{ ok: boolean; messageId?: string; channel: string; errorDetail?: string }> {
+  if (appToken) {
+    const viaApp = await sendTelegram(appToken, chatId, text);
+    if (viaApp.ok) return { ...viaApp, channel: "app_bot" };
+  }
+  const viaOz = await sendTelegram(ozToken, chatId, text);
+  return { ...viaOz, channel: "ozauth_bot" };
+}
+
 // Map a transactions table change to an event_type. Returns null when the
 // change is not notification-worthy (e.g. UPDATE that didn't move status).
 function resolveEventType(payload: WebhookPayload): string | null {
@@ -155,7 +175,18 @@ Deno.serve(async (req) => {
     envOrThrow("SUPABASE_SERVICE_ROLE_KEY"),
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
-  const botToken = envOrThrow("TELEGRAM_BOT_TOKEN");
+  const ozBotToken = envOrThrow("TELEGRAM_BOT_TOKEN");
+  // Optional: when set, deal notifications prefer the Mini App's app bot so they
+  // can deep-link into the app (falls back to @ozauth_bot — see dispatch()).
+  const appBotToken = Deno.env.get("TELEGRAM_APP_BOT_TOKEN") ?? null;
+  // Optional: e.g. "https://t.me/oz_app_bot". When set, each message gets a
+  // tappable link that opens the Mini App straight on the transaction. Requires
+  // the app bot to have a Main Mini App configured in BotFather. Plain text
+  // (no parse_mode), so the bare URL is auto-linked and can't inject markup.
+  const deeplinkBase = Deno.env.get("MINIAPP_DEEPLINK_BASE") ?? null;
+  const deepLink = deeplinkBase
+    ? `${deeplinkBase}?startapp=tx_${transactionId}`
+    : null;
 
   const { data, error } = await supabase.rpc(
     "find_transaction_event_notifications",
@@ -187,7 +218,10 @@ Deno.serve(async (req) => {
       if (logErr) console.error("notification_log insert (no_telegram_link) failed", logErr);
       continue;
     }
-    const result = await sendTelegram(botToken, row.telegram_user_id, row.message_text);
+    const text = deepLink
+      ? `${row.message_text}\n\nОткрыть в öz: ${deepLink}`
+      : row.message_text;
+    const result = await dispatch(appBotToken, ozBotToken, row.telegram_user_id, text);
     if (result.ok) {
       dispatched += 1;
       const { error: logErr } = await supabase.from("notification_log").insert({
