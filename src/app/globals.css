@@ -804,7 +804,9 @@ button {
   border-radius: 24px 24px 0 0;
   box-shadow: var(--shadow-pop);
   z-index: 31;
-  padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+  /* max() so the sheet clears whichever is larger: the device home indicator
+     (env) or Telegram's bottom chrome (--tg-safe-bottom, 0 outside Telegram). */
+  padding: 24px 20px calc(24px + max(env(safe-area-inset-bottom), var(--tg-safe-bottom)));
   /* dvh tracks mobile Safari's dynamic toolbar (vh ignores it and lets the
      keyboard cover focused inputs); vh line is the older-browser fallback. */
   max-height: 85vh;

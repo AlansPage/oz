@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/feed/Avatar";
+import { getWebApp } from "@/lib/telegram/webapp";
 
 type Props = {
   displayName: string | null;
@@ -16,7 +17,13 @@ export function HeaderAvatarMenu({ displayName, phone, avatarUrl }: Props) {
   const supabase = createClient();
   const [open, setOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  // Resolved after mount to avoid an SSR/hydration mismatch (window-only check).
+  const [miniApp, setMiniApp] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setMiniApp(Boolean(getWebApp()?.initData));
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -37,6 +44,13 @@ export function HeaderAvatarMenu({ displayName, phone, avatarUrl }: Props) {
 
   async function handleLogout() {
     setLoggingOut(true);
+    // Inside Telegram a user IS their Telegram account — there's no web login to
+    // return to, and reopening re-auths via initData. So just close the Mini App
+    // instead of routing to the web landing page.
+    if (miniApp) {
+      getWebApp()?.close();
+      return;
+    }
     await supabase.auth.signOut();
     router.replace("/");
     router.refresh();
@@ -90,7 +104,7 @@ export function HeaderAvatarMenu({ displayName, phone, avatarUrl }: Props) {
             onClick={handleLogout}
             disabled={loggingOut}
           >
-            {loggingOut ? "Выходим…" : "Выйти"}
+            {miniApp ? "Закрыть" : loggingOut ? "Выходим…" : "Выйти"}
           </button>
         </div>
       )}
