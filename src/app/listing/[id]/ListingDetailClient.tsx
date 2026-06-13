@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTelegramBackButton } from "@/lib/telegram/useTelegramBackButton";
 import { createClient } from "@/lib/supabase/client";
 import { signAvatar } from "@/lib/avatar-url";
 import { PROFILE_COLUMNS } from "@/lib/profile-columns";
@@ -59,6 +60,7 @@ export function ListingDetailClient({
 }: Props) {
   const supabase = createClient();
   const router = useRouter();
+  useTelegramBackButton();
   const { data: rateData } = useRate();
   const [listing, setListing] = useState<ListingWithProfile | null>(null);
   const [loading, setLoading] = useState(true);

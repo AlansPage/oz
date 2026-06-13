@@ -9,6 +9,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useTelegramBackButton } from "@/lib/telegram/useTelegramBackButton";
 import { signAvatar } from "@/lib/avatar-url";
 import { PROFILE_COLUMNS } from "@/lib/profile-columns";
 import {
@@ -66,6 +67,7 @@ const SYMBOL: Record<Currency, string> = { KZT: "₸", KRW: "₩" };
 export function TransactionDetailClient({ id, currentUserId }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
+  useTelegramBackButton();
   const [tx, setTx] = useState<TransactionWithProfiles | null>(null);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [ratings, setRatings] = useState<Rating[]>([]);

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Montserrat } from "next/font/google";
 import { SupabaseProvider } from "@/components/SupabaseProvider";
+import { MiniAppProvider } from "@/components/telegram/MiniAppProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -54,7 +55,9 @@ export default function RootLayout({
   return (
     <html lang="ru" className={`${inter.variable} ${jetbrainsMono.variable} ${montserrat.variable}`}>
       <body>
-        <SupabaseProvider>{children}</SupabaseProvider>
+        <SupabaseProvider>
+          <MiniAppProvider>{children}</MiniAppProvider>
+        </SupabaseProvider>
       </body>
     </html>
   );

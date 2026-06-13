@@ -66,6 +66,53 @@
   /* Shadows: warm over beige canvas */
   --shadow-card: 0 1px 2px rgba(60, 40, 10, 0.04), 0 8px 24px rgba(60, 40, 10, 0.06);
   --shadow-pop: 0 4px 12px rgba(60, 40, 10, 0.08), 0 24px 60px rgba(60, 40, 10, 0.12);
+
+  /* Telegram Mini App safe-area insets. Default 0 (browser); MiniAppProvider
+     overwrites these from WebApp.safeAreaInset on <html> inside Telegram. */
+  --tg-safe-top: 0px;
+  --tg-safe-bottom: 0px;
+  --tg-safe-left: 0px;
+  --tg-safe-right: 0px;
+}
+
+/* ── Telegram Mini App shell ───────────────────────────────────────────────
+   Active only when MiniAppProvider sets data-tg-theme on <html> — the browser
+   web app is untouched. Pad the page so content clears Telegram's header/footer
+   chrome (safe-area insets are written by the provider). */
+html[data-tg-theme] body {
+  padding-top: var(--tg-safe-top);
+  padding-bottom: var(--tg-safe-bottom);
+  padding-left: var(--tg-safe-left);
+  padding-right: var(--tg-safe-right);
+}
+
+/* Baseline dark palette for Telegram dark mode. Keeps öz's brand green; inverts
+   the warm-neutral canvas/surfaces/text. This is a starting baseline — tune the
+   soft/status tints on a real device (Phase 1 done-when is device-verified). */
+html[data-tg-theme="dark"] {
+  --bg: #14110D;
+  --bg-grid: rgba(245, 240, 232, 0.04);
+
+  --surface: #1E1A15;
+  --surface-2: #231E18;
+  --surface-sunken: #100D0A;
+
+  --text: #F5F0E8;
+  --text-2: #C9C1B3;
+  --text-3: #A39B8D;
+  --text-mute: #8A8275;
+
+  --border: #332E26;
+  --border-strong: #463F34;
+
+  /* Lift the brand green slightly for contrast on the dark canvas; keep hue. */
+  --primary: #2E9D63;
+  --primary-hover: #38B173;
+  --primary-soft: #15321F;
+  --primary-ink: #BFE6CE;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-pop: 0 4px 12px rgba(0, 0, 0, 0.4), 0 24px 60px rgba(0, 0, 0, 0.55);
 }
 
 html,
