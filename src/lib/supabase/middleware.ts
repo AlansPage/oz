@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { embeddableCookieOptions, IS_PROD } from "./cookie-options";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
@@ -31,7 +32,11 @@ export async function updateSession(request: NextRequest) {
           );
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
+            supabaseResponse.cookies.set(
+              name,
+              value,
+              embeddableCookieOptions(options, IS_PROD),
+            ),
           );
         },
       },
