@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BrandMark } from "@/components/BrandMark";
+import { MiniAppHint } from "@/components/MiniAppHint";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function LandingPage() {
@@ -32,6 +33,9 @@ export default async function LandingPage() {
         <p className="mt-4 text-center text-[12px] text-text-3">
           Сообщество казахстанцев в Корее
         </p>
+        <div className="mt-2 text-center">
+          <MiniAppHint />
+        </div>
       </div>
     </main>
   );
