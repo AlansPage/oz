@@ -110,3 +110,25 @@ export function isMiniApp(): boolean {
   const wa = getWebApp();
   return Boolean(wa && wa.initData);
 }
+
+/**
+ * Haptic helpers. No-op outside Telegram (getWebApp() is null) and on older
+ * clients that lack HapticFeedback, so call sites can fire them unconditionally.
+ */
+export function hapticImpact(
+  style: "light" | "medium" | "heavy" | "rigid" | "soft" = "medium",
+): void {
+  try {
+    getWebApp()?.HapticFeedback?.impactOccurred(style);
+  } catch {
+    // best-effort polish; never let haptics break an action
+  }
+}
+
+export function hapticNotification(type: "success" | "warning" | "error"): void {
+  try {
+    getWebApp()?.HapticFeedback?.notificationOccurred(type);
+  } catch {
+    // best-effort polish
+  }
+}

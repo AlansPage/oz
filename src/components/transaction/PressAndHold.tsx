@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { hapticImpact, hapticNotification } from "@/lib/telegram/webapp";
 
 type Props = {
   label?: string;
@@ -38,6 +39,7 @@ export function PressAndHold({
       holdingRef.current = false;
       setPct(1);
       setDone(true);
+      hapticNotification("success");
       onConfirm?.();
       return;
     }
@@ -48,6 +50,7 @@ export function PressAndHold({
     if (disabled || done || holdingRef.current) return;
     holdingRef.current = true;
     startRef.current = performance.now();
+    hapticImpact("light"); // feedback that the hold has started
     rafRef.current = requestAnimationFrame(tick);
   };
 

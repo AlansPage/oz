@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { hapticImpact, hapticNotification } from "@/lib/telegram/webapp";
 
 type Props = {
   label?: string;
@@ -27,6 +28,7 @@ export function SlideToConfirm({
   const draggingRef = useRef(false);
   const startXRef = useRef(0);
   const startPosRef = useRef(0);
+  const armedRef = useRef(false); // fired the "past threshold" haptic this drag
 
   const setPosition = (p: number) => {
     posRef.current = p;
@@ -41,6 +43,7 @@ export function SlideToConfirm({
   const commit = () => {
     setPosition(1);
     setDone(true);
+    hapticNotification("success");
     onConfirm?.();
   };
 
@@ -51,6 +54,14 @@ export function SlideToConfirm({
     const dx = x - startXRef.current;
     const w = trackWidth();
     const next = Math.max(0, Math.min(1, startPosRef.current + (w ? dx / w : 0)));
+    // Light tick the moment the thumb crosses into the "release to confirm"
+    // zone, so the user feels where the commit point is.
+    if (next >= THRESHOLD && !armedRef.current) {
+      armedRef.current = true;
+      hapticImpact("light");
+    } else if (next < THRESHOLD) {
+      armedRef.current = false;
+    }
     setPosition(next);
   };
 

@@ -48,6 +48,16 @@ export function MiniAppProvider({ children }: { children: React.ReactNode }) {
     };
 
     apply();
+
+    // Stop Telegram's swipe-to-close from fighting in-app gestures (the
+    // SlideToConfirm drag, PressAndHold, and vertical scrolling). Newer clients
+    // only — guarded. This is the single biggest webview gesture conflict.
+    try {
+      wa.disableVerticalSwipes?.();
+    } catch {
+      // older client without the method — ignore
+    }
+
     const events = [
       "themeChanged",
       "safeAreaChanged",
