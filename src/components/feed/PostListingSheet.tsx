@@ -72,8 +72,10 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
   const amount = parseAmount(amountStr);
   const rate = rateStr ? Number(rateStr.replace(",", ".")) : null;
   const minVal = parseAmount(minStr);
-  // A minimum only makes sense as inventory: positive and no larger than the post.
-  const minOk = !showMin || (minVal > 0 && minVal <= amount);
+  // The minimum stays OPTIONAL even when expanded: an empty field means "no
+  // minimum" (submits null), so it never blocks publishing. A positive value
+  // only has to be no larger than the post.
+  const minOk = !showMin || minVal <= amount;
   const canSubmit =
     amount > 0 && !submitting && (rate === null || rate > 0) && minOk;
 
@@ -184,16 +186,28 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
             {!showMin ? (
               <button
                 type="button"
-                className="oz-secondary-btn-sm"
+                className="oz-field-link"
                 onClick={() => setShowMin(true)}
               >
                 + Минимальная сумма обмена
               </button>
             ) : (
               <>
-                <label className="oz-sheet__label" htmlFor="oz-min">
-                  Минимальная сумма обмена
-                </label>
+                <div className="oz-field-head">
+                  <label className="oz-sheet__label" htmlFor="oz-min">
+                    Минимальная сумма обмена
+                  </label>
+                  <button
+                    type="button"
+                    className="oz-field-link"
+                    onClick={() => {
+                      setShowMin(false);
+                      setMinStr("");
+                    }}
+                  >
+                    убрать
+                  </button>
+                </div>
                 <div className="oz-input--withsuffix">
                   <input
                     id="oz-min"
