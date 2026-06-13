@@ -9,7 +9,9 @@ export type SecurityEventType =
   | "rpc_unauthorized"
   | "chat_flagged"
   | "rate_limited"
-  | "suspicious_pattern";
+  | "suspicious_pattern"
+  | "miniapp_signin"
+  | "miniapp_initdata_invalid";
 
 export async function logSecurityEvent(params: {
   event_type: SecurityEventType;
