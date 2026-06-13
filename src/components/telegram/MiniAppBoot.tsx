@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BrandMark } from "@/components/BrandMark";
 import { getWebApp } from "@/lib/telegram/webapp";
+import { resolveStartParam } from "@/lib/telegram/start-param";
 import { BindPhoneStep } from "@/components/telegram/BindPhoneStep";
 
 /**
@@ -29,6 +30,9 @@ export function MiniAppBoot() {
   const [state, setState] = useState<BootState>({ kind: "loading" });
   const [initData, setInitData] = useState<string | null>(null);
   const ranRef = useRef(false);
+  // Deep-link target from ?startapp=tx_<id> (e.g. a deal notification), resolved
+  // once and honored after both direct auth and post-binding. Defaults to /feed.
+  const landingRef = useRef("/feed");
 
   useEffect(() => {
     // Guard against double-invocation (React 18 StrictMode dev double-mount).
@@ -41,6 +45,8 @@ export function MiniAppBoot() {
       return;
     }
     setInitData(wa.initData);
+    landingRef.current =
+      resolveStartParam(wa.initDataUnsafe?.start_param) ?? "/feed";
 
     try {
       wa.ready();
@@ -68,7 +74,7 @@ export function MiniAppBoot() {
         if (cancelled) return;
 
         if (res.ok && data.ok) {
-          router.replace(data.redirect ?? "/feed");
+          router.replace(landingRef.current);
           return;
         }
         if (res.ok && data.needs_binding) {
@@ -107,7 +113,7 @@ export function MiniAppBoot() {
         <div className="mt-6">
           <BindPhoneStep
             initData={initData}
-            onBound={() => router.replace("/feed")}
+            onBound={() => router.replace(landingRef.current)}
           />
         </div>
       )}
