@@ -11,7 +11,10 @@ export type SecurityEventType =
   | "rate_limited"
   | "suspicious_pattern"
   | "miniapp_signin"
-  | "miniapp_initdata_invalid";
+  | "miniapp_initdata_invalid"
+  | "miniapp_binding"
+  | "miniapp_binding_mismatch"
+  | "app_webhook_auth_failed";
 
 export async function logSecurityEvent(params: {
   event_type: SecurityEventType;

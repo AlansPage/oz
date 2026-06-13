@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BrandMark } from "@/components/BrandMark";
 import { getWebApp } from "@/lib/telegram/webapp";
+import { BindPhoneStep } from "@/components/telegram/BindPhoneStep";
 
 /**
  * Mini App bootstrap (Phase 0). Runs once on the `/tg` entry route inside the
@@ -26,6 +27,7 @@ type BootState =
 export function MiniAppBoot() {
   const router = useRouter();
   const [state, setState] = useState<BootState>({ kind: "loading" });
+  const [initData, setInitData] = useState<string | null>(null);
   const ranRef = useRef(false);
 
   useEffect(() => {
@@ -38,6 +40,7 @@ export function MiniAppBoot() {
       setState({ kind: "not_telegram" });
       return;
     }
+    setInitData(wa.initData);
 
     try {
       wa.ready();
@@ -69,7 +72,6 @@ export function MiniAppBoot() {
           return;
         }
         if (res.ok && data.needs_binding) {
-          // Phase 2 replaces this with the in-app phone-binding step.
           setState({ kind: "needs_binding" });
           return;
         }
@@ -101,13 +103,12 @@ export function MiniAppBoot() {
         <p className="mt-6 text-[14px] text-text-2">Входим в öz…</p>
       )}
 
-      {state.kind === "needs_binding" && (
-        <div className="mt-6 max-w-xs">
-          <h1 className="text-[18px] font-bold text-text">Подтвердите номер</h1>
-          <p className="mt-2 text-[14px] text-text-2">
-            Чтобы безопасно обменивать, привяжите казахстанский номер +7. Этот
-            шаг скоро появится прямо здесь.
-          </p>
+      {state.kind === "needs_binding" && initData && (
+        <div className="mt-6">
+          <BindPhoneStep
+            initData={initData}
+            onBound={() => router.replace("/feed")}
+          />
         </div>
       )}
 
