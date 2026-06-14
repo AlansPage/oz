@@ -2103,6 +2103,82 @@ button {
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────────
+   Contact founder — "связаться с создателем"
+   Honest contact surface: a real person, not a support desk. Card variant is
+   used on /help and on empty/error states; the inline variant is a quiet
+   catch-all beneath the in-deal dispute button (which stays the prominent,
+   context-carrying path for deal-specific problems).
+   ───────────────────────────────────────────────────────────────────── */
+.oz-contact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--s-5);
+  box-shadow: var(--shadow-card);
+  text-align: left;
+}
+
+.oz-contact__lede {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+  margin: 0;
+}
+
+.oz-contact__email {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  font-size: 14px;
+  color: var(--text-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--text-3);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .oz-contact__email:hover { color: var(--text); }
+}
+
+.oz-contact__note {
+  font-size: 13px;
+  color: var(--text-3);
+  text-align: center;
+  margin: 0;
+}
+
+/* Inline catch-all: deliberately quiet (small, muted, no button chrome) so it
+   never competes with the dispute button it sits beneath. Full-width centred
+   with a 44px touch target. */
+.oz-contact__inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--text-3);
+  text-decoration: none;
+}
+
+.oz-contact__inline:active { color: var(--text-2); }
+
+@media (hover: hover) and (pointer: fine) {
+  .oz-contact__inline:hover {
+    color: var(--text-2);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
 /* iOS Safari auto-zooms focused inputs whose font-size is under 16px.
    Bump text-entry controls to 16px on touch devices only; desktop keeps
    the 13-15px spec sizes. (.oz-otp-box is already 22px — exempt.) */

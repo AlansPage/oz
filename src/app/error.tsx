@@ -1,5 +1,7 @@
 "use client";
 
+import { ContactFounder } from "@/components/ContactFounder";
+
 export default function ErrorBoundary({
   error: _error,
   reset,
@@ -9,7 +11,7 @@ export default function ErrorBoundary({
 }) {
   return (
     <main className="min-h-[100dvh] flex flex-col items-center justify-center px-6 bg-bg">
-      <div className="max-w-sm text-center">
+      <div className="max-w-sm w-full text-center">
         <h1 className="text-[20px] font-bold tracking-tight">
           Что-то пошло не так
         </h1>
@@ -22,6 +24,9 @@ export default function ErrorBoundary({
         >
           Попробовать снова
         </button>
+        <div className="mt-8">
+          <ContactFounder />
+        </div>
       </div>
     </main>
   );

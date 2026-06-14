@@ -92,6 +92,17 @@ export function HeaderAvatarMenu({ displayName, phone, avatarUrl }: Props) {
             className="oz-headeravatar__item"
             onClick={() => {
               setOpen(false);
+              router.push("/help");
+            }}
+          >
+            Помощь
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="oz-headeravatar__item"
+            onClick={() => {
+              setOpen(false);
               router.push("/alerts");
             }}
           >
