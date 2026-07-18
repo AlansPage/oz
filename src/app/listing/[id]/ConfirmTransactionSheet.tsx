@@ -23,6 +23,20 @@ import {
 
 const SYMBOL: Record<Currency, string> = { KZT: "₸", KRW: "₩" };
 
+// Server rejections that re-tapping "Подтвердить" cannot clear: a freeze
+// or cooldown applies to this pairing, so the button must be disabled and
+// the message reads as a warning explaining why — never an active button
+// next to a freeze notice. Transient failures (network, a stale listing,
+// a fixable fill amount) are NOT freezes: those keep the button tappable
+// so the user can retry. Both the warning and the disabled state derive
+// from this one set, so they can never disagree.
+const FREEZE_CODES = new Set([
+  "payment_method_too_new",
+  "counterparty_no_payment_method",
+  "first_deal_limit_exceeded",
+  "cannot_transact_own_listing",
+]);
+
 // Maps the RPC's raise-exception codes to user-facing Russian copy.
 function createErrorMessage(raw: string | undefined): string {
   switch (raw) {
@@ -59,7 +73,10 @@ export function ConfirmTransactionSheet({ open, onClose, listing }: Props) {
   const { data: rateData } = useRate();
   const [mounted, setMounted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // The raw rejection code from the last failed attempt (null = no error).
+  // The visible message and whether the deal is frozen both derive from it,
+  // so the warning and the button state share a single source of truth.
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [fillStr, setFillStr] = useState("");
 
   useEffect(() => setMounted(true), []);
@@ -77,7 +94,7 @@ export function ConfirmTransactionSheet({ open, onClose, listing }: Props) {
 
   useEffect(() => {
     if (!open) {
-      setError(null);
+      setErrorCode(null);
       setSubmitting(false);
     }
   }, [open]);
@@ -135,10 +152,17 @@ export function ConfirmTransactionSheet({ open, onClose, listing }: Props) {
       ? equivalentAmount(fillAmount, from, lockedRate, listingRate)
       : null;
 
+  // Single source of truth for the error UI. `frozen` gates BOTH the warning
+  // copy and the confirm button, so an active button can never sit next to a
+  // freeze notice. A non-freeze code (e.g. a stale listing) still shows its
+  // message but leaves the button tappable for a retry.
+  const frozen = errorCode !== null && FREEZE_CODES.has(errorCode);
+  const errorMessage = errorCode !== null ? createErrorMessage(errorCode) : null;
+
   const confirm = async () => {
     if (needsFill && fillError) return;
     setSubmitting(true);
-    setError(null);
+    setErrorCode(null);
     // Server derives counterparty/currency/direction from the listing and is the
     // authority on the fill (a fresh sum under the lock). We pass the fill only
     // when the listing is divisible; a full taker sends null = whole remaining.
@@ -150,7 +174,7 @@ export function ConfirmTransactionSheet({ open, onClose, listing }: Props) {
 
     if (rpcError || !data) {
       setSubmitting(false);
-      setError(createErrorMessage(rpcError?.message));
+      setErrorCode(rpcError?.message ?? "unknown");
       return;
     }
     router.push(`/transaction/${(data as { id: string }).id}`);
@@ -182,7 +206,13 @@ export function ConfirmTransactionSheet({ open, onClose, listing }: Props) {
                 inputMode="decimal"
                 autoComplete="off"
                 value={fillStr}
-                onChange={(e) => setFillStr(formatAmountInput(e.target.value))}
+                onChange={(e) => {
+                  setFillStr(formatAmountInput(e.target.value));
+                  // A new amount may clear a fill-dependent freeze (e.g. the
+                  // first-deal cap), so drop the stale rejection and let the
+                  // user retry rather than leaving the button disabled.
+                  setErrorCode(null);
+                }}
               />
               <span className="oz-input__suffix">{SYMBOL[from]}</span>
             </div>
@@ -218,7 +248,7 @@ export function ConfirmTransactionSheet({ open, onClose, listing }: Props) {
           )}
         </div>
 
-        {error && <p className="oz-sheet__error">{error}</p>}
+        {errorMessage && <p className="oz-sheet__error">{errorMessage}</p>}
 
         <div className="oz-confirm__actions">
           <button
@@ -233,6 +263,7 @@ export function ConfirmTransactionSheet({ open, onClose, listing }: Props) {
             onClick={confirm}
             disabled={
               submitting ||
+              frozen ||
               lockedRate === null ||
               (needsFill && fillError !== null)
             }

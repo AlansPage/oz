@@ -195,9 +195,11 @@ export type PaymentMethod = {
   is_default: boolean;
   created_at: string;
   updated_at: string;
-  // Stamped on insert and on real account_number/recipient_name changes;
-  // backs the 24h first-deal freeze in create_transaction (20260544).
-  details_changed_at: string;
+  // Null until a real account_number/recipient_name edit stamps it; backs
+  // the 24h recent-change freeze in create_transaction. Null = never edited
+  // since creation = not on cooldown (20260551 — first-time creation no
+  // longer freezes the first deal).
+  details_changed_at: string | null;
 };
 
 export type CounterpartyPaymentMethod = {

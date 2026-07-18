@@ -266,7 +266,7 @@ export type Database = {
           bank_name: string
           created_at: string
           currency: string
-          details_changed_at: string
+          details_changed_at: string | null
           id: string
           is_default: boolean
           recipient_name: string
@@ -279,7 +279,7 @@ export type Database = {
           bank_name: string
           created_at?: string
           currency: string
-          details_changed_at?: string
+          details_changed_at?: string | null
           id?: string
           is_default?: boolean
           recipient_name: string
@@ -292,7 +292,7 @@ export type Database = {
           bank_name?: string
           created_at?: string
           currency?: string
-          details_changed_at?: string
+          details_changed_at?: string | null
           id?: string
           is_default?: boolean
           recipient_name?: string
@@ -926,7 +926,7 @@ export type Database = {
           bank_name: string
           created_at: string
           currency: string
-          details_changed_at: string
+          details_changed_at: string | null
           id: string
           is_default: boolean
           recipient_name: string
