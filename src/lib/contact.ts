@@ -18,7 +18,7 @@
  * paste the "@" form into config.
  */
 export const OZ_CONTACT_TELEGRAM = (
-  process.env.NEXT_PUBLIC_OZ_CONTACT_TELEGRAM || "oz_founder"
+  process.env.NEXT_PUBLIC_OZ_CONTACT_TELEGRAM || "hello_a1an"
 )
   .trim()
   .replace(/^@+/, "");
