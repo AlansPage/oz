@@ -8,6 +8,7 @@ import { HeaderAvatarMenu } from "@/components/HeaderAvatarMenu";
 import { RateWidget } from "@/components/RateWidget";
 import { RateProvider } from "@/components/feed/RateContext";
 import { FeedClient } from "@/components/feed/FeedClient";
+import { HolidayBanner } from "@/components/feed/HolidayBanner";
 import type { Profile } from "@/lib/types";
 
 export default async function FeedPage() {
@@ -58,6 +59,8 @@ export default async function FeedPage() {
             />
           </div>
         </header>
+
+        <HolidayBanner />
 
         <FeedClient
           currentUserId={user.id}

@@ -18,6 +18,7 @@ import { ConfirmTransactionSheet } from "@/app/listing/[id]/ConfirmTransactionSh
 import { ContactActions } from "@/app/listing/[id]/ContactActions";
 import { ListingHero } from "@/app/listing/[id]/ListingHero";
 import { AboutUser } from "@/app/listing/[id]/AboutUser";
+import { ContactFounder } from "@/components/ContactFounder";
 import type { Profile, ListingWithProfile } from "@/lib/types";
 import type { TransactionWithProfiles } from "@/app/transaction/[id]/TransactionDetailClient";
 import { formatAmount } from "@/lib/format";
@@ -179,6 +180,19 @@ function Surface() {
             />
           </div>
         </RateProvider>
+      );
+    case "help-fallback":
+      // The in-deal contact catch-all: dispute button (prominent) with the
+      // smaller "написать создателю" link beneath it. Mirrors the real
+      // TransactionDetailClient block which needs auth + a tx row.
+      return txWrap(
+        <>
+          <button className="oz-btn oz-btn--ghost">Сообщить о проблеме</button>
+          <ContactFounder
+            variant="inline"
+            transactionId="00000000-0000-0000-0000-00000000000b"
+          />
+        </>,
       );
     case "listing-hero":
       return (

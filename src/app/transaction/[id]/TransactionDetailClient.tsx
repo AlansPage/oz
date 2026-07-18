@@ -36,6 +36,7 @@ import { DisputeSheet } from "./DisputeSheet";
 import { RateForm, RatingReadOnly } from "./RatingCard";
 import { ChatThread } from "./ChatThread";
 import { NameMismatchPanel } from "./NameMismatchPanel";
+import { ContactFounder } from "@/components/ContactFounder";
 import { advanceErrorMessage } from "./advance-error";
 import { useTransactionChat } from "./useTransactionChat";
 import { ReceiptViewerSheet } from "./ReceiptViewerSheet";
@@ -635,12 +636,19 @@ export function TransactionDetailClient({ id, currentUserId }: Props) {
       {chatSection}
 
       {showDispute && (
-        <button
-          className="oz-btn oz-btn--ghost"
-          onClick={() => setDisputeOpen(true)}
-        >
-          Сообщить о проблеме
-        </button>
+        <>
+          {/* Dispute stays the prominent path for deal-specific problems: it
+              carries full context (tx id, receipts, security log) and fires the
+              operator alert. The contact link below is only a smaller catch-all
+              for problems that aren't about this specific deal. */}
+          <button
+            className="oz-btn oz-btn--ghost"
+            onClick={() => setDisputeOpen(true)}
+          >
+            Сообщить о проблеме
+          </button>
+          <ContactFounder variant="inline" transactionId={tx.id} />
+        </>
       )}
         </section>
       )}
