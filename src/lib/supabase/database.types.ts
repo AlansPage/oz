@@ -647,6 +647,19 @@ export type Database = {
         }
         Relationships: []
       }
+      user_volume_velocity: {
+        Row: {
+          counterparties_30d: number | null
+          counterparties_7d: number | null
+          deals_30d: number | null
+          deals_7d: number | null
+          display_name: string | null
+          user_id: string | null
+          volume_kzt_30d: number | null
+          volume_kzt_7d: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       advance_transaction: {

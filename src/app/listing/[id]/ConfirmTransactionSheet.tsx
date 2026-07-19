@@ -48,7 +48,7 @@ function createErrorMessage(raw: string | undefined): string {
     case "cannot_transact_own_listing":
       return "Нельзя начать сделку по собственному объявлению.";
     case "first_deal_limit_exceeded":
-      return `Для новых участников лимит первой сделки — ${formatAmount(500_000, "KZT")}.`;
+      return `Пока у участника менее трёх завершённых сделок, лимит каждой сделки — ${formatAmount(500_000, "KZT")}.`;
     case "same_day_limit_exceeded":
       return `Дневной лимит обменов — эквивалент ${formatAmount(2_500_000, "KZT")} на человека. Попробуйте меньшую сумму или вернитесь завтра.`;
     case "payment_method_too_new":

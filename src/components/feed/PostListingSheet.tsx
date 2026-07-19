@@ -6,7 +6,12 @@ import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 import { useRate } from "./RateContext";
 import { createClient } from "@/lib/supabase/client";
 import { PaymentMethodGateSheet } from "@/components/PaymentMethodGateSheet";
-import { formatAmountInput, formatRate, parseAmount } from "@/lib/format";
+import {
+  formatAmount,
+  formatAmountInput,
+  formatRate,
+  parseAmount,
+} from "@/lib/format";
 import {
   directionFrom,
   type Currency,
@@ -15,6 +20,12 @@ import {
 } from "@/lib/types";
 
 const SYMBOL: Record<Currency, string> = { KZT: "₸", KRW: "₩" };
+
+// Mirrors c_day_cap_kzt in create_transaction and the listing ceiling
+// trigger (20260558): one party's legal same-day volume, so a listing
+// may not advertise more than that. If the statutory proxy moves, the
+// server constants and this one move together.
+const DAY_CAP_KZT = 2_500_000;
 
 type SubmitPayload = Pick<
   ListingInsert,
@@ -76,8 +87,20 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
   // minimum" (submits null), so it never blocks publishing. A positive value
   // only has to be no larger than the post.
   const minOk = !showMin || minVal <= amount;
+  // Client-side mirror of the listings_enforce_size_ceiling trigger
+  // (20260558); the server stays authoritative. KZT counts as-is; KRW
+  // divides by the listing's own rate (1 KZT = rate KRW). A market-rate
+  // KRW listing (empty rate) cannot be priced against the ceiling and is
+  // allowed — the same-day cap still bounds every actual fill.
+  const amountKzt =
+    from === "KZT" ? amount : rate !== null && rate > 0 ? amount / rate : null;
+  const overLimit = amountKzt !== null && amountKzt > DAY_CAP_KZT;
   const canSubmit =
-    amount > 0 && !submitting && (rate === null || rate > 0) && minOk;
+    amount > 0 &&
+    !submitting &&
+    (rate === null || rate > 0) &&
+    minOk &&
+    !overLimit;
 
   const doSubmit = async () => {
     setSubmitting(true);
@@ -93,7 +116,14 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Не удалось опубликовать");
+      const raw = err instanceof Error ? err.message : null;
+      // The ceiling trigger's raise-exception code, mapped to user copy the
+      // same way ConfirmTransactionSheet maps create_transaction codes.
+      setError(
+        raw === "listing_over_limit"
+          ? `Объявление не может превышать эквивалент ${formatAmount(DAY_CAP_KZT, "KZT")} — это дневной лимит обменов на человека.`
+          : (raw ?? "Не удалось опубликовать"),
+      );
       setSubmitting(false);
     }
   };
@@ -178,6 +208,13 @@ export function PostListingSheet({ open, userId, onClose, onSubmit }: Props) {
               />
               <span className="oz-input__suffix">{SYMBOL[from]}</span>
             </div>
+            {overLimit && (
+              <p className="oz-sheet__error">
+                Объявление не может превышать эквивалент{" "}
+                {formatAmount(DAY_CAP_KZT, "KZT")} — это дневной лимит обменов
+                на человека.
+              </p>
+            )}
           </div>
 
           {/* Inventory minimum — opt-in, hidden by default so retail posters

@@ -24,6 +24,22 @@ type DuplicateRail = {
   }[];
 };
 
+// One row per user with any non-cancelled transaction in the trailing
+// 30 days: KZT-equivalent volume, deal counts and distinct counterparties
+// over 7/30 days — operator visibility into business-like velocity under
+// the non-profit-seeking condition of FETR Art. 7-20. See
+// 20260559000000_user_volume_velocity.
+type UserVolumeVelocity = {
+  user_id: string;
+  display_name: string | null;
+  volume_kzt_7d: number;
+  volume_kzt_30d: number;
+  deals_7d: number;
+  deals_30d: number;
+  counterparties_7d: number;
+  counterparties_30d: number;
+};
+
 export async function GET(req: Request) {
   const expected = process.env.OZ_ADMIN_TOKEN;
   const auth = req.headers.get("authorization") ?? "";
@@ -56,6 +72,7 @@ export async function GET(req: Request) {
     secAuthFailures24h,
     secChatFlagged24h,
     duplicateRails,
+    volumeVelocity,
   ] = await Promise.all([
     supabaseAdmin.from("profiles").select("*", head),
     supabaseAdmin
@@ -113,6 +130,10 @@ export async function GET(req: Request) {
       .eq("event_type", "chat_flagged")
       .gt("created_at", dayAgo),
     supabaseAdmin.from("duplicate_payout_rails").select("*"),
+    supabaseAdmin
+      .from("user_volume_velocity")
+      .select("*")
+      .order("volume_kzt_30d", { ascending: false }),
   ]);
 
   const n = (r: { count: number | null }) => r.count ?? 0;
@@ -156,6 +177,11 @@ export async function GET(req: Request) {
       count: (duplicateRails.data ?? []).length,
       rails: (duplicateRails.data ?? []) as DuplicateRail[],
       error: duplicateRails.error?.message ?? null,
+    },
+    volume_velocity: {
+      count: (volumeVelocity.data ?? []).length,
+      users: (volumeVelocity.data ?? []) as UserVolumeVelocity[],
+      error: volumeVelocity.error?.message ?? null,
     },
   });
 }
